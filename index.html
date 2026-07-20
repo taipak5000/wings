@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>羽根トラッカー - Sky所持率管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #F2F2F7;
+      --card:      #FFFFFF;
+      --sep:       rgba(60,60,67,0.12);
+      --orange:    #FF9500;
+      --orange-d:  #FF6200;
+      --orange-bg: rgba(255,149,0,0.10);
+      --blue:      #007AFF;
+      --blue-bg:   rgba(0,122,255,0.08);
+      --green:     #34C759;
+      --green-bg:  rgba(52,199,89,0.10);
+      --text:      #1C1C1E;
+      --text-2:    #8E8E93;
+      --text-3:    #C7C7CC;
+      --r:         16px;
+      --r-sm:      10px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    a { text-decoration:none; color:inherit; -webkit-tap-highlight-color:transparent; }
+    button { cursor:pointer; border:none; background:none; font-family:inherit; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(242,242,247,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 0.5px solid var(--sep); padding: 14px 20px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .nav-back { color: var(--blue); font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+    .app-layout { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+    @media (min-width: 850px) { .app-layout { max-width: 960px; display: flex; gap: 20px; align-items: flex-start; } }
+    .wrap { flex: 1; min-width: 0; }
+
+    .sidebar {
+      width: 200px; flex-shrink: 0; position: sticky; top: 58px;
+      background: var(--card); border-radius: var(--r); padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none; margin-top: 22px;
+    }
+    @media (min-width: 850px) { .sidebar { display: block; } }
+    .sidebar-section-label { font-size: 11px; font-weight: 700; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; }
+    .sidebar-nav-link {
+      display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: var(--r-sm);
+      color: var(--text); font-size: 13.5px; font-weight: 500; margin-bottom: 2px;
+    }
+    .sidebar-nav-link:hover { background: var(--bg); }
+
+    .notice-card {
+      background: var(--card); border-radius: var(--r); padding: 16px; margin-top: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07); font-size: 13px; color: var(--text-2); line-height: 1.7;
+    }
+    .notice-card b { color: var(--text); }
+
+    .summary-card {
+      background: linear-gradient(135deg, var(--blue) 0%, #0051A8 100%);
+      border-radius: var(--r); padding: 22px; margin-top: 16px; color: #fff;
+      box-shadow: 0 4px 14px rgba(0,122,255,0.25);
+    }
+    .summary-title { font-size: 14px; font-weight: 700; opacity: 0.9; margin-bottom: 14px; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .summary-item-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+    .summary-item-value { font-size: 22px; font-weight: 800; }
+    .summary-item-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+    .sec-label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--text-2); padding: 22px 4px 8px;
+    }
+
+    .season-card {
+      background: var(--card); border-radius: var(--r); padding: 16px; margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .season-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .season-name { font-size: 15px; font-weight: 700; }
+    .season-sub-badge {
+      font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+      background: var(--blue-bg); color: var(--blue); white-space: nowrap;
+    }
+    .season-sub-badge.complete { background: var(--green-bg); color: var(--green); }
+    .spirit-list {
+      display: flex; flex-direction: column; gap: 2px; margin-top: 12px; padding-top: 12px;
+      border-top: 0.5px solid var(--sep);
+    }
+    .spirit-opt {
+      display: flex; align-items: center; gap: 9px; font-size: 13.5px; padding: 6px 4px; border-radius: var(--r-sm);
+    }
+    .spirit-opt:hover { background: var(--bg); }
+    .spirit-opt input { accent-color: var(--blue); width: 16px; height: 16px; flex-shrink: 0; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(28,28,30,0.92); color: #fff; padding: 10px 18px; border-radius: 999px;
+      font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="https://taipak5000.github.io/item/" class="nav-back">◀ Sky所持率管理</a>
+  <div class="nav-title">🪽 羽根トラッカー</div>
+  <div style="width:90px;"></div>
+</nav>
+
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-section-label">🗂️ メニュー</div>
+    <nav>
+      <a href="https://taipak5000.github.io/item/" class="sidebar-nav-link">🏠 Sky所持率管理に戻る</a>
+    </nav>
+  </aside>
+
+  <div class="wrap">
+
+    <div class="notice-card">
+      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>羽根</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
+      ここで数える星のキャンドルは、<a href="https://taipak5000.github.io/item/cost.html" style="color:var(--blue); font-weight:600;">課金コスト診断</a>ページの「アイテム購入用」の集計とは<b>別物</b>として扱われます。
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-title">羽根の集計</div>
+      <div class="summary-grid">
+        <div>
+          <div class="summary-item-label">もらった羽根</div>
+          <div class="summary-item-value" id="sumFeathers">0枚</div>
+          <div class="summary-item-sub" id="sumFeathersSub">0体分</div>
+        </div>
+        <div>
+          <div class="summary-item-label">羽根に使った星のキャンドル</div>
+          <div class="summary-item-value" id="sumCandles">0本</div>
+          <div class="summary-item-sub">羽根1枚 = 星のキャンドル2本</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sec-label">季節ごとの精霊一覧</p>
+    <div id="seasonList">
+      <!-- JSで動的に生成 -->
+    </div>
+
+    <div class="notice-card" style="margin-top:16px;">
+      砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /.app-layout -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   季節ごとの季節精霊リスト（実装順）
+   ================================================================ */
+const SEASON_SPIRITS = [
+  { season: '感謝の季節', spirits: ['おませな漂流者', '屈伸する導師', '挑戦的な表現者', '飛び跳ねる舞踏家', '敬礼する守護者', '礼を尽くす祈祷師'] },
+  { season: '光の探求者の季節', spirits: ['おんぶする光探求者', 'ダブルタッチの光採取者', 'くつろぐ開拓者', 'くるりと舞う優勝者', '蟹の語り部', '静けさを望む光学者'] },
+  { season: '想いを編む季節', spirits: ['音と舞う幼子', '紙ふぶき好きのいとこ', 'ぽんぽんする若者', '煌きを放つ親', '訴えかける親', '祖たる賢者'] },
+  { season: 'リズムが弾ける季節', spirits: ['一座の進行役', '祝祭の旋舞家', 'うっとりするような旅役者', '一座の曲芸師', '敬意を表す楽師', '思慮深き座長'] },
+  { season: '魔法の季節', spirits: ['うなずく壁画師', '無頓着な錬金術師', '蟹歩きの名人', 'こけおどしの農家', '居眠りする大工', 'けんかごっこ好きの植物採集者'] },
+  { season: '楽園の季節', spirits: ['海月の語り部', '引っ込み思案な読書家', '奮い立つ怖いもの知らず', 'ハイキングする気むずかし屋', '感謝する貝殻収集家', 'くつろぐ日光浴者'] },
+  { season: '預言者の季節', spirits: ['水の預言者', '地の預言者', '風の預言者', '火の預言者'] },
+  { season: '夢かなう季節', spirits: ['舞い踊る表現者', '旋舞の師匠', 'そっと覗く郵便屋', 'ハグ好きの隠者'] },
+  { season: '大樹に集う季節', spirits: ['とまどう植物学者', 'したり顔の生徒', '臆病な見習い士官', '行進する冒険家', '含み笑いのスカウト', '夢見がちな森の民'] },
+  { season: '星の王子さまの季節', spirits: ['手招く支配者', 'ご満悦のうぬぼれ屋', '体をほぐす点燈夫', 'うなだれる戦士', 'くしゃみする地理学者', '星の収集家'] },
+  { season: '羽ばたく季節', spirits: ['快活な誘導手', '光の語り部', '工夫好きの風鈴職人', '腕利きの工匠'] },
+  { season: '深淵の季節', spirits: ['繊細な漁師', '動じない提督', 'おっちょこちょいな水夫長', '豪快に笑う砲手'] },
+  { season: '表現者たちの季節', spirits: ['一生懸命な舞台美術家', '忘れっぽい劇作家', 'のんびり屋の音楽家', '慎み深い踊り手'] },
+  { season: '砕ケル闇ノ季節', spirits: ['万古の光', '万古の闇'] },
+  { season: 'AURORAの季節', spirits: ['駆けゆく旅人', '覚醒の採掘者', '慈愛の戦士', '希望の君'] },
+  { season: '追慕の季節', spirits: ['喪失の初老', '懇願する幼子', 'ぬき足の茶人', '傷ついた戦士'] },
+  { season: 'ならいの季節', spirits: ['風変わりなひとり好き', 'ぐるぐる回るいたずらっ子', '物憂げなとぼとぼ歩き', '活発すぎる頑張り屋'] },
+  { season: '瞬きの季節', spirits: ['頼もしい自然保護官', '上機嫌な地質学者', '節制の修行者', '夜鳥の語り部'] },
+  { season: '復古の季節', spirits: ['見捨てられた隠れ家の残響', '忘れ去られた楽園のなごり', '寂れたオアシスの面影', '失われし村の記憶'] },
+  { season: '九色の鹿の季節', spirits: ['薬草採集人', '狩人', '国王', '王女'] },
+  { season: '巣づくりの季節', spirits: ['巣づくりのサンルーム', '巣づくりのロフト', '巣づくりの吹き抜け', '巣づくりの小部屋'] },
+  { season: 'ムーミンの季節', spirits: ['慈愛の安らぎ', '自己の確立', '冒険の心', '包容力の源'] },
+  { season: '光に染まる季節', spirits: ['光に染まる飛び跳ねる舞踏家', '光に染まる挑戦的な表現者', '光に染まる礼を尽くす祈祷師'] },
+  { season: '青い鳥の季節', spirits: ['神聖な祖たる賢者', '衣装をまとう紙ふぶき好きのいとこ', '高貴なぽんぽんする若者', '懐かしむ煌きを放つ親', '木こりの訴えかける親'] },
+  { season: 'ふたつの灯火の季節　前編', spirits: ['心優しき玩具職人', '機知に富む隠とん者', '厳格なマナティ飼い', '手負いの巡回兵', '寄り添うお友だち'] },
+  { season: '渡りの季節', spirits: ['渡りの鐘職人', '渡りの鳥の語り部', '渡りのマンタの語り部', '渡りの蝶々使い', '渡りの海月の語り部'] },
+  { season: '光の修繕者の季節', spirits: ['光修繕する優勝者', '光修繕する光採取者', '光修繕する光学者', '光修繕する開拓者'] },
+  { season: 'カーニバルの季節', spirits: ['カーニバルの曲芸師', 'カーニバルの旋舞家', 'カーニバルの旅役者', 'カーニバルの謎解き座長'] },
+];
+
+const CANDLES_PER_FEATHER = 2;
+const TRACKER_KEY = 'wingTracker_v1'; // { [季節名]: { [精霊名]: true } }
+
+function loadTracker() {
+  try { return JSON.parse(localStorage.getItem(TRACKER_KEY)) || {}; }
+  catch (_) { return {}; }
+}
+function saveTracker(t) { localStorage.setItem(TRACKER_KEY, JSON.stringify(t)); }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
+
+function render() {
+  const tracker = loadTracker();
+
+  let totalFeathers = 0, totalSpirits = 0;
+  const html = SEASON_SPIRITS.map(({ season, spirits }) => {
+    const checked = tracker[season] || {};
+    const gotCount = spirits.filter(sp => checked[sp]).length;
+    totalFeathers += gotCount;
+    totalSpirits += spirits.length;
+    const complete = gotCount === spirits.length;
+
+    const spiritsHtml = spirits.map(sp => `
+      <label class="spirit-opt">
+        <input type="checkbox" ${checked[sp] ? 'checked' : ''}
+          onchange="onSpiritToggle('${escapeAttr(season)}', '${escapeAttr(sp)}', this.checked)">
+        ${escapeHtml(sp)}
+      </label>`).join('');
+
+    return `
+      <div class="season-card">
+        <div class="season-head">
+          <div class="season-name">${escapeHtml(season)}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${gotCount} / ${spirits.length} 体</span>
+        </div>
+        <div class="spirit-list">${spiritsHtml}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('seasonList').innerHTML = html;
+  document.getElementById('sumFeathers').textContent = `${totalFeathers.toLocaleString()}枚`;
+  document.getElementById('sumFeathersSub').textContent = `${totalFeathers} / ${totalSpirits}体分`;
+  document.getElementById('sumCandles').textContent = `${(totalFeathers * CANDLES_PER_FEATHER).toLocaleString()}本`;
+}
+
+function onSpiritToggle(season, spirit, isChecked) {
+  const tracker = loadTracker();
+  if (!tracker[season]) tracker[season] = {};
+  if (isChecked) tracker[season][spirit] = true;
+  else delete tracker[season][spirit];
+  saveTracker(tracker);
+  render();
+  showToast('保存しました');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+
+</body>
+</html>
