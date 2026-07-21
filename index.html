@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>羽根トラッカー - Sky所持率管理</title>
+  <title>羽トラッカー - Sky所持率管理</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -156,7 +156,7 @@
 
 <nav>
   <a href="https://taipak5000.github.io/item/" class="nav-back">◀ Sky所持率管理</a>
-  <div class="nav-title">🪽 羽根トラッカー</div>
+  <div class="nav-title">🪽 羽トラッカー</div>
   <div style="width:90px;"></div>
 </nav>
 
@@ -172,22 +172,22 @@
   <div class="wrap">
 
     <div class="notice-card">
-      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>羽根</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
+      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
       ここで数える星のキャンドルは、<a href="https://taipak5000.github.io/item/cost.html" style="color:var(--blue); font-weight:600;">課金コスト診断</a>ページの「アイテム購入用」の集計とは<b>別物</b>として扱われます。
     </div>
 
     <div class="summary-card">
-      <div class="summary-title">羽根の合計</div>
+      <div class="summary-title">光の翼の合計</div>
       <div class="summary-grid">
         <div>
-          <div class="summary-item-label">もらった羽根（合計）</div>
+          <div class="summary-item-label">もらった光の翼（合計）</div>
           <div class="summary-item-value" id="sumFeathersAll">0枚</div>
           <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊</div>
         </div>
         <div>
-          <div class="summary-item-label">季節精霊の羽根に使った星のキャンドル</div>
+          <div class="summary-item-label">季節精霊の光の翼に使った星のキャンドル</div>
           <div class="summary-item-value" id="sumCandles">0本</div>
-          <div class="summary-item-sub">羽根1枚 = 星のキャンドル2本</div>
+          <div class="summary-item-sub">光の翼1枚 = 星のキャンドル2本</div>
         </div>
       </div>
     </div>
@@ -203,7 +203,7 @@
 
     <p class="sec-label">季節ごとの精霊一覧</p>
     <div class="notice-card" id="sumFeathersSeasonWrap">
-      季節精霊・再訪の羽根: <b id="sumFeathersSeason">0 / 0</b>体分
+      季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分
     </div>
     <div id="seasonList">
       <!-- JSで動的に生成 -->
@@ -215,7 +215,7 @@
 
     <p class="sec-label">恒常精霊のツリー（地方の精霊）</p>
     <div class="notice-card">
-      各地方の恒常精霊37体には友情ツリーの羽根（Tier1）が1つずつ、うち12体には追加のTier2の羽根もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
+      各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
       <b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本
     </div>
     <div id="realmList">
@@ -263,8 +263,8 @@ const SEASON_SPIRITS = [
 ];
 
 /* ================================================================
-   恒常精霊（地方の精霊）リスト — 37体、うち12体はTier2の羽根も追加である
-   t1/t2 は羽根の開放に必要な星のキャンドルの本数（精霊ごとに異なる）
+   恒常精霊（地方の精霊）リスト — 37体、うち12体はTier2の光の翼も追加である
+   t1/t2 は光の翼の開放に必要な星のキャンドルの本数（精霊ごとに異なる）
    ================================================================ */
 const REALM_SPIRITS = [
   { realm: '孤島', spirits: [
@@ -426,7 +426,7 @@ function render() {
   renderCapeLevels(totalAll);
 }
 
-// 現在の羽根合計に応じて、現在のケープレベルのひし形スタックを表示する
+// 現在の光の翼合計に応じて、現在のケープレベルのひし形スタックを表示する
 // ひし形の数はレベル5で頭打ち（最大5個）。レベル6以降は個数を増やさず、
 // 上（新しい方）から順に既存のひし形自体が「縁取り」→「縁取り+光の粒4つ」と強化されていく
 function renderCapeLevels(total) {
