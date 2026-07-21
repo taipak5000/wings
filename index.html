@@ -102,6 +102,47 @@
     .spirit-opt:hover { background: var(--bg); }
     .spirit-opt input { accent-color: var(--blue); width: 16px; height: 16px; flex-shrink: 0; }
 
+    .cape-card {
+      background: linear-gradient(160deg, #1b2333 0%, #05070d 100%);
+      border-radius: var(--r); padding: 20px; margin-top: 16px; color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    }
+    .cape-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .cape-card-sub { font-size: 12.5px; color: rgba(255,255,255,0.65); margin-bottom: 4px; }
+    .cape-level-label { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 14px; }
+    .cape-pips { display: flex; flex-direction: column-reverse; gap: 9px; align-items: center; }
+    .cape-pip {
+      position: relative;
+      width: 12px; height: 12px; transform: rotate(45deg);
+      background: rgba(255,255,255,0.85); border: 1.4px solid rgba(255,255,255,0.85);
+    }
+    /* 6〜10番目: 外枠+内側に小さいひし形（二重の輪郭で強化を分かりやすく） */
+    .cape-pip.tier2, .cape-pip.tier3 {
+      width: 21px; height: 21px;
+      background: transparent; border: 2px solid #fff;
+      box-shadow: 0 0 5px rgba(255,255,255,0.65);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cape-pip-inner {
+      width: 8px; height: 8px; background: #fff;
+      box-shadow: 0 0 4px rgba(255,255,255,0.9);
+    }
+    /* 11〜13番目: さらに四つの光の粒が付く */
+    .cape-pip.tier3 {
+      box-shadow: 0 0 8px rgba(255,255,255,0.9);
+    }
+    .cape-pip.tier3 .cape-pip-inner {
+      box-shadow: 0 0 6px #fff, 0 0 12px rgba(255,255,255,0.6);
+    }
+    .cape-spark {
+      position: absolute; width: 3px; height: 3px; border-radius: 50%;
+      background: #fff; box-shadow: 0 0 3px #fff; transform: rotate(-45deg);
+    }
+    .cape-spark.t { top: -7px; left: 50%; margin-left: -1.5px; }
+    .cape-spark.b { bottom: -7px; left: 50%; margin-left: -1.5px; }
+    .cape-spark.l { left: -7px; top: 50%; margin-top: -1.5px; }
+    .cape-spark.r { right: -7px; top: 50%; margin-top: -1.5px; }
+
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: rgba(28,28,30,0.92); color: #fff; padding: 10px 18px; border-radius: 999px;
@@ -136,28 +177,49 @@
     </div>
 
     <div class="summary-card">
-      <div class="summary-title">羽根の集計</div>
+      <div class="summary-title">羽根の合計</div>
       <div class="summary-grid">
         <div>
-          <div class="summary-item-label">もらった羽根</div>
-          <div class="summary-item-value" id="sumFeathers">0枚</div>
-          <div class="summary-item-sub" id="sumFeathersSub">0体分</div>
+          <div class="summary-item-label">もらった羽根（合計）</div>
+          <div class="summary-item-value" id="sumFeathersAll">0枚</div>
+          <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊</div>
         </div>
         <div>
-          <div class="summary-item-label">羽根に使った星のキャンドル</div>
+          <div class="summary-item-label">季節精霊の羽根に使った星のキャンドル</div>
           <div class="summary-item-value" id="sumCandles">0本</div>
           <div class="summary-item-sub">羽根1枚 = 星のキャンドル2本</div>
         </div>
       </div>
     </div>
 
+    <div class="cape-card">
+      <div class="cape-card-title">✦ ケープレベル</div>
+      <div class="cape-card-sub" id="capeSummary">読み込み中…</div>
+      <div class="cape-level-label" id="capeLevelLabel"></div>
+      <div class="cape-pips" id="capePips">
+        <!-- JSで動的に生成 -->
+      </div>
+    </div>
+
     <p class="sec-label">季節ごとの精霊一覧</p>
+    <div class="notice-card" id="sumFeathersSeasonWrap">
+      季節精霊・再訪の羽根: <b id="sumFeathersSeason">0 / 0</b>体分
+    </div>
     <div id="seasonList">
       <!-- JSで動的に生成 -->
     </div>
 
     <div class="notice-card" style="margin-top:16px;">
       砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。
+    </div>
+
+    <p class="sec-label">恒常精霊のツリー（地方の精霊）</p>
+    <div class="notice-card">
+      各地方の恒常精霊37体には友情ツリーの羽根（Tier1）が1つずつ、うち12体には追加のTier2の羽根もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
+      <b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本
+    </div>
+    <div id="realmList">
+      <!-- JSで動的に生成 -->
     </div>
 
   </div><!-- /wrap -->
@@ -200,14 +262,80 @@ const SEASON_SPIRITS = [
   { season: 'カーニバルの季節', spirits: ['カーニバルの曲芸師', 'カーニバルの旋舞家', 'カーニバルの旅役者', 'カーニバルの謎解き座長'] },
 ];
 
+/* ================================================================
+   恒常精霊（地方の精霊）リスト — 37体、うち12体はTier2の羽根も追加である
+   t1/t2 は羽根の開放に必要な星のキャンドルの本数（精霊ごとに異なる）
+   ================================================================ */
+const REALM_SPIRITS = [
+  { realm: '孤島', spirits: [
+    { name: '指差すキャンドル職人', t1: 1 },
+    { name: '固辞する航行者', t1: 1 },
+    { name: '先導する星読み', t1: 1 },
+  ] },
+  { realm: '草原', spirits: [
+    { name: '賞賛する鐘の造り手', t1: 1 },
+    { name: '鳥の語り部', t1: 2 },
+    { name: '蝶々使い', t1: 1, t2: 3 },
+    { name: '式典の礼拝者', t1: 1 },
+    { name: '疲弊した荷積み人', t1: 1 },
+    { name: '笑う光採取者', t1: 2 },
+    { name: '寝不足の造舟師', t1: 1 },
+    { name: '手を振る鐘の造り手', t1: 2, t2: 6 },
+  ] },
+  { realm: '雨林', spirits: [
+    { name: '反省する木こり', t1: 1 },
+    { name: '恥じらう探鉱者', t1: 1 },
+    { name: 'うろたえる狩人', t1: 3, t2: 9 },
+    { name: 'かくれんぼ提唱者', t1: 3, t2: 6 },
+    { name: '怒れる運び人', t1: 2, t2: 6 },
+    { name: '凍える先駆者', t1: 2 },
+    { name: '涙ぐむ光坑夫', t1: 1, t2: 3 },
+    { name: '鯨の語り部', t1: 1 },
+  ] },
+  { realm: '峡谷', spirits: [
+    { name: '宙返りをする優勝者', t1: 2 },
+    { name: 'お辞儀をするメダリスト', t1: 2 },
+    { name: '応援する観客', t1: 2 },
+    { name: '自信に満ちた観光客', t1: 2 },
+    { name: '逆立ちする怖いもの知らず', t1: 3, t2: 9 },
+    { name: 'マンタの語り部', t1: 1 },
+    { name: '誇り高き勝者', t1: 3, t2: 9 },
+  ] },
+  { realm: '捨てられた地', spirits: [
+    { name: '勇敢な戦士', t1: 2, t2: 6 },
+    { name: '昏倒する戦士', t1: 2 },
+    { name: '怯える難民', t1: 1 },
+    { name: '警戒する斥候', t1: 2 },
+    { name: '敬礼する隊長', t1: 3 },
+    { name: '隠れ潜む生存者', t1: 4, t2: 12 },
+  ] },
+  { realm: '書庫', spirits: [
+    { name: '念動力の使い手', t1: 2 },
+    { name: '瞑想する修道士', t1: 3 },
+    { name: '記憶の語り部', t1: 4, t2: 12 },
+    { name: '敬けんな賢人', t1: 2 },
+    { name: '祈る侍者', t1: 3, t2: 9 },
+  ] },
+];
+
+// ケープレベルごとの累計必要光の翼数（Sky Wiki「光の翼」ページより）
+const CAPE_LEVELS = [1, 2, 5, 10, 20, 35, 55, 75, 100, 120, 150, 200, 250];
+
 const CANDLES_PER_FEATHER = 2;
 const TRACKER_KEY = 'wingTracker_v1'; // { [季節名]: { [精霊名]: true } }
+const PERM_TRACKER_KEY = 'permWingTracker_v1'; // { [精霊名]: { tier1: true, tier2: true } }
 
 function loadTracker() {
   try { return JSON.parse(localStorage.getItem(TRACKER_KEY)) || {}; }
   catch (_) { return {}; }
 }
 function saveTracker(t) { localStorage.setItem(TRACKER_KEY, JSON.stringify(t)); }
+
+function loadPermTracker() {
+  try { return JSON.parse(localStorage.getItem(PERM_TRACKER_KEY)) || {}; }
+  catch (_) { return {}; }
+}
+function savePermTracker(t) { localStorage.setItem(PERM_TRACKER_KEY, JSON.stringify(t)); }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -216,13 +344,15 @@ function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
 
 function render() {
   const tracker = loadTracker();
+  const permTracker = loadPermTracker();
 
-  let totalFeathers = 0, totalSpirits = 0;
-  const html = SEASON_SPIRITS.map(({ season, spirits }) => {
+  // ── 季節精霊・再訪 ──
+  let seasonFeathers = 0, seasonSpiritsTotal = 0;
+  const seasonHtml = SEASON_SPIRITS.map(({ season, spirits }) => {
     const checked = tracker[season] || {};
     const gotCount = spirits.filter(sp => checked[sp]).length;
-    totalFeathers += gotCount;
-    totalSpirits += spirits.length;
+    seasonFeathers += gotCount;
+    seasonSpiritsTotal += spirits.length;
     const complete = gotCount === spirits.length;
 
     const spiritsHtml = spirits.map(sp => `
@@ -241,11 +371,104 @@ function render() {
         <div class="spirit-list">${spiritsHtml}</div>
       </div>`;
   }).join('');
+  document.getElementById('seasonList').innerHTML = seasonHtml;
 
-  document.getElementById('seasonList').innerHTML = html;
-  document.getElementById('sumFeathers').textContent = `${totalFeathers.toLocaleString()}枚`;
-  document.getElementById('sumFeathersSub').textContent = `${totalFeathers} / ${totalSpirits}体分`;
-  document.getElementById('sumCandles').textContent = `${(totalFeathers * CANDLES_PER_FEATHER).toLocaleString()}本`;
+  // ── 恒常精霊 ──
+  let permFeathers = 0, permCandles = 0;
+  const permTotal = REALM_SPIRITS.reduce((sum, r) => sum + r.spirits.reduce((s2, sp) => s2 + (sp.t2 ? 2 : 1), 0), 0);
+  const realmHtml = REALM_SPIRITS.map(({ realm, spirits }) => {
+    let realmGot = 0;
+    const realmMax = spirits.reduce((s, sp) => s + (sp.t2 ? 2 : 1), 0);
+
+    const spiritsHtml = spirits.map(sp => {
+      const state = permTracker[sp.name] || {};
+      if (state.tier1) { realmGot++; permCandles += sp.t1; }
+      if (sp.t2 && state.tier2) { realmGot++; permCandles += sp.t2; }
+
+      const tier1Opt = `
+      <label class="spirit-opt">
+        <input type="checkbox" ${state.tier1 ? 'checked' : ''}
+          onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier1', this.checked)">
+        ${escapeHtml(sp.name)}（Tier1・星のキャンドル${sp.t1}本）
+      </label>`;
+      const tier2Opt = sp.t2 ? `
+      <label class="spirit-opt">
+        <input type="checkbox" ${state.tier2 ? 'checked' : ''}
+          onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier2', this.checked)">
+        ${escapeHtml(sp.name)}（Tier2・星のキャンドル${sp.t2}本）
+      </label>` : '';
+      return tier1Opt + tier2Opt;
+    }).join('');
+
+    permFeathers += realmGot;
+    const complete = realmGot === realmMax;
+
+    return `
+      <div class="season-card">
+        <div class="season-head">
+          <div class="season-name">${escapeHtml(realm)}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${realmGot} / ${realmMax} 枚</span>
+        </div>
+        <div class="spirit-list">${spiritsHtml}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('realmList').innerHTML = realmHtml;
+
+  // ── 集計表示 ──
+  const totalAll = seasonFeathers + permFeathers;
+  document.getElementById('sumFeathersAll').textContent = `${totalAll.toLocaleString()}枚`;
+  document.getElementById('sumFeathersAllSub').textContent = `季節精霊 ${seasonFeathers} + 恒常精霊 ${permFeathers}`;
+  document.getElementById('sumCandles').textContent = `${(seasonFeathers * CANDLES_PER_FEATHER).toLocaleString()}本`;
+  document.getElementById('sumFeathersSeason').textContent = `${seasonFeathers} / ${seasonSpiritsTotal}`;
+  document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
+  document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
+
+  renderCapeLevels(totalAll);
+}
+
+// 現在の羽根合計に応じて、現在のケープレベルのひし形スタックを表示する
+// ひし形の数はレベル5で頭打ち（最大5個）。レベル6以降は個数を増やさず、
+// 上（新しい方）から順に既存のひし形自体が「縁取り」→「縁取り+光の粒4つ」と強化されていく
+function renderCapeLevels(total) {
+  const reachedLevel = CAPE_LEVELS.filter(need => total >= need).length;
+  const nextNeed = CAPE_LEVELS[reachedLevel];
+
+  const summary = reachedLevel >= CAPE_LEVELS.length
+    ? `現在 光の翼 ${total}枚 — 最大ケープレベル ${CAPE_LEVELS.length} に到達済み！`
+    : `現在 光の翼 ${total}枚（レベル${reachedLevel + 1}まであと ${nextNeed - total}枚）`;
+  document.getElementById('capeSummary').textContent = summary;
+
+  document.getElementById('capeLevelLabel').textContent = `Lv${reachedLevel}`;
+
+  if (reachedLevel === 0) {
+    document.getElementById('capePips').innerHTML = '';
+    return;
+  }
+
+  const pipCount = Math.min(reachedLevel, 5);
+  const numSparkle = Math.max(0, Math.min(reachedLevel - 10, 5)); // 上からtier3にする枚数
+  const numOutlined = Math.max(0, Math.min(reachedLevel - 5, 5));  // 上からtier2以上にする枚数
+
+  // pips[] は下から順に並べる（column-reverseで表示すると配列の最後が一番上に来る）
+  const pips = Array.from({ length: pipCount }, (_, i) => {
+    const distFromTop = pipCount - 1 - i; // 0 = 一番上
+    if (distFromTop < numSparkle) {
+      return `
+        <div class="cape-pip tier3">
+          <span class="cape-pip-inner"></span>
+          <span class="cape-spark t"></span>
+          <span class="cape-spark b"></span>
+          <span class="cape-spark l"></span>
+          <span class="cape-spark r"></span>
+        </div>`;
+    }
+    if (distFromTop < numOutlined) {
+      return `<div class="cape-pip tier2"><span class="cape-pip-inner"></span></div>`;
+    }
+    return `<div class="cape-pip"></div>`;
+  }).join('');
+
+  document.getElementById('capePips').innerHTML = pips;
 }
 
 function onSpiritToggle(season, spirit, isChecked) {
@@ -254,6 +477,16 @@ function onSpiritToggle(season, spirit, isChecked) {
   if (isChecked) tracker[season][spirit] = true;
   else delete tracker[season][spirit];
   saveTracker(tracker);
+  render();
+  showToast('保存しました');
+}
+
+function onPermToggle(spirit, tier, isChecked) {
+  const tracker = loadPermTracker();
+  if (!tracker[spirit]) tracker[spirit] = {};
+  if (isChecked) tracker[spirit][tier] = true;
+  else delete tracker[spirit][tier];
+  savePermTracker(tracker);
   render();
   showToast('保存しました');
 }
