@@ -40,7 +40,17 @@
       display: flex; align-items: center; justify-content: space-between;
     }
     .nav-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
-    .nav-back { color: var(--blue); font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+    .sidebar-toggle-btn {
+      background: var(--card); border: 1px solid var(--sep); border-radius: var(--r-sm);
+      padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    @media (min-width: 850px) { .sidebar-toggle-btn { visibility: hidden; } }
+
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 499; }
+    .sidebar-overlay.show { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .app-layout { max-width: 720px; margin: 0 auto; padding: 0 16px; }
     @media (min-width: 850px) { .app-layout { max-width: 960px; display: flex; gap: 20px; align-items: flex-start; } }
@@ -52,12 +62,25 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none; margin-top: 22px;
     }
     @media (min-width: 850px) { .sidebar { display: block; } }
+    .sidebar.sidebar-open {
+      display: flex !important; flex-direction: column; position: fixed; top: 0; left: 0;
+      height: 100%; width: 240px; z-index: 500; overflow-y: auto; margin-top: 0;
+      border-radius: 0 12px 12px 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    }
+    .sidebar-close-btn {
+      background: none; border: none; font-size: 22px; cursor: pointer;
+      color: var(--text-2); padding: 0; line-height: 1; flex-shrink: 0; display: none;
+    }
+    .sidebar.sidebar-open .sidebar-close-btn { display: block; }
     .sidebar-section-label { font-size: 11px; font-weight: 700; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; }
     .sidebar-nav-link {
       display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: var(--r-sm);
       color: var(--text); font-size: 13.5px; font-weight: 500; margin-bottom: 2px;
+      width: 100%; box-sizing: border-box;
     }
     .sidebar-nav-link:hover { background: var(--bg); }
+    .sidebar-nav-link.current-tool { background: var(--orange-bg); color: var(--orange-d); font-weight: 700; }
+    .sidebar nav { display: block; position: static; padding: 0; background: none; border-bottom: none; }
 
     .notice-card {
       background: var(--card); border-radius: var(--r); padding: 16px; margin-top: 16px;
@@ -155,17 +178,24 @@
 <body>
 
 <nav>
-  <a href="https://taipak5000.github.io/item/" class="nav-back">◀ Sky所持率管理</a>
   <div class="nav-title">🪽 羽トラッカー</div>
-  <div style="width:90px;"></div>
+  <button class="sidebar-toggle-btn" onclick="openSidebarMobile()">☰ ツール</button>
 </nav>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebarMobile()"></div>
 
 <div class="app-layout">
 
-  <aside class="sidebar">
-    <div class="sidebar-section-label">🗂️ メニュー</div>
+  <aside class="sidebar" id="sidebar">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <div class="sidebar-section-label" style="margin-bottom:0;">🔗 関連ツール</div>
+      <button class="sidebar-close-btn" onclick="closeSidebarMobile()">×</button>
+    </div>
     <nav>
-      <a href="https://taipak5000.github.io/item/" class="sidebar-nav-link">🏠 Sky所持率管理に戻る</a>
+      <a href="https://taipak5000.github.io/share/" class="sidebar-nav-link">📍 創作物管理ツール</a>
+      <a href="https://taipak5000.github.io/star-candle/" class="sidebar-nav-link">🕯️ 星のキャンドル計算機</a>
+      <a href="https://taipak5000.github.io/companion/" class="sidebar-nav-link">✨ 精霊同行ツール</a>
+      <a href="https://taipak5000.github.io/wings/" class="sidebar-nav-link current-tool">🪽 羽トラッカー</a>
     </nav>
   </aside>
 
@@ -173,7 +203,7 @@
 
     <div class="notice-card">
       精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
-      ここで数える星のキャンドルは、<a href="https://taipak5000.github.io/item/cost.html" style="color:var(--blue); font-weight:600;">課金コスト診断</a>ページの「アイテム購入用」の集計とは<b>別物</b>として扱われます。
+      ここで数える星のキャンドルは、<a href="https://taipak5000.github.io/item/item_cost.html" style="color:var(--blue); font-weight:600;">アイテム別コスト</a>ページの「アイテム購入用」の集計とは<b>別物</b>として扱われます。
     </div>
 
     <div class="summary-card">
@@ -498,6 +528,15 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+function openSidebarMobile() {
+  document.getElementById('sidebar').classList.add('sidebar-open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+}
+function closeSidebarMobile() {
+  document.getElementById('sidebar').classList.remove('sidebar-open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
 document.addEventListener('DOMContentLoaded', render);
