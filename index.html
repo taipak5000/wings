@@ -216,9 +216,9 @@
           <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊</div>
         </div>
         <div>
-          <div class="summary-item-label">季節精霊の光の翼に使った星のキャンドル</div>
+          <div class="summary-item-label">翼に使った星のキャンドル</div>
           <div class="summary-item-value" id="sumCandles">0本</div>
-          <div class="summary-item-sub">光の翼1枚 = 星のキャンドル2本</div>
+          <div class="summary-item-sub">光の翼1枚 = 星のキャンドル2本（季節精霊の場合）</div>
         </div>
       </div>
     </div>
@@ -469,7 +469,7 @@ function render() {
   const totalAll = seasonFeathers + permFeathers + REBIRTH_BONUS;
   document.getElementById('sumFeathersAll').textContent = `${totalAll.toLocaleString()}枚`;
   document.getElementById('sumFeathersAllSub').textContent = `季節精霊 ${seasonFeathers} + 恒常精霊 ${permFeathers} + 転生 ${REBIRTH_BONUS}`;
-  document.getElementById('sumCandles').textContent = `${(seasonFeathers * CANDLES_PER_FEATHER).toLocaleString()}本`;
+  document.getElementById('sumCandles').textContent = `${((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString()}本`;
   document.getElementById('sumFeathersSeason').textContent = `${seasonFeathers} / ${seasonSpiritsTotal}`;
   document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
   document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
