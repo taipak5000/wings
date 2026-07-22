@@ -203,7 +203,8 @@
   <div class="wrap">
 
     <div class="notice-card">
-      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。
+      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
+      また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。
     </div>
 
     <div class="summary-card">
@@ -472,7 +473,7 @@ function render() {
   document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
   document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
 
-  renderCapeLevels(totalAll);
+  renderCapeLevels(totalAll + 1);
 }
 
 // 現在の光の翼合計に応じて、現在のケープレベルのひし形スタックを表示する
