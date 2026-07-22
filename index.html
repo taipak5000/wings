@@ -88,6 +88,13 @@
     }
     .notice-card b { color: var(--text); }
     .notice-card.sticky-notice { position: sticky; top: 58px; z-index: 10; margin-bottom: 16px; }
+    .notice-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .filter-toggle-btn {
+      font-size: 11.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+      background: var(--bg); color: var(--text-2); white-space: nowrap; flex-shrink: 0;
+      border: 1px solid var(--sep);
+    }
+    .filter-toggle-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 
     .summary-card {
       background: linear-gradient(135deg, var(--blue) 0%, #0051A8 100%);
@@ -235,7 +242,10 @@
     <p class="sec-label">季節ごとの精霊一覧</p>
     <div class="sticky-section">
       <div class="notice-card sticky-notice" id="sumFeathersSeasonWrap">
-        季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分
+        <div class="notice-head">
+          <span>季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分</span>
+          <button class="filter-toggle-btn" id="seasonFilterBtn" onclick="toggleSeasonFilter()">未取得のみ表示</button>
+        </div>
       </div>
       <div id="seasonList">
         <!-- JSで動的に生成 -->
@@ -250,7 +260,10 @@
     <div class="sticky-section">
       <div class="notice-card sticky-notice" id="sumFeathersPermWrap">
         各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
-        <b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本
+        <div class="notice-head">
+          <span><b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本</span>
+          <button class="filter-toggle-btn" id="permFilterBtn" onclick="togglePermFilter()">未取得のみ表示</button>
+        </div>
       </div>
       <div id="realmList">
         <!-- JSで動的に生成 -->
@@ -392,9 +405,24 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
 
+let seasonFilterUnowned = false;
+let permFilterUnowned = false;
+
+function toggleSeasonFilter() {
+  seasonFilterUnowned = !seasonFilterUnowned;
+  render();
+}
+function togglePermFilter() {
+  permFilterUnowned = !permFilterUnowned;
+  render();
+}
+
 function render() {
   const tracker = loadTracker();
   const permTracker = loadPermTracker();
+
+  document.getElementById('seasonFilterBtn').classList.toggle('active', seasonFilterUnowned);
+  document.getElementById('permFilterBtn').classList.toggle('active', permFilterUnowned);
 
   // ── 季節精霊・再訪 ──
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
@@ -405,7 +433,10 @@ function render() {
     seasonSpiritsTotal += spirits.length;
     const complete = gotCount === spirits.length;
 
-    const spiritsHtml = spirits.map(sp => `
+    if (seasonFilterUnowned && complete) return '';
+
+    const visibleSpirits = seasonFilterUnowned ? spirits.filter(sp => !checked[sp]) : spirits;
+    const spiritsHtml = visibleSpirits.map(sp => `
       <label class="spirit-opt">
         <input type="checkbox" ${checked[sp] ? 'checked' : ''}
           onchange="onSpiritToggle('${escapeAttr(season)}', '${escapeAttr(sp)}', this.checked)">
@@ -432,18 +463,20 @@ function render() {
 
     const spiritsHtml = spirits.map(sp => {
       const state = permTracker[sp.name] || {};
-      if (state.tier1) { realmGot++; permCandles += sp.t1; }
-      if (sp.t2 && state.tier2) { realmGot++; permCandles += sp.t2; }
+      const t1Owned = !!state.tier1;
+      const t2Owned = sp.t2 ? !!state.tier2 : false;
+      if (t1Owned) { realmGot++; permCandles += sp.t1; }
+      if (sp.t2 && t2Owned) { realmGot++; permCandles += sp.t2; }
 
-      const tier1Opt = `
+      const tier1Opt = (!permFilterUnowned || !t1Owned) ? `
       <label class="spirit-opt">
-        <input type="checkbox" ${state.tier1 ? 'checked' : ''}
+        <input type="checkbox" ${t1Owned ? 'checked' : ''}
           onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier1', this.checked)">
         ${escapeHtml(sp.name)}（Tier1・星のキャンドル${sp.t1}本）
-      </label>`;
-      const tier2Opt = sp.t2 ? `
+      </label>` : '';
+      const tier2Opt = (sp.t2 && (!permFilterUnowned || !t2Owned)) ? `
       <label class="spirit-opt">
-        <input type="checkbox" ${state.tier2 ? 'checked' : ''}
+        <input type="checkbox" ${t2Owned ? 'checked' : ''}
           onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier2', this.checked)">
         ${escapeHtml(sp.name)}（Tier2・星のキャンドル${sp.t2}本）
       </label>` : '';
@@ -452,6 +485,8 @@ function render() {
 
     permFeathers += realmGot;
     const complete = realmGot === realmMax;
+
+    if (permFilterUnowned && complete) return '';
 
     return `
       <div class="season-card">
