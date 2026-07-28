@@ -182,6 +182,24 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    .confirm-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .confirm-overlay.show { display: flex; animation: fadeIn 0.15s ease; }
+    .confirm-box {
+      background: var(--card); border-radius: var(--r); padding: 20px; max-width: 320px; width: 100%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    }
+    .confirm-message { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 18px; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-btn {
+      flex: 1; padding: 10px; border-radius: var(--r-sm); font-size: 13.5px; font-weight: 700;
+      text-align: center;
+    }
+    .confirm-btn.cancel { background: var(--bg); color: var(--text); }
+    .confirm-btn.ok { background: #ff3b30; color: #fff; }
+
     /* ── モード切替タブ ─────────────────────────── */
     .mode-tabs { display: flex; gap: 8px; margin-top: 16px; }
     .mode-tab {
@@ -196,8 +214,17 @@
     .area-name {
       font-size: 12.5px; font-weight: 700; color: var(--text-2);
       margin: 12px 0 8px; padding-top: 10px; border-top: 0.5px solid var(--sep);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
     .area-name:first-of-type { border-top: none; padding-top: 0; }
+    .area-name-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .area-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .area-btn {
+      font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      background: var(--bg); color: var(--text-2); white-space: nowrap;
+      border: 1px solid var(--sep);
+    }
+    .filter-toggle-btn.danger { color: #ff3b30; border-color: rgba(255,59,48,0.35); }
     .light-child-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .light-child-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: var(--r-sm); padding: 6px 4px; }
     .light-child-opt:hover { background: var(--bg); }
@@ -324,7 +351,10 @@
           光の子1体につき光の翼1枚がもらえます（星のキャンドルは不要）。地方ごと・場所ごとにチェックしてください。<br>
           <div class="notice-head">
             <span><b id="sumLightChildren">0 / 124</b>体 発見済み</span>
-            <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()">未取得のみ表示</button>
+            <span style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()">未取得のみ表示</button>
+              <button class="filter-toggle-btn danger" onclick="resetAllLightChildren()">光の子を全リセット</button>
+            </span>
           </div>
         </div>
         <div id="lightChildrenList">
@@ -357,6 +387,16 @@
 </footer>
 
 <div class="toast" id="toast"></div>
+
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this) closeConfirmModal()">
+  <div class="confirm-box">
+    <div class="confirm-message" id="confirmMessage"></div>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-btn cancel" onclick="closeConfirmModal()">キャンセル</button>
+      <button type="button" class="confirm-btn ok" id="confirmOkBtn">OK</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ================================================================
@@ -1051,8 +1091,15 @@ function renderLightChildren() {
           </label>`;
       }).join('');
       if (!optsHtml.trim()) return '';
+      const idsCsv = children.map(c => c.id).join(',');
       return `
-        <div class="area-name">${escapeHtml(area)}</div>
+        <div class="area-name">
+          <span class="area-name-label">${escapeHtml(area)}</span>
+          <span class="area-actions">
+            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', true)">全選択</button>
+            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', false)">リセット</button>
+          </span>
+        </div>
         <div class="light-child-grid">${optsHtml}</div>`;
     }).join('');
 
@@ -1083,6 +1130,39 @@ function onLightChildToggle(id, isChecked) {
   saveLightChildrenTracker(tracker);
   render();
   showToast('保存しました');
+}
+
+function setAreaChildren(idsCsv, checked) {
+  const ids = idsCsv.split(',');
+  const tracker = loadLightChildrenTracker();
+  ids.forEach(id => {
+    if (checked) tracker[id] = true;
+    else delete tracker[id];
+  });
+  saveLightChildrenTracker(tracker);
+  render();
+  showToast(checked ? 'エリアをまとめて選択しました' : 'エリアをリセットしました');
+}
+
+function resetAllLightChildren() {
+  showConfirmModal('光の子のチェックをすべてリセットします。よろしいですか？', () => {
+    saveLightChildrenTracker({});
+    render();
+    showToast('光の子をすべてリセットしました');
+  });
+}
+
+function showConfirmModal(message, onConfirm) {
+  document.getElementById('confirmMessage').textContent = message;
+  const okBtn = document.getElementById('confirmOkBtn');
+  const newOkBtn = okBtn.cloneNode(true); // 前回登録したonclickを消すため差し替える
+  okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+  newOkBtn.onclick = () => { closeConfirmModal(); onConfirm(); };
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmOverlay').classList.remove('show');
 }
 
 // 現在の光の翼合計に応じて、現在のケープレベルのひし形スタックを表示する
