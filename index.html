@@ -181,6 +181,43 @@
       pointer-events: none;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── モード切替タブ ─────────────────────────── */
+    .mode-tabs { display: flex; gap: 8px; margin-top: 16px; }
+    .mode-tab {
+      flex: 1; background: var(--card); border-radius: var(--r-sm); padding: 11px;
+      font-size: 13.5px; font-weight: 700; color: var(--text-2); text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .mode-tab.active { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(0,122,255,0.3); }
+
+    /* ── 光の子チェックリスト ───────────────────── */
+    .realm-block { margin-bottom: 14px; }
+    .area-name {
+      font-size: 12.5px; font-weight: 700; color: var(--text-2);
+      margin: 12px 0 8px; padding-top: 10px; border-top: 0.5px solid var(--sep);
+    }
+    .area-name:first-of-type { border-top: none; padding-top: 0; }
+    .light-child-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .light-child-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: var(--r-sm); padding: 6px 4px; }
+    .light-child-opt:hover { background: var(--bg); }
+    .light-child-thumb {
+      width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden;
+      background: var(--bg); position: relative; border: 2px solid transparent;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .light-child-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .light-child-thumb.img-fallback img { display: none; }
+    .light-child-opt.checked .light-child-thumb { border-color: var(--blue); }
+    .light-child-check {
+      position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(0,0,0,0.35); color: #fff; font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .light-child-opt.checked .light-child-check { background: var(--blue); }
+    .light-child-label { font-size: 10px; color: var(--text-2); text-align: center; line-height: 1.3; }
+    .light-child-thumb-fallback { display: none; font-size: 18px; }
+    .light-child-thumb.img-fallback .light-child-thumb-fallback { display: block; }
   </style>
 </head>
 <body>
@@ -210,7 +247,7 @@
   <div class="wrap">
 
     <div class="notice-card">
-      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。<br>
+      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている<b>光の子</b>を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>
       また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。
     </div>
 
@@ -220,7 +257,7 @@
         <div>
           <div class="summary-item-label">もらった光の翼（合計）</div>
           <div class="summary-item-value" id="sumFeathersAll">0枚</div>
-          <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊</div>
+          <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊 + 光の子</div>
         </div>
         <div>
           <div class="summary-item-label">翼に使った星のキャンドル</div>
@@ -239,36 +276,63 @@
       </div>
     </div>
 
-    <p class="sec-label">季節ごとの精霊一覧</p>
-    <div class="sticky-section">
-      <div class="notice-card sticky-notice" id="sumFeathersSeasonWrap">
-        <div class="notice-head">
-          <span>季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分</span>
-          <button class="filter-toggle-btn" id="seasonFilterBtn" onclick="toggleSeasonFilter()">未取得のみ表示</button>
-        </div>
-      </div>
-      <div id="seasonList">
-        <!-- JSで動的に生成 -->
-      </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabWings" onclick="switchMode('wings')">🪽 精霊の羽</button>
+      <button class="mode-tab" id="tabLightChildren" onclick="switchMode('lightChildren')">👶 光の子</button>
     </div>
 
-    <div class="notice-card" style="margin-top:16px;">
-      砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。
-    </div>
+    <div id="wingsMode">
 
-    <p class="sec-label">恒常精霊のツリー（地方の精霊）</p>
-    <div class="sticky-section">
-      <div class="notice-card sticky-notice" id="sumFeathersPermWrap">
-        各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
-        <div class="notice-head">
-          <span><b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本</span>
-          <button class="filter-toggle-btn" id="permFilterBtn" onclick="togglePermFilter()">未取得のみ表示</button>
+      <p class="sec-label">季節ごとの精霊一覧</p>
+      <div class="sticky-section">
+        <div class="notice-card sticky-notice" id="sumFeathersSeasonWrap">
+          <div class="notice-head">
+            <span>季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分</span>
+            <button class="filter-toggle-btn" id="seasonFilterBtn" onclick="toggleSeasonFilter()">未取得のみ表示</button>
+          </div>
+        </div>
+        <div id="seasonList">
+          <!-- JSで動的に生成 -->
         </div>
       </div>
-      <div id="realmList">
-        <!-- JSで動的に生成 -->
+
+      <div class="notice-card" style="margin-top:16px;">
+        砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。
       </div>
-    </div>
+
+      <p class="sec-label">恒常精霊のツリー（地方の精霊）</p>
+      <div class="sticky-section">
+        <div class="notice-card sticky-notice" id="sumFeathersPermWrap">
+          各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
+          <div class="notice-head">
+            <span><b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本</span>
+            <button class="filter-toggle-btn" id="permFilterBtn" onclick="togglePermFilter()">未取得のみ表示</button>
+          </div>
+        </div>
+        <div id="realmList">
+          <!-- JSで動的に生成 -->
+        </div>
+      </div>
+
+    </div><!-- /wingsMode -->
+
+    <div id="lightChildrenMode" style="display:none;">
+
+      <p class="sec-label">地方ごとの光の子一覧</p>
+      <div class="sticky-section">
+        <div class="notice-card sticky-notice" id="sumLightChildrenWrap">
+          光の子1体につき光の翼1枚がもらえます（星のキャンドルは不要）。地方ごと・場所ごとにチェックしてください。<br>
+          <div class="notice-head">
+            <span><b id="sumLightChildren">0 / 124</b>体 発見済み</span>
+            <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()">未取得のみ表示</button>
+          </div>
+        </div>
+        <div id="lightChildrenList">
+          <!-- JSで動的に生成 -->
+        </div>
+      </div>
+
+    </div><!-- /lightChildrenMode -->
 
   </div><!-- /wrap -->
 </div><!-- /.app-layout -->
@@ -285,6 +349,10 @@
     <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E9%80%9A%E5%B8%B8%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">通常精霊 (Sky Wiki 日本語)</a>
     ／
     <a href="https://sky-children-of-the-light.fandom.com/wiki/Regular_Spirit" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">Regular Spirits (Sky Wiki 英語)</a>
+    ／
+    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E5%85%89%E3%81%AE%E5%AD%90" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">光の子 (Sky Wiki 日本語)</a>
+    ／
+    <a href="https://sky-children-of-the-light.fandom.com/wiki/Children_of_Light" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">Children of Light (Sky Wiki 英語)</a>
   </span>
 </footer>
 
@@ -384,9 +452,422 @@ const REALM_SPIRITS = [
 // ケープレベルごとの累計必要光の翼数（Sky Wiki「光の翼」ページより）
 const CAPE_LEVELS = [1, 2, 5, 10, 20, 35, 55, 75, 100, 120, 150, 200, 250];
 
+/* ================================================================
+   光の子（Children of Light）リスト — 全124体、地方 → 場所 → 個別の階層（天空の1体は転生ボーナスと重複するため除外）
+   各1体につき光の翼1枚（星のキャンドル不要）
+   ================================================================ */
+// Sources: JP wiki https://sky-children-of-the-light.fandom.com/ja/wiki/%E5%85%89%E3%81%AE%E5%AD%90
+//          EN wiki https://sky-children-of-the-light.fandom.com/wiki/Children_of_Light (used only to fill one gap noted below)
+// NOTE: isle_10 (孤島 光の子10) does not appear on the JP wiki page's content section (only 9 of 10
+// Isle children are documented there). Its label/id were constructed to match the JP page's own
+// numbering convention, and its image was sourced from the EN wiki page instead (a far/wide shot,
+// no close-up exists there either).
+const LIGHT_CHILDREN = [
+  {
+    realm: '花鳥郷',
+    areas: [
+      {
+        area: 'さすらいカーニバル',
+        children: [
+          { id: 'aviary_1', label: '花鳥郷 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/47/Carnival-Winged-Light-1.jpg/revision/latest/scale-to-width-down/204?cb=20260417140555' },
+          { id: 'aviary_2', label: '花鳥郷 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/34/Carnival-Winged-Light-2.jpg/revision/latest/scale-to-width-down/204?cb=20260417140556' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '孤島',
+    areas: [
+      {
+        area: '孤島台地（砂丘）',
+        children: [
+          { id: 'isle_1', label: '孤島 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/ca/IMG_5816.JPG/revision/latest/scale-to-width-down/209?cb=20230703223929' },
+          { id: 'isle_2', label: '孤島 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c2/StarIsle01.jpg/revision/latest/scale-to-width-down/204?cb=20190803001822' },
+          { id: 'isle_3', label: '孤島 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/a8/StarIsle04.jpg/revision/latest/scale-to-width-down/204?cb=20190803002058' },
+          { id: 'isle_4', label: '孤島 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/34/StarIsle03.jpg/revision/latest/scale-to-width-down/204?cb=20190803002059' },
+          { id: 'isle_10', label: '孤島 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e3/Migration-WingedLight-in-Isle.png/revision/latest/scale-to-width-down/204?cb=20251020164853' },
+        ]
+      },
+      {
+        area: '孤島の見晴らし台（蝶々の洞窟）',
+        children: [
+          { id: 'isle_5', label: '孤島 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/46/IMG_5445.JPG/revision/latest/scale-to-width-down/209?cb=20230703224815' },
+        ]
+      },
+      {
+        area: '預言者の石窟',
+        children: [
+          { id: 'isle_6', label: '孤島 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6a/WL_water_trial.jpg/revision/latest/scale-to-width-down/209?cb=20230704012826' },
+          { id: 'isle_7', label: '孤島 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/84/Trial_of_Earth_WL.jpg/revision/latest/scale-to-width-down/209?cb=20230705220526' },
+          { id: 'isle_8', label: '孤島 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/86/AIR_WL.JPG/revision/latest/scale-to-width-down/209?cb=20230705232858' },
+          { id: 'isle_9', label: '孤島 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c2/Trial-of-Fire-WL.png/revision/latest/scale-to-width-down/193?cb=20230110182520' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '草原',
+    areas: [
+      {
+        area: '蝶々の住処',
+        children: [
+          { id: 'prairie_1', label: '草原 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c3/Butterflyfieldsstar3far.jpg/revision/latest/scale-to-width-down/167?cb=20241011010252' },
+          { id: 'prairie_2', label: '草原 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/ca/StarPrairie01.jpeg/revision/latest/scale-to-width-down/204?cb=20190803002305' },
+          { id: 'prairie_3', label: '草原 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4f/StarPrairie02.jpg/revision/latest/scale-to-width-down/204?cb=20190803002306' },
+        ]
+      },
+      {
+        area: '草原の村',
+        children: [
+          { id: 'prairie_4', label: '草原 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/StarPrairie06.jpg/revision/latest/scale-to-width-down/204?cb=20190803002525' },
+          { id: 'prairie_5', label: '草原 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6e/StarPrairie07.jpg/revision/latest/scale-to-width-down/204?cb=20190803002526' },
+          { id: 'prairie_6', label: '草原 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/32/StarPrairie08.jpg/revision/latest/scale-to-width-down/204?cb=20190803003034' },
+        ]
+      },
+      {
+        area: '草原高地（8人エレベーター）',
+        children: [
+          { id: 'prairie_7', label: '草原 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1f/8playerpuzzlestar.JPG/revision/latest/scale-to-width-down/209?cb=20230703072031' },
+        ]
+      },
+      {
+        area: '草原の神殿',
+        children: [
+          { id: 'prairie_8', label: '草原 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d3/StarPrairie011.jpg/revision/latest/scale-to-width-down/209?cb=20230703233809' },
+          { id: 'prairie_9', label: '草原 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0b/StarPrairie012.jpg/revision/latest/scale-to-width-down/209?cb=20230703233859' },
+        ]
+      },
+      {
+        area: '草原の洞窟',
+        children: [
+          { id: 'prairie_10', label: '草原 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/17/StarPrairie09.jpg/revision/latest/scale-to-width-down/204?cb=20190803003035' },
+          { id: 'prairie_11', label: '草原 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6d/StarPrairie010.jpg/revision/latest/scale-to-width-down/204?cb=20190803003036' },
+        ]
+      },
+      {
+        area: '鳥の巣（鳥の塔）',
+        children: [
+          { id: 'prairie_12', label: '草原 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/16/StarPrairie4.jpg/revision/latest/scale-to-width-down/209?cb=20230707034626' },
+          { id: 'prairie_13', label: '草原 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9c/StarPrairie5.jpg/revision/latest/scale-to-width-down/209?cb=20230707034705' },
+        ]
+      },
+      {
+        area: '楽園の島々',
+        children: [
+          { id: 'prairie_14', label: '草原 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5d/Prairie_sanctuary_WL1.jpeg/revision/latest/scale-to-width-down/125?cb=20200626232203' },
+          { id: 'prairie_15', label: '草原 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/59/Prairie_sanctuary_WL2.jpeg/revision/latest/scale-to-width-down/209?cb=20230707050926' },
+          { id: 'prairie_16', label: '草原 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c6/Prairie_sanctuary_WL3.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051027' },
+          { id: 'prairie_17', label: '草原 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ec/Prairie_sanctuary_WL4.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051122' },
+          { id: 'prairie_18', label: '草原 光の子18', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dc/Prairie_sanctuary_WL5.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051225' },
+          { id: 'prairie_19', label: '草原 光の子19', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9a/Prairie_sanctuary_WL6.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051333' },
+          { id: 'prairie_20', label: '草原 光の子20', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d7/Prairie_sanctuary_WL7.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051433' },
+          { id: 'prairie_21', label: '草原 光の子21', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/45/Prairie_sanctuary_WL8.jpeg/revision/latest/scale-to-width-down/209?cb=20230707051537' },
+        ]
+      },
+      {
+        area: '草原連峰',
+        children: [
+          { id: 'prairie_22', label: '草原 光の子22', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/10/Prairie-Peaks-WL1.jpg/revision/latest/scale-to-width-down/209?cb=20230628152954' },
+          { id: 'prairie_23', label: '草原 光の子23', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2f/Prairie-Peaks-WL3.jpg/revision/latest/scale-to-width-down/209?cb=20230628152956' },
+          { id: 'prairie_24', label: '草原 光の子24', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/36/Prairie-Peaks-WL2.jpg/revision/latest/scale-to-width-down/209?cb=20230628152955' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '雨林',
+    areas: [
+      {
+        area: '雨林の前庭（雨林の開拓地）',
+        children: [
+          { id: 'forest_1', label: '雨林 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/63/StarForest01.jpg/revision/latest/scale-to-width-down/204?cb=20190803003514' },
+          { id: 'forest_2', label: '雨林 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/85/StarForest02.jpg/revision/latest/scale-to-width-down/204?cb=20190803003515' },
+        ]
+      },
+      {
+        area: '雨林の小川',
+        children: [
+          { id: 'forest_3', label: '雨林 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/85/StarForest03.jpeg/revision/latest/scale-to-width-down/209?cb=20230711030827' },
+          { id: 'forest_4', label: '雨林 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f2/StarForest04.jpeg/revision/latest/scale-to-width-down/209?cb=20230707232933' },
+          { id: 'forest_5', label: '雨林 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/83/StarForest05.jpg/revision/latest/scale-to-width-down/204?cb=20190803003551' },
+          { id: 'forest_6', label: '雨林 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9d/StarForest06.jpeg/revision/latest/scale-to-width-down/209?cb=20230711031132' },
+        ]
+      },
+      {
+        area: '雨林の墓場',
+        children: [
+          { id: 'forest_7', label: '雨林 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ac/StarForest010.jpg/revision/latest/scale-to-width-down/204?cb=20190803011411' },
+          { id: 'forest_8', label: '雨林 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/66/StarForest09.jpg/revision/latest/scale-to-width-down/204?cb=20190803011409' },
+          { id: 'forest_9', label: '雨林 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/80/StarForest011.jpg/revision/latest/scale-to-width-down/204?cb=20190803011412' },
+        ]
+      },
+      {
+        area: '高台広場（雨の途切れる地）',
+        children: [
+          { id: 'forest_10', label: '雨林 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/94/StarForest07.jpg/revision/latest/scale-to-width-down/209?cb=20230711025937' },
+          { id: 'forest_11', label: '雨林 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f6/StarForest08.jpg/revision/latest/scale-to-width-down/209?cb=20230709035049' },
+        ]
+      },
+      {
+        area: '青い鳥劇場',
+        children: [
+          { id: 'forest_12', label: '雨林 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4c/Blue-Bird-Winged-Light-Location.jpg/revision/latest/scale-to-width-down/204?cb=20250421174747' },
+        ]
+      },
+      {
+        area: '雨林の大空洞（雨林の地下洞）',
+        children: [
+          { id: 'forest_13', label: '雨林 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/54/Caverns_star1.jpg/revision/latest/scale-to-width-down/209?cb=20230708022634' },
+          { id: 'forest_14', label: '雨林 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e0/Caverns_star3.jpg/revision/latest/scale-to-width-down/209?cb=20230708022753' },
+          { id: 'forest_15', label: '雨林 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/cc/Caverns_star2.jpg/revision/latest/scale-to-width-down/209?cb=20230708022858' },
+          { id: 'forest_16', label: '雨林 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2d/Caverns_star4.jpg/revision/latest/scale-to-width-down/209?cb=20230708022942' },
+        ]
+      },
+      {
+        area: '聖なる池（雨林の端）',
+        children: [
+          { id: 'forest_17', label: '雨林 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2b/StarForest012.jpg/revision/latest/scale-to-width-down/204?cb=20190803011413' },
+        ]
+      },
+      {
+        area: 'ツリーハウス',
+        children: [
+          { id: 'forest_18', label: '雨林 光の子18', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/78/SOA-Winglight-2.jpg/revision/latest/scale-to-width-down/209?cb=20230708050149' },
+          { id: 'forest_19', label: '雨林 光の子19', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/73/SOA-Winglight-1.jpg/revision/latest/scale-to-width-down/209?cb=20230708050236' },
+        ]
+      },
+      {
+        area: '風の街道',
+        children: [
+          { id: 'forest_20', label: '雨林 光の子20', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f3/SOF-Winglight-1.png/revision/latest/scale-to-width-down/209?cb=20230708071606' },
+          { id: 'forest_21', label: '雨林 光の子21', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0c/Migration-WingedLight-in-Windpath.png/revision/latest/scale-to-width-down/204?cb=20251020122821' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '峡谷',
+    areas: [
+      {
+        area: '凍った湖（アイスリンク）',
+        children: [
+          { id: 'valley_1', label: '峡谷 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/47/StarValley01.jpg/revision/latest/scale-to-width-down/204?cb=20190803011525' },
+          { id: 'valley_2', label: '峡谷 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/08/StarValley02.jpg/revision/latest/scale-to-width-down/204?cb=20190803011525' },
+          { id: 'valley_3', label: '峡谷 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c1/StarValley03.jpg/revision/latest/scale-to-width-down/209?cb=20230707233401' },
+        ]
+      },
+      {
+        area: '峡谷の陸通り（陸のレース）',
+        children: [
+          { id: 'valley_4', label: '峡谷 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/ff/StarValley09.jpg/revision/latest/scale-to-width-down/204?cb=20190803221727' },
+        ]
+      },
+      {
+        area: '城塞都市',
+        children: [
+          { id: 'valley_5', label: '峡谷 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d6/StarValley04.jpg/revision/latest/scale-to-width-down/204?cb=20190803011528' },
+          { id: 'valley_6', label: '峡谷 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/69/StarValley05.jpeg/revision/latest/scale-to-width-down/204?cb=20190803011529' },
+        ]
+      },
+      {
+        area: '峡谷の空通り（空のレース）',
+        children: [
+          { id: 'valley_7', label: '峡谷 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/38/StarValley06.jpg/revision/latest/scale-to-width-down/204?cb=20190803011529' },
+          { id: 'valley_8', label: '峡谷 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c1/StarValley07.jpeg/revision/latest/scale-to-width-down/204?cb=20190803221725' },
+        ]
+      },
+      {
+        area: '円形劇場',
+        children: [
+          { id: 'valley_9', label: '峡谷 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5d/StarValley08.jpg/revision/latest/scale-to-width-down/204?cb=20190803221725' },
+          { id: 'valley_10', label: '峡谷 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e3/Screenshot_20201223-184359_Sky.jpg/revision/latest/scale-to-width-down/204?cb=20201224021445' },
+        ]
+      },
+      {
+        area: '峡谷の神殿',
+        children: [
+          { id: 'valley_11', label: '峡谷 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9f/Temple_WL_11.jpg/revision/latest/scale-to-width-down/209?cb=20230708223004' },
+        ]
+      },
+      {
+        area: '夢見の町',
+        children: [
+          { id: 'valley_12', label: '峡谷 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8f/SKY_20210105_115647_.jpg/revision/latest/scale-to-width-down/209?cb=20230708223216' },
+          { id: 'valley_13', label: '峡谷 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bc/Valley_Wl_13.jpg/revision/latest/scale-to-width-down/209?cb=20230708223514' },
+          { id: 'valley_14', label: '峡谷 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/52/WL_14.jpg/revision/latest/scale-to-width-down/209?cb=20230708223718' },
+        ]
+      },
+      {
+        area: '隠者の峠',
+        children: [
+          { id: 'valley_15', label: '峡谷 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0c/WingLight4.jpg/revision/latest/scale-to-width-down/209?cb=20230708224309' },
+          { id: 'valley_16', label: '峡谷 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/80/Hermit_Valley_WL_16.jpg/revision/latest/scale-to-width-down/209?cb=20230708230955' },
+        ]
+      },
+      {
+        area: '夢見の劇場',
+        children: [
+          { id: 'valley_17', label: '峡谷 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/41/Season_of_Performance_-_WingedLight.png/revision/latest/scale-to-width-down/209?cb=20230708231217' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '捨てられた地',
+    areas: [
+      {
+        area: '外郭（倒壊した祠）',
+        children: [
+          { id: 'wasteland_1', label: '捨てられた地 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/45/StarWasteland01.jpg/revision/latest/scale-to-width-down/204?cb=20190803221906' },
+          { id: 'wasteland_2', label: '捨てられた地 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/7b/StarWasteland02.jpg/revision/latest/scale-to-width-down/209?cb=20230710041928' },
+        ]
+      },
+      {
+        area: '墓所',
+        children: [
+          { id: 'wasteland_3', label: '捨てられた地 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b8/StarWasteland03.jpg/revision/latest/scale-to-width-down/209?cb=20230710042216' },
+          { id: 'wasteland_4', label: '捨てられた地 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ed/StarWasteland04.jpg/revision/latest/scale-to-width-down/204?cb=20190803221908' },
+          { id: 'wasteland_5', label: '捨てられた地 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/55/StarWasteland05.jpg/revision/latest/scale-to-width-down/204?cb=20190803221909' },
+          { id: 'wasteland_6', label: '捨てられた地 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1a/StarWasteland06.jpg/revision/latest/scale-to-width-down/204?cb=20190803222731' },
+          { id: 'wasteland_7', label: '捨てられた地 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/19/StarWasteland07.jpg/revision/latest/scale-to-width-down/209?cb=20230710042728' },
+          { id: 'wasteland_8', label: '捨てられた地 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b2/StarWasteland08.jpg/revision/latest/scale-to-width-down/204?cb=20190803222734' },
+        ]
+      },
+      {
+        area: '戦場',
+        children: [
+          { id: 'wasteland_9', label: '捨てられた地 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/ff/StarWasteland012.jpg/revision/latest/scale-to-width-down/204?cb=20190803223900' },
+          { id: 'wasteland_10', label: '捨てられた地 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ac/StarWasteland013.jpg/revision/latest/scale-to-width-down/204?cb=20190803223901' },
+        ]
+      },
+      {
+        area: '蟹の沼地（座礁船）',
+        children: [
+          { id: 'wasteland_11', label: '捨てられた地 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d0/StarWasteland09.jpeg/revision/latest/scale-to-width-down/204?cb=20190803222735' },
+          { id: 'wasteland_12', label: '捨てられた地 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8a/StarWasteland010.jpg/revision/latest/scale-to-width-down/204?cb=20190803222736' },
+          { id: 'wasteland_13', label: '捨てられた地 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8a/StarWasteland011.jpg/revision/latest/scale-to-width-down/204?cb=20190803222736' },
+        ]
+      },
+      {
+        area: '捨てられた地の神殿',
+        children: [
+          { id: 'wasteland_14', label: '捨てられた地 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/35/StarWasteland014.jpg/revision/latest/scale-to-width-down/204?cb=20190803223902' },
+        ]
+      },
+      {
+        area: '忘れられた方舟',
+        children: [
+          { id: 'wasteland_15', label: '捨てられた地 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/69/Forgotten_ark_star_1.jpg/revision/latest/scale-to-width-down/188?cb=20200707194829' },
+          { id: 'wasteland_16', label: '捨てられた地 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/14/Forgotten_ark_star_2.jpg/revision/latest/scale-to-width-down/188?cb=20200707194904' },
+        ]
+      },
+      {
+        area: '秘宝の環礁',
+        children: [
+          { id: 'wasteland_17', label: '捨てられた地 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/81/Season_of_Abyss_-_Winglight_1.jpg/revision/latest/scale-to-width-down/209?cb=20211220014236' },
+          { id: 'wasteland_18', label: '捨てられた地 光の子18', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dd/Season_of_Abyss_-_Winglight2.jpg/revision/latest/scale-to-width-down/209?cb=20211220014249' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '書庫',
+    areas: [
+      {
+        area: '1〜3階',
+        children: [
+          { id: 'vault_1', label: '書庫 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/96/StarVault01.jpg/revision/latest/scale-to-width-down/209?cb=20230711011811' },
+          { id: 'vault_2', label: '書庫 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/05/StarVault02.jpg/revision/latest/scale-to-width-down/209?cb=20230711011913' },
+        ]
+      },
+      {
+        area: '4階〜最上階',
+        children: [
+          { id: 'vault_3', label: '書庫 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ea/StarVault03.jpg/revision/latest/scale-to-width-down/204?cb=20190803230810' },
+          { id: 'vault_4', label: '書庫 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3a/Vaultnewstarfloor4.jpg/revision/latest/scale-to-width-down/183?cb=20200519163418' },
+          { id: 'vault_5', label: '書庫 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b2/StarVault04.jpg/revision/latest/scale-to-width-down/204?cb=20190803224256' },
+          { id: 'vault_6', label: '書庫 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/a1/StarVault05.jpg/revision/latest/scale-to-width-down/204?cb=20190803224257' },
+        ]
+      },
+      {
+        area: '資料庫',
+        children: [
+          { id: 'vault_7', label: '書庫 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b6/Vaultstar2.jpg/revision/latest/scale-to-width-down/167?cb=20200320013416' },
+          { id: 'vault_8', label: '書庫 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/78/Vaultstar3.jpg/revision/latest/scale-to-width-down/167?cb=20200320013449' },
+        ]
+      },
+      {
+        area: '星月夜の砂漠',
+        children: [
+          { id: 'vault_9', label: '書庫 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/66/SOTLP-Winglight-1.jpg/revision/latest/scale-to-width-down/198?cb=20210606020353' },
+          { id: 'vault_10', label: '書庫 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c4/SOTLP-Winglight-2.jpg/revision/latest/scale-to-width-down/198?cb=20210606020354' },
+          { id: 'vault_11', label: '書庫 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b7/SOTLP-Winglight-3.jpg/revision/latest/scale-to-width-down/198?cb=20210606020354' },
+        ]
+      },
+      {
+        area: '君憶う保存庫',
+        children: [
+          { id: 'vault_12', label: '書庫 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/db/SOR-Winglight-1.png/revision/latest/scale-to-width-down/204?cb=20230116104621' },
+        ]
+      },
+      {
+        area: '三日月オアシス',
+        children: [
+          { id: 'vault_13', label: '書庫 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/21/Crescent-Oasis-WL1.jpg/revision/latest/scale-to-width-down/204?cb=20231222213208' },
+          { id: 'vault_14', label: '書庫 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d6/Crescent-Oasis-WL2.jpg/revision/latest/scale-to-width-down/204?cb=20231222212155' },
+          { id: 'vault_15', label: '書庫 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c8/Crescent-Oasis-WL3.jpg/revision/latest/scale-to-width-down/203?cb=20240316230745' },
+        ]
+      },
+      {
+        area: 'ムーミン谷',
+        children: [
+          { id: 'vault_16', label: '書庫 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c8/Season-of-Moomin-Winged-Light.jpg/revision/latest/scale-to-width-down/204?cb=20241009011144' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: '暴風域',
+    areas: [
+      {
+        area: '暴風域',
+        children: [
+          { id: 'eden_1', label: '暴風域 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d3/StarEden01.jpg/revision/latest/scale-to-width-down/209?cb=20230709035814' },
+          { id: 'eden_2', label: '暴風域 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bb/StarEden02.jpg/revision/latest/scale-to-width-down/204?cb=20190803224259' },
+          { id: 'eden_3', label: '暴風域 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/76/StarEden3.jpg/revision/latest/scale-to-width-down/204?cb=20190803230258' },
+          { id: 'eden_4', label: '暴風域 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/ce/StarEden04.jpg/revision/latest/scale-to-width-down/204?cb=20190803230259' },
+          { id: 'eden_5', label: '暴風域 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ad/StarEden05.jpg/revision/latest/scale-to-width-down/204?cb=20190803230301' },
+          { id: 'eden_6', label: '暴風域 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/af/StarEden06.jpg/revision/latest/scale-to-width-down/204?cb=20190803230302' },
+          { id: 'eden_7', label: '暴風域 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b4/StarEden07.jpg/revision/latest/scale-to-width-down/204?cb=20190803230303' },
+          { id: 'eden_8', label: '暴風域 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d5/StarEden08.jpg/revision/latest/scale-to-width-down/204?cb=20190803230546' },
+          { id: 'eden_9', label: '暴風域 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/73/StarEden09.jpg/revision/latest/scale-to-width-down/204?cb=20190803230547' },
+          { id: 'eden_10', label: '暴風域 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c8/StarEden010.jpg/revision/latest/scale-to-width-down/204?cb=20190803230548' },
+        ]
+      }
+    ]
+  },
+  {
+    realm: 'いにしえの追想',
+    areas: [
+      {
+        area: 'いにしえの追想',
+        children: [
+          { id: 'shard_1', label: 'いにしえの追想 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/12/SoShattering-Winged-Light-Jellyfish-Void.jpg/revision/latest/scale-to-width-down/193?cb=20220829003247' },
+          { id: 'shard_2', label: 'いにしえの追想 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/fe/SOShattering-Winged-light-crab-void.jpg/revision/latest/scale-to-width-down/209?cb=20220624235010' },
+          { id: 'shard_3', label: 'いにしえの追想 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/81/SOShattering-Winged-light-Manta-void.jpg/revision/latest/scale-to-width-down/209?cb=20220624235010' },
+          { id: 'shard_4', label: 'いにしえの追想 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/76/SOShattering-Winged-Light-in-Dark-Dragon-Void.jpg/revision/latest/scale-to-width-down/209?cb=20220821002301' },
+          { id: 'shard_5', label: 'いにしえの追想 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2f/SOShattering-Winged-Light-whale-void.jpg/revision/latest/scale-to-width-down/209?cb=20220624235009' },
+          { id: 'shard_6', label: 'いにしえの追想 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c0/SoShattering-Winged-Light-elders-void.jpg/revision/latest/scale-to-width-down/209?cb=20220917012834' },
+        ]
+      }
+    ]
+  }
+];
+
 const CANDLES_PER_FEATHER = 2;
 const TRACKER_KEY = 'wingTracker_v1'; // { [季節名]: { [精霊名]: true } }
 const PERM_TRACKER_KEY = 'permWingTracker_v1'; // { [精霊名]: { tier1: true, tier2: true } }
+const LIGHT_CHILDREN_TRACKER_KEY = 'lightChildrenTracker_v1'; // { [id]: true }
 
 function loadTracker() {
   try { return JSON.parse(localStorage.getItem(TRACKER_KEY)) || {}; }
@@ -400,6 +881,12 @@ function loadPermTracker() {
 }
 function savePermTracker(t) { localStorage.setItem(PERM_TRACKER_KEY, JSON.stringify(t)); }
 
+function loadLightChildrenTracker() {
+  try { return JSON.parse(localStorage.getItem(LIGHT_CHILDREN_TRACKER_KEY)) || {}; }
+  catch (_) { return {}; }
+}
+function saveLightChildrenTracker(t) { localStorage.setItem(LIGHT_CHILDREN_TRACKER_KEY, JSON.stringify(t)); }
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 }
@@ -407,6 +894,7 @@ function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
 
 let seasonFilterUnowned = false;
 let permFilterUnowned = false;
+let lightChildrenFilterUnowned = false;
 
 function toggleSeasonFilter() {
   seasonFilterUnowned = !seasonFilterUnowned;
@@ -416,6 +904,17 @@ function togglePermFilter() {
   permFilterUnowned = !permFilterUnowned;
   render();
 }
+function toggleLightChildrenFilter() {
+  lightChildrenFilterUnowned = !lightChildrenFilterUnowned;
+  render();
+}
+
+function switchMode(mode) {
+  document.getElementById('wingsMode').style.display = mode === 'wings' ? 'block' : 'none';
+  document.getElementById('lightChildrenMode').style.display = mode === 'lightChildren' ? 'block' : 'none';
+  document.getElementById('tabWings').classList.toggle('active', mode === 'wings');
+  document.getElementById('tabLightChildren').classList.toggle('active', mode === 'lightChildren');
+}
 
 function render() {
   const tracker = loadTracker();
@@ -423,6 +922,7 @@ function render() {
 
   document.getElementById('seasonFilterBtn').classList.toggle('active', seasonFilterUnowned);
   document.getElementById('permFilterBtn').classList.toggle('active', permFilterUnowned);
+  document.getElementById('lightChildrenFilterBtn').classList.toggle('active', lightChildrenFilterUnowned);
 
   // ── 季節精霊・再訪 ──
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
@@ -499,17 +999,90 @@ function render() {
   }).join('');
   document.getElementById('realmList').innerHTML = realmHtml;
 
+  // ── 光の子 ──
+  const { got: lightChildrenGot, total: lightChildrenTotal } = renderLightChildren();
+
   // ── 集計表示 ──
   const REBIRTH_BONUS = 1; // 原罪での転生ボーナス（精霊への配布とは別に+1）
-  const totalAll = seasonFeathers + permFeathers + REBIRTH_BONUS;
+  const totalAll = seasonFeathers + permFeathers + lightChildrenGot + REBIRTH_BONUS;
   document.getElementById('sumFeathersAll').textContent = `${totalAll.toLocaleString()}枚`;
-  document.getElementById('sumFeathersAllSub').textContent = `季節精霊 ${seasonFeathers} + 恒常精霊 ${permFeathers} + 転生 ${REBIRTH_BONUS}`;
+  document.getElementById('sumFeathersAllSub').textContent = `季節精霊 ${seasonFeathers} + 恒常精霊 ${permFeathers} + 光の子 ${lightChildrenGot} + 転生 ${REBIRTH_BONUS}`;
   document.getElementById('sumCandles').textContent = `${((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString()}本`;
   document.getElementById('sumFeathersSeason').textContent = `${seasonFeathers} / ${seasonSpiritsTotal}`;
   document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
   document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
+  document.getElementById('sumLightChildren').textContent = `${lightChildrenGot} / ${lightChildrenTotal}`;
 
   renderCapeLevels(totalAll);
+}
+
+// 光の子チェックリストを描画し、{ got, total } を返す
+function renderLightChildren() {
+  const tracker = loadLightChildrenTracker();
+  let got = 0, total = 0;
+
+  if (!LIGHT_CHILDREN.length) {
+    document.getElementById('lightChildrenList').innerHTML =
+      `<div class="notice-card">データを準備中です。しばらくお待ちください。</div>`;
+    return { got: 0, total: 0 };
+  }
+
+  const html = LIGHT_CHILDREN.map(({ realm, areas }) => {
+    let realmGot = 0, realmTotal = 0;
+    const areasHtml = areas.map(({ area, children }) => {
+      realmTotal += children.length;
+      const optsHtml = children.map(child => {
+        const checked = !!tracker[child.id];
+        if (checked) realmGot++;
+        if (lightChildrenFilterUnowned && checked) return '';
+        const thumb = child.img
+          ? `<img src="${escapeAttr(child.img)}" alt="${escapeHtml(child.label)}" loading="lazy" onerror="this.parentElement.classList.add('img-fallback')">`
+          : '';
+        return `
+          <label class="light-child-opt ${checked ? 'checked' : ''}">
+            <div class="light-child-thumb ${child.img ? '' : 'img-fallback'}">
+              ${thumb}
+              <span class="light-child-thumb-fallback">👶</span>
+              <span class="light-child-check">${checked ? '✓' : ''}</span>
+            </div>
+            <input type="checkbox" style="display:none;" ${checked ? 'checked' : ''}
+              onchange="onLightChildToggle('${escapeAttr(child.id)}', this.checked)">
+            <span class="light-child-label">${escapeHtml(child.label)}</span>
+          </label>`;
+      }).join('');
+      if (!optsHtml.trim()) return '';
+      return `
+        <div class="area-name">${escapeHtml(area)}</div>
+        <div class="light-child-grid">${optsHtml}</div>`;
+    }).join('');
+
+    total += realmTotal;
+    got += realmGot;
+    const complete = realmGot === realmTotal;
+
+    if (lightChildrenFilterUnowned && complete) return '';
+
+    return `
+      <div class="realm-block">
+        <div class="season-head">
+          <div class="season-name">${escapeHtml(realm)}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${realmGot} / ${realmTotal} 体</span>
+        </div>
+        ${areasHtml}
+      </div>`;
+  }).join('');
+
+  document.getElementById('lightChildrenList').innerHTML = html || `<div class="notice-card">条件に一致する光の子がいません。</div>`;
+  return { got, total };
+}
+
+function onLightChildToggle(id, isChecked) {
+  const tracker = loadLightChildrenTracker();
+  if (isChecked) tracker[id] = true;
+  else delete tracker[id];
+  saveLightChildrenTracker(tracker);
+  render();
+  showToast('保存しました');
 }
 
 // 現在の光の翼合計に応じて、現在のケープレベルのひし形スタックを表示する
