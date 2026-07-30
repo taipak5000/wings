@@ -225,6 +225,7 @@
       border: 1px solid var(--sep);
     }
     .filter-toggle-btn.danger { color: #ff3b30; border-color: rgba(255,59,48,0.35); }
+    .filter-toggle-btn.success { color: var(--green); border-color: rgba(52,199,89,0.35); }
     .light-child-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .light-child-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: var(--r-sm); padding: 6px 4px; }
     .light-child-opt:hover { background: var(--bg); }
@@ -353,6 +354,7 @@
             <span><b id="sumLightChildren">0 / 124</b>体 発見済み</span>
             <span style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()">未取得のみ表示</button>
+              <button class="filter-toggle-btn success" onclick="markAllLightChildren()">光の子を全エリア取得済みにする</button>
               <button class="filter-toggle-btn danger" onclick="resetAllLightChildren()">光の子を全リセット</button>
             </span>
           </div>
@@ -1149,6 +1151,20 @@ function resetAllLightChildren() {
     saveLightChildrenTracker({});
     render();
     showToast('光の子をすべてリセットしました');
+  });
+}
+
+function markAllLightChildren() {
+  showConfirmModal('光の子を全エリア一気に取得済みにします。よろしいですか？', () => {
+    const tracker = loadLightChildrenTracker();
+    LIGHT_CHILDREN.forEach(({ areas }) => {
+      areas.forEach(({ children }) => {
+        children.forEach(child => { tracker[child.id] = true; });
+      });
+    });
+    saveLightChildrenTracker(tracker);
+    render();
+    showToast('光の子を全エリア取得済みにしました');
   });
 }
 
