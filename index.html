@@ -218,8 +218,8 @@
     .pf-icon-btn { background: var(--bg); border: 1px solid var(--sep); color: var(--text-2);
       border-radius: 6px; padding: 5px 9px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
     .pf-icon-btn:hover { background: var(--sep); }
-    .pf-add-row { display: flex; gap: 8px; margin-top: 14px; }
-    .pf-input { flex: 1; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
+    .pf-add-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .pf-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
       padding: 8px 10px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; }
     .pf-add-btn { background: var(--blue); color: #fff; border: none; border-radius: 6px; padding: 8px 14px;
       font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
@@ -1073,7 +1073,7 @@ function pfRenderModal() {
     if (pfEditingId === p.id) {
       const nameEsc = escapeHtml(p.name);
       return `
-        <div class="pf-row">
+        <div class="pf-row" style="flex-wrap: wrap;">
           <input type="text" class="pf-row-input" id="pfEditInput" value="${nameEsc}" maxlength="30"
             onkeydown="if(event.key==='Enter') pfConfirmRenameInline('${p.id}'); if(event.key==='Escape') pfCancelRowState();">
           <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="pfConfirmRenameInline('${p.id}')">保存</button>
