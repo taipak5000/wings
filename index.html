@@ -200,6 +200,33 @@
     .confirm-btn.cancel { background: var(--bg); color: var(--text); }
     .confirm-btn.ok { background: #ff3b30; color: #fff; }
 
+    .pf-bar { background: var(--card); border-bottom: 0.5px solid var(--sep); padding: 8px 20px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+    .pf-bar:hover { background: var(--bg); }
+    .pf-bar .pf-name { color: var(--text); }
+    .pf-bar .pf-caret { font-size: 10px; opacity: 0.6; }
+    .pf-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 1000; align-items: flex-end; justify-content: center; }
+    .pf-modal-overlay.show { display: flex; animation: fadeIn 0.15s ease; }
+    .pf-modal-card { background: var(--card); border-radius: 16px 16px 0 0; width: 100%; max-width: 600px;
+      max-height: 80vh; overflow-y: auto; padding: 20px 20px 28px; box-sizing: border-box; }
+    .pf-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .pf-modal-title { font-size: 17px; font-weight: 700; }
+    .pf-modal-close { font-size: 22px; color: var(--text-2); padding: 2px 6px; background: none; border: none; cursor: pointer; }
+    .pf-row { display: flex; align-items: center; gap: 8px; padding: 10px 4px; border-bottom: 0.5px solid var(--sep); }
+    .pf-row-name { flex: 1; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); }
+    .pf-row.active .pf-row-name { color: var(--blue); }
+    .pf-row-badge { font-size: 10px; font-weight: 700; color: #fff; background: var(--blue); border-radius: 999px; padding: 2px 8px; flex-shrink: 0; }
+    .pf-icon-btn { font-size: 15px; padding: 5px 6px; border-radius: 8px; color: var(--text-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
+    .pf-icon-btn:hover { background: var(--bg); }
+    .pf-add-row { display: flex; gap: 8px; margin-top: 14px; }
+    .pf-input { flex: 1; background: var(--bg); border: none; border-radius: 10px; padding: 10px 12px;
+      font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; }
+    .pf-add-btn { background: var(--blue); color: #fff; border-radius: 10px; padding: 10px 16px;
+      font-size: 14px; font-weight: 600; font-family: inherit; border: none; cursor: pointer; white-space: nowrap; }
+    .pf-hint { font-size: 11.5px; color: var(--text-2); line-height: 1.6; margin-top: 12px; }
+
     /* ── モード切替タブ ─────────────────────────── */
     .mode-tabs { display: flex; gap: 8px; margin-top: 16px; }
     .mode-tab {
@@ -254,6 +281,8 @@
   <div class="nav-title">🪽 羽トラッカー</div>
   <button class="sidebar-toggle-btn" onclick="openSidebarMobile()">☰ ツール</button>
 </nav>
+
+<div class="pf-bar" id="pfBar" onclick="pfOpenModal()"></div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebarMobile()"></div>
 
@@ -397,6 +426,16 @@
       <button type="button" class="confirm-btn cancel" onclick="closeConfirmModal()">キャンセル</button>
       <button type="button" class="confirm-btn ok" id="confirmOkBtn">OK</button>
     </div>
+  </div>
+</div>
+
+<div class="pf-modal-overlay" id="pfModalOverlay" onclick="if(event.target===this) pfCloseModal()">
+  <div class="pf-modal-card">
+    <div class="pf-modal-header">
+      <span class="pf-modal-title">👤 プロフィール切り替え</span>
+      <button type="button" class="pf-modal-close" onclick="pfCloseModal()">✕</button>
+    </div>
+    <div id="pfModalBody"></div>
   </div>
 </div>
 
@@ -906,10 +945,153 @@ const LIGHT_CHILDREN = [
   }
 ];
 
+/* ================================================================
+   複数プロフィール（保存枠）管理
+   サブアカウントなど複数アカウントを持つユーザー向けに、
+   精霊の羽・光の子の記録をプロフィールごとに切り替えて保存できるようにする。
+   ================================================================ */
+const PROFILES_KEY       = 'wingsProfiles_v1';       // [{ id, name }, ...]
+const ACTIVE_PROFILE_KEY = 'wingsActiveProfile_v1';   // 現在選択中のプロフィールID
+const DEFAULT_PROFILE_ID = 'default';
+
+function loadProfiles() {
+  try {
+    const list = JSON.parse(localStorage.getItem(PROFILES_KEY));
+    if (Array.isArray(list) && list.length > 0) return list;
+  } catch (_) {}
+  return null;
+}
+function saveProfiles(list) { localStorage.setItem(PROFILES_KEY, JSON.stringify(list)); }
+
+// 初回アクセス時、プロフィールが1件も無ければ「メイン」を作成する。
+// 「メイン」は既存ユーザーのデータをそのまま引き継げるよう、
+// キーに接尾辞を付けない特別なプロフィールとして扱う（nsKey参照）。
+function ensureProfilesInit() {
+  let list = loadProfiles();
+  if (!list) {
+    list = [{ id: DEFAULT_PROFILE_ID, name: 'メイン' }];
+    saveProfiles(list);
+  }
+  if (!localStorage.getItem(ACTIVE_PROFILE_KEY)) {
+    localStorage.setItem(ACTIVE_PROFILE_KEY, DEFAULT_PROFILE_ID);
+  }
+  return list;
+}
+function getActiveProfileId() { return localStorage.getItem(ACTIVE_PROFILE_KEY) || DEFAULT_PROFILE_ID; }
+function getActiveProfile() {
+  const list = ensureProfilesInit();
+  return list.find(p => p.id === getActiveProfileId()) || list[0];
+}
+
+// 保存キーをプロフィールごとに名前空間化する。
+// 「メイン」プロフィールの場合は元のキーをそのまま返すため、
+// このプロフィール機能を追加する前からのユーザーデータは無改造で引き継がれる。
+function nsKey(rawKey) {
+  const id = getActiveProfileId();
+  return id === DEFAULT_PROFILE_ID ? rawKey : `${rawKey}__p_${id}`;
+}
+
+function switchProfile(id) {
+  if (id === getActiveProfileId()) return;
+  localStorage.setItem(ACTIVE_PROFILE_KEY, id);
+  location.reload();
+}
+
+function createProfile(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return;
+  const list = ensureProfilesInit();
+  const id = 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  list.push({ id, name: trimmed });
+  saveProfiles(list);
+  switchProfile(id);
+}
+
+function renameProfile(id, name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return;
+  const list = ensureProfilesInit();
+  const p = list.find(pr => pr.id === id);
+  if (!p) return;
+  p.name = trimmed;
+  saveProfiles(list);
+  pfRenderModal();
+  pfRenderBar();
+}
+
+function deleteProfile(id) {
+  const list = ensureProfilesInit();
+  if (list.length <= 1) return; // 最後の1件は削除させない
+  const remaining = list.filter(p => p.id !== id);
+  saveProfiles(remaining);
+  if (getActiveProfileId() === id) {
+    localStorage.setItem(ACTIVE_PROFILE_KEY, remaining[0].id);
+    location.reload();
+    return;
+  }
+  pfRenderModal();
+}
+
+function pfRenderBar() {
+  const bar = document.getElementById('pfBar');
+  if (!bar) return;
+  const profile = getActiveProfile();
+  bar.innerHTML = `👤 <span class="pf-name">${escapeHtml(profile.name)}</span> <span class="pf-caret">▾</span>`;
+}
+
+function pfOpenModal() {
+  pfRenderModal();
+  document.getElementById('pfModalOverlay').classList.add('show');
+}
+function pfCloseModal() {
+  document.getElementById('pfModalOverlay').classList.remove('show');
+}
+
+function pfRenderModal() {
+  const list = ensureProfilesInit();
+  const activeId = getActiveProfileId();
+  const rows = list.map(p => {
+    const isActive = p.id === activeId;
+    const nameEsc = escapeHtml(p.name).replace(/'/g, "\\'");
+    return `
+      <div class="pf-row ${isActive ? 'active' : ''}">
+        <span class="pf-row-name" onclick="switchProfile('${p.id}')">${escapeHtml(p.name)}</span>
+        ${isActive ? `<span class="pf-row-badge">使用中</span>` : ''}
+        <button type="button" class="pf-icon-btn" title="名前を変更" onclick="pfPromptRename('${p.id}', '${nameEsc}')">✏️</button>
+        ${list.length > 1 ? `<button type="button" class="pf-icon-btn" title="削除" onclick="pfConfirmDelete('${p.id}', '${nameEsc}')">🗑</button>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('pfModalBody').innerHTML = `
+    <div>${rows}</div>
+    <div class="pf-add-row">
+      <input type="text" class="pf-input" id="pfNewName" placeholder="例: サブ垢1" maxlength="30">
+      <button type="button" class="pf-add-btn" onclick="pfAddProfile()">＋ 追加</button>
+    </div>
+    <div class="pf-hint">プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。</div>
+  `;
+}
+
+function pfAddProfile() {
+  const input = document.getElementById('pfNewName');
+  createProfile(input.value);
+}
+
+function pfPromptRename(id, currentName) {
+  const next = prompt('新しいプロフィール名を入力してください', currentName);
+  if (next === null) return;
+  renameProfile(id, next);
+}
+
+function pfConfirmDelete(id, name) {
+  const ok = confirm(`プロフィール「${name}」を削除しますか？（このプロフィールの選択自体を削除するだけで、保存済みデータはブラウザ内に残ります）`);
+  if (ok) deleteProfile(id);
+}
+
 const CANDLES_PER_FEATHER = 2;
-const TRACKER_KEY = 'wingTracker_v1'; // { [季節名]: { [精霊名]: true } }
-const PERM_TRACKER_KEY = 'permWingTracker_v1'; // { [精霊名]: { tier1: true, tier2: true } }
-const LIGHT_CHILDREN_TRACKER_KEY = 'lightChildrenTracker_v1'; // { [id]: true }
+const TRACKER_KEY = nsKey('wingTracker_v1'); // { [季節名]: { [精霊名]: true } }
+const PERM_TRACKER_KEY = nsKey('permWingTracker_v1'); // { [精霊名]: { tier1: true, tier2: true } }
+const LIGHT_CHILDREN_TRACKER_KEY = nsKey('lightChildrenTracker_v1'); // { [id]: true }
 
 function loadTracker() {
   try { return JSON.parse(localStorage.getItem(TRACKER_KEY)) || {}; }
@@ -1264,6 +1446,7 @@ function closeSidebarMobile() {
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
+document.addEventListener('DOMContentLoaded', pfRenderBar);
 document.addEventListener('DOMContentLoaded', render);
 </script>
 
