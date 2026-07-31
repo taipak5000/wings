@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/app-icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="羽トラッカー">
+  <meta name="theme-color" content="#FF9500">
   <title>羽トラッカー - Sky所持率管理</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -465,7 +471,7 @@ const SEASON_SPIRITS = [
   { season: '羽ばたく季節', spirits: ['快活な誘導手', '光の語り部', '工夫好きの風鈴職人', '腕利きの工匠'] },
   { season: '深淵の季節', spirits: ['繊細な漁師', '動じない提督', 'おっちょこちょいな水夫長', '豪快に笑う砲手'] },
   { season: '表現者たちの季節', spirits: ['一生懸命な舞台美術家', '忘れっぽい劇作家', 'のんびり屋の音楽家', '慎み深い踊り手'] },
-  { season: '砕ケル闇ノ季節', spirits: ['万古の光', '万古の闇'] },
+  { season: '砕ケル闇ノ季節', spirits: ['万古の光（海月）', '万古の光（マンタ）', '万古の闇（暗黒竜）', '万古の闇（蝕む闇）'] },
   { season: 'AURORAの季節', spirits: ['駆けゆく旅人', '覚醒の採掘者', '慈愛の戦士', '希望の君'] },
   { season: '追慕の季節', spirits: ['喪失の初老', '懇願する幼子', 'ぬき足の茶人', '傷ついた戦士'] },
   { season: 'ならいの季節', spirits: ['風変わりなひとり好き', 'ぐるぐる回るいたずらっ子', '物憂げなとぼとぼ歩き', '活発すぎる頑張り屋'] },
@@ -480,6 +486,9 @@ const SEASON_SPIRITS = [
   { season: '渡りの季節', spirits: ['渡りの鐘職人', '渡りの鳥の語り部', '渡りのマンタの語り部', '渡りの蝶々使い', '渡りの海月の語り部'] },
   { season: '光の修繕者の季節', spirits: ['光修繕する優勝者', '光修繕する光採取者', '光修繕する光学者', '光修繕する開拓者'] },
   { season: 'カーニバルの季節', spirits: ['カーニバルの曲芸師', 'カーニバルの旋舞家', 'カーニバルの旅役者', 'カーニバルの謎解き座長'] },
+  // 🚧 重なる音色の季節: 再訪（光の翼配布）の有無・精霊名が未確認のため、枠だけ仮設置。
+  // 確認でき次第、下のspiritsを実際の精霊名リストに差し替えてください。
+  { season: '重なる音色の季節', spirits: ['未確認（再訪の有無・精霊名は要確認）'] },
 ];
 
 /* ================================================================
