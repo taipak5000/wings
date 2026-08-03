@@ -238,6 +238,14 @@
     .pf-row-btn-ok { background: var(--blue); color: #fff; border: none; }
     .pf-row-btn-danger { background: #ff3b30; color: #fff; border: none; }
 
+    .pf-currency-section { margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--sep); }
+    .pf-currency-title { font-size: 12px; font-weight: 700; color: var(--text-2); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .pf-currency-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 2px; }
+    .pf-currency-label { font-size: 13px; color: var(--text); }
+    .pf-currency-input { width: 90px; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
+      padding: 6px 8px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; text-align: right; }
+    .pf-currency-input:focus { border-color: var(--blue); }
+
     /* ── モード切替タブ ─────────────────────────── */
     .mode-tabs { display: flex; gap: 8px; margin-top: 16px; }
     .mode-tab {
@@ -449,6 +457,10 @@
       <button type="button" class="pf-add-btn" onclick="pfAddProfile()">追加</button>
     </div>
     <div class="pf-hint">プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。</div>
+    <div class="pf-currency-section">
+      <div class="pf-currency-title">💰 所持通貨</div>
+      <div id="pfCurrencyBody"></div>
+    </div>
     <button type="button" class="pf-close-btn" onclick="pfCloseModal()">閉じる</button>
   </div>
 </div>
@@ -1060,10 +1072,80 @@ function pfRenderBar() {
 let pfEditingId = null;
 let pfDeletingId = null;
 
+/* ================================================================
+   💰 所持通貨の統一管理（プロフィール切替モーダル内、全サイト共通）
+   candle/heartはitemのwishOwnCurrencyを、seasonCandleはcompanionの
+   記録データを直接読み書きし、二重管理を避ける。昇華キャンドル・
+   シーズンハート・イベント通貨はどのサイトにも記録先が無いため、
+   新規キー（skyCurrencyExtra_v1）で管理する。
+   ================================================================ */
+const PF_CURRENCY_FIELDS = [
+  { key: 'candle',         icon: '🕯️', label: 'キャンドル' },
+  { key: 'heart',          icon: '💗', label: 'ハート' },
+  { key: 'ascendedCandle', icon: '🕯️✨', label: '昇華キャンドル' },
+  { key: 'seasonCandle',   icon: '🕯️🍂', label: 'シーズンキャンドル' },
+  { key: 'seasonHeart',    icon: '💗🍂', label: 'シーズンハート' },
+  { key: 'eventCurrency',  icon: '🎫', label: 'イベント通貨' },
+];
+function pfCompanionDataKey() {
+  const id = getActiveProfileId();
+  return id === DEFAULT_PROFILE_ID ? 'sky_companion_v4_data' : ('sky_companion_v4_data__' + id);
+}
+function pfLoadCurrency() {
+  let wish;
+  try { wish = JSON.parse(localStorage.getItem(nsKey('wishOwnCurrency'))) || {}; } catch (_) { wish = {}; }
+  let companionData;
+  try { companionData = JSON.parse(localStorage.getItem(pfCompanionDataKey())) || {}; } catch (_) { companionData = {}; }
+  let extra;
+  try { extra = JSON.parse(localStorage.getItem(nsKey('skyCurrencyExtra_v1'))) || {}; } catch (_) { extra = {}; }
+  return {
+    candle: wish.candle || 0,
+    heart: wish.heart || 0,
+    seasonCandle: companionData.ownedCandles || 0,
+    ascendedCandle: extra.ascendedCandle || 0,
+    seasonHeart: extra.seasonHeart || 0,
+    eventCurrency: extra.eventCurrency || 0,
+  };
+}
+function pfSaveCurrencyField(field, rawValue) {
+  const n = Math.max(0, Number(rawValue) || 0);
+  if (field === 'candle' || field === 'heart') {
+    const key = nsKey('wishOwnCurrency');
+    let wish;
+    try { wish = JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { wish = {}; }
+    wish[field] = n;
+    localStorage.setItem(key, JSON.stringify(wish));
+  } else if (field === 'seasonCandle') {
+    const key = pfCompanionDataKey();
+    let data;
+    try { data = JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { data = {}; }
+    data.ownedCandles = n;
+    localStorage.setItem(key, JSON.stringify(data));
+  } else {
+    const key = nsKey('skyCurrencyExtra_v1');
+    let extra;
+    try { extra = JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { extra = {}; }
+    extra[field] = n;
+    localStorage.setItem(key, JSON.stringify(extra));
+  }
+}
+function pfRenderCurrency() {
+  const body = document.getElementById('pfCurrencyBody');
+  if (!body) return;
+  const c = pfLoadCurrency();
+  body.innerHTML = PF_CURRENCY_FIELDS.map(f => `
+    <div class="pf-currency-row">
+      <span class="pf-currency-label">${f.icon} ${f.label}</span>
+      <input type="number" min="0" class="pf-currency-input" value="${c[f.key]}"
+        onchange="pfSaveCurrencyField('${f.key}', this.value)">
+    </div>`).join('');
+}
+
 function pfOpenModal() {
   pfEditingId = null;
   pfDeletingId = null;
   pfRenderModal();
+  pfRenderCurrency();
   document.getElementById('pfModalOverlay').classList.add('show');
 }
 function pfCloseModal() {
