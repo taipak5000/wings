@@ -243,6 +243,8 @@
     .pf-color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
     .pf-color-input::-moz-color-swatch { border: none; border-radius: 50%; }
     .pf-color-clear-btn { font-size: 10px; }
+    .pf-tint-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2;
+      background-color: var(--pf-tint-rgb, transparent); }
 
     .pf-currency-section { margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--sep); }
     .pf-currency-title { font-size: 12px; font-weight: 700; color: var(--text-2); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.4px;
@@ -303,6 +305,8 @@
   </style>
 </head>
 <body>
+
+<div class="pf-tint-overlay" aria-hidden="true"></div>
 
 <nav>
   <div class="nav-title">🪽 羽トラッカー</div>
@@ -1045,10 +1049,12 @@ function getActiveProfile() {
 
 /* ================================================================
    プロフィールごとのアカウントカラー（任意）
-   選んだ色を、このサイトのイメージカラー（青）に反映する。
+   選んだ色は、フォントやボタンではなく画面背景へのうっすらとした
+   色重ねとして反映する。CSS変数名・仕組みは全サイト共通（taipak5000.
+   github.io 配下は同一originのためプロフィール自体も共有されており、
+   storageイベントで他タブ・他サイトへも即座に反映される）。
    ================================================================ */
-const PF_THEME_MAIN_VAR = '--blue';
-const PF_THEME_BG_VAR   = '--blue-bg';
+const PF_TINT_VAR = '--pf-tint-rgb';
 
 function pfHexToRgb(hex) {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
@@ -1057,14 +1063,15 @@ function pfHexToRgb(hex) {
 function pfApplyThemeColor(hex) {
   const root = document.documentElement.style;
   if (!hex || !pfIsSafeColor(hex)) {
-    root.removeProperty(PF_THEME_MAIN_VAR);
-    root.removeProperty(PF_THEME_BG_VAR);
+    root.removeProperty(PF_TINT_VAR);
     return;
   }
   const c = pfHexToRgb(hex);
-  root.setProperty(PF_THEME_MAIN_VAR, hex);
-  root.setProperty(PF_THEME_BG_VAR, `rgba(${c.r}, ${c.g}, ${c.b}, 0.10)`);
+  root.setProperty(PF_TINT_VAR, `rgba(${c.r}, ${c.g}, ${c.b}, 0.07)`);
 }
+window.addEventListener('storage', (e) => {
+  if (e.key === PROFILES_KEY) pfApplyThemeColor(getActiveProfile().color);
+});
 function pfSetProfileColor(id, color) {
   if (!pfIsSafeColor(color)) return;
   const list = ensureProfilesInit();
