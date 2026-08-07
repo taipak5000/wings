@@ -1158,8 +1158,6 @@ const PF_CURRENCY_FIELDS = [
   { key: 'heart',          icon: '💗', label: 'ハート' },
   { key: 'ascendedCandle', icon: '🕯️✨', label: '星のキャンドル' },
   { key: 'seasonCandle',   icon: '🕯️🍂', label: 'シーズンキャンドル' },
-  { key: 'seasonHeart',    icon: '💗🍂', label: 'シーズンハート' },
-  { key: 'eventCurrency',  icon: '🎫', label: 'イベント通貨' },
 ];
 function pfCompanionDataKey() {
   const id = getActiveProfileId();
@@ -1177,8 +1175,6 @@ function pfLoadCurrency() {
     heart: wish.heart || 0,
     seasonCandle: companionData.ownedCandles || 0,
     ascendedCandle: extra.ascendedCandle || 0,
-    seasonHeart: extra.seasonHeart || 0,
-    eventCurrency: extra.eventCurrency || 0,
   };
 }
 function pfSaveCurrencyField(field, rawValue) {
