@@ -243,8 +243,8 @@
     .pf-color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
     .pf-color-input::-moz-color-swatch { border: none; border-radius: 50%; }
     .pf-color-clear-btn { font-size: 10px; }
-    .pf-tint-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2;
-      background-color: var(--pf-tint-rgb, transparent); }
+    .pf-tint-overlay { display: none; }
+    body { background: linear-gradient(var(--pf-tint-rgb, transparent), var(--pf-tint-rgb, transparent)), var(--bg) !important; }
 
     .pf-currency-section { margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--sep); }
     .pf-currency-title { font-size: 12px; font-weight: 700; color: var(--text-2); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.4px;
