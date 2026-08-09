@@ -1179,21 +1179,28 @@ function pfLoadCurrency() {
   try { companionData = JSON.parse(localStorage.getItem(pfCompanionDataKey())) || {}; } catch (_) { companionData = {}; }
   let extra;
   try { extra = JSON.parse(localStorage.getItem(nsKey('skyCurrencyExtra_v1'))) || {}; } catch (_) { extra = {}; }
+  // 星のキャンドルは以前 skyCurrencyExtra_v1.ascendedCandle で別管理していたが、
+  // ウィッシュリストの所持星キャンドル（wishOwnCurrency.starCandle）と二重管理に
+  // なっていたため統一する。既存データがあれば一度だけ引き継ぐ。
+  if (wish.starCandle === undefined && extra.ascendedCandle) {
+    wish.starCandle = extra.ascendedCandle;
+    localStorage.setItem(nsKey('wishOwnCurrency'), JSON.stringify(wish));
+  }
   return {
     candle: wish.candle || 0,
     heart: wish.heart || 0,
     seasonCandle: companionData.ownedCandles || 0,
-    ascendedCandle: extra.ascendedCandle || 0,
+    ascendedCandle: wish.starCandle || 0,
     giftPass: extra.giftPass || 0,
   };
 }
 function pfSaveCurrencyField(field, rawValue) {
   const n = Math.max(0, Number(rawValue) || 0);
-  if (field === 'candle' || field === 'heart') {
+  if (field === 'candle' || field === 'heart' || field === 'ascendedCandle') {
     const key = nsKey('wishOwnCurrency');
     let wish;
     try { wish = JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { wish = {}; }
-    wish[field] = n;
+    wish[field === 'ascendedCandle' ? 'starCandle' : field] = n;
     localStorage.setItem(key, JSON.stringify(wish));
   } else if (field === 'seasonCandle') {
     const key = pfCompanionDataKey();
