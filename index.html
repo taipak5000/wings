@@ -221,6 +221,8 @@
     .dash-row { display: flex; align-items: flex-start; gap: 8px; padding: 9px 11px; background: var(--bg);
       border-radius: var(--r-sm); margin-bottom: 6px; font-size: 13px; color: var(--text); line-height: 1.5; }
     .dash-row:last-child { margin-bottom: 0; }
+    .dash-row-icon { flex-shrink: 0; }
+    .dash-row-text { flex: 1; min-width: 0; }
     .dash-row b { color: var(--blue); }
     .dash-empty { font-size: 12.5px; color: var(--text-2); padding: 2px 2px 4px; }
     .pf-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -1220,28 +1222,31 @@ async function pfDashLoadData() {
     season: pfExtractArray(html, 'CURRENT_SEASON') || null,
   };
 }
+function pfDashRow(icon, html) {
+  return `<div class="dash-row"><span class="dash-row-icon">${icon}</span><span class="dash-row-text">${html}</span></div>`;
+}
 function pfDashBuildHtml(data) {
   const todayRows = [];
   data.events.forEach(name => {
-    todayRows.push(`<div class="dash-row">🌟 <b>${escapeHtml(name)}</b> が開催中</div>`);
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(name)}</b> が開催中`));
   });
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
-    todayRows.push(rv.active
-      ? `<div class="dash-row">🕊️ 旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中（あと${rv.daysLeft}日）</div>`
-      : `<div class="dash-row">🕊️ 旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まであと${rv.daysUntil}日</div>`);
+    todayRows.push(pfDashRow('🕊️', rv.active
+      ? `旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中（あと${rv.daysLeft}日）`
+      : `旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まであと${rv.daysUntil}日`));
   }
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
   const edenDays = pfDashNextEdenResetDays();
   const edenText = edenDays === 0 ? '本日リセット' : `あと${edenDays}日でリセット`;
-  const weekHtml = `<div class="dash-row">🌩️ エデンの目：羽ばたく光の週間上限が${edenText}<br><span style="font-size:11.5px; color:var(--text-2);">毎週日曜0時・太平洋時間</span></div>`;
+  const weekHtml = pfDashRow('🌩️', `原罪：羽ばたく光の週間上限が${edenText}<br><span style="font-size:11.5px; color:var(--text-2);">毎週日曜0時・太平洋時間</span>`);
 
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
     const daysLeft = Math.max(0, Math.ceil((end - new Date()) / 86400000));
-    monthHtml = `<div class="dash-row">🎨 「<b>${escapeHtml(data.season.name)}</b>」終了まであと${daysLeft}日</div>`;
+    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まであと${daysLeft}日`);
   } else {
     monthHtml = `<div class="dash-empty">シーズン情報が取得できませんでした</div>`;
   }
