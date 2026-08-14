@@ -1284,10 +1284,11 @@ function pfDashFormatShardTime(d) {
 // 2026-08-13（太平洋時間の日付）が荒野だったことを起点に計算する。
 const GRAND_CANDLE_ANCHOR_DATE = new Date(2026, 7, 13);
 const GRAND_CANDLE_ANCHOR_REALM_IDX = 3;
-function pfDashGrandCandleRealm() {
+function pfDashGrandCandleRealm(dayOffset = 0) {
   const pacNow = pfDashPacificNow();
   const today = new Date(pacNow);
   today.setHours(0, 0, 0, 0);
+  today.setDate(today.getDate() + dayOffset);
   const anchor = new Date(GRAND_CANDLE_ANCHOR_DATE);
   anchor.setHours(0, 0, 0, 0);
   const daysSince = Math.round((today - anchor) / 86400000);
@@ -1398,6 +1399,8 @@ function pfDashBuildHtml(data) {
   }
   const candleRealm = pfDashGrandCandleRealm();
   dailyRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b><span class="dash-countdown">次の変更まで ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
+  const questCandleRealm = pfDashGrandCandleRealm(-1);
+  dailyRows.push(pfDashRow('📜', `クエスト・シーズンキャンドル：<b>${SHARD_REALM_JA[questCandleRealm]}</b><span class="dash-countdown">次の変更まで ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
   dailyRows.push(pfDashRow('🌋', `ウニ焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(5))}</span>`));
   dailyRows.push(pfDashRow('🍞', `パン焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(35))}</span>`));
   dailyRows.push(pfDashRow('🐢', `亀闇<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(50))}</span>`));
