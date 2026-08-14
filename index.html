@@ -1253,6 +1253,21 @@ function pfDashGrandCandleRealm() {
   const idx = (((GRAND_CANDLE_ANCHOR_REALM_IDX + daysSince) % 5) + 5) % 5;
   return SHARD_REALMS[idx];
 }
+
+// ウニ焼き・パン焼き・亀闇：2時間おき（太平洋時間の偶数時）に発生する協力プレイイベント。
+// サマータイム期間中は各偶数時（0,2,4,...,22時）の指定の分から開始する
+// （ユーザーからの実測情報に基づく。標準時期間のオフセットは未確認）。
+function pfDashNextEvenHourEvent(minuteOffset) {
+  const pacNow = pfDashPacificNow();
+  const realOffsetMs = Date.now() - pacNow.getTime();
+  const candidate = new Date(pacNow);
+  candidate.setSeconds(0, 0);
+  candidate.setMinutes(minuteOffset);
+  const curHour = candidate.getHours();
+  candidate.setHours(curHour % 2 === 0 ? curHour : curHour - 1);
+  if (candidate.getTime() <= pacNow.getTime()) candidate.setTime(candidate.getTime() + 2 * 3600000);
+  return new Date(candidate.getTime() + realOffsetMs);
+}
 function pfDashRevisitStatus(schedule) {
   if (!schedule || !schedule.anchorStart || !schedule.anchorEnd) return null;
   const start0 = new Date(schedule.anchorStart);
@@ -1301,6 +1316,9 @@ function pfDashBuildHtml(data) {
   }
   const candleRealm = pfDashGrandCandleRealm();
   todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b>`));
+  todayRows.push(pfDashRow('🌋', `ウニ焼き：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(5))}`));
+  todayRows.push(pfDashRow('🍞', `パン焼き：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(35))}`));
+  todayRows.push(pfDashRow('🐢', `亀闇：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(50))}`));
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
   const edenDays = pfDashNextEdenResetDays();
