@@ -1190,15 +1190,16 @@ function pfExtractArray(html, varName) {
 function pfDashPacificNow() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
 }
-function pfDashNextEdenResetDays() {
+function pfDashNextEdenResetTarget() {
   const now = pfDashPacificNow();
+  const realOffsetMs = Date.now() - now.getTime();
   const todayMidnight = new Date(now);
   todayMidnight.setHours(0, 0, 0, 0);
   let addDays = (7 - todayMidnight.getDay()) % 7;
   if (addDays === 0 && now.getTime() > todayMidnight.getTime()) addDays = 7;
   const target = new Date(todayMidnight);
   target.setDate(target.getDate() + addDays);
-  return Math.max(0, Math.ceil((target - now) / 86400000));
+  return new Date(target.getTime() + realOffsetMs);
 }
 // 闇の破片（赤闇・黒闇）の出現予測。コミュニティ製の予測ツール
 // https://github.com/PlutoyDev/sky-shards （src/data/shard.ts）のアルゴリズムを
@@ -1268,6 +1269,36 @@ function pfDashNextEvenHourEvent(minuteOffset) {
   if (candidate.getTime() <= pacNow.getTime()) candidate.setTime(candidate.getTime() + 2 * 3600000);
   return new Date(candidate.getTime() + realOffsetMs);
 }
+
+// 次に太平洋時間0時（＝日替わり大キャンドルの切り替わりのタイミング）を迎える実時刻
+function pfDashNextPacificMidnight() {
+  const pacNow = pfDashPacificNow();
+  const realOffsetMs = Date.now() - pacNow.getTime();
+  const target = new Date(pacNow);
+  target.setHours(24, 0, 0, 0);
+  return new Date(target.getTime() + realOffsetMs);
+}
+
+// 指定の未来時刻までの残り時間を「D日 HH:MM:SS」（1日未満なら「HH:MM:SS」）で表示する、
+// リアルタイムカウントダウン用のフォーマッタ
+function pfDashCountdown(target) {
+  const ms = target - new Date();
+  if (ms <= 0) return '00:00:00';
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+  const ss = String(totalSec % 60).padStart(2, '0');
+  return days > 0 ? `${days}日 ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+}
+
+// 複数の未来時刻候補から一番近いものを選ぶ（全て過去なら null）
+function pfDashSoonestFuture(dates) {
+  const now = new Date();
+  const future = dates.filter(d => d > now).sort((a, b) => a - b);
+  return future.length ? future[0] : null;
+}
+
 function pfDashRevisitStatus(schedule) {
   if (!schedule || !schedule.anchorStart || !schedule.anchorEnd) return null;
   const start0 = new Date(schedule.anchorStart);
@@ -1277,9 +1308,9 @@ function pfDashRevisitStatus(schedule) {
   const k = Math.floor((now - start0) / intervalMs);
   const start = new Date(start0.getTime() + k * intervalMs);
   const end = new Date(start.getTime() + (end0 - start0));
-  if (start <= now && now <= end) return { active: true, daysLeft: Math.ceil((end - now) / 86400000) };
+  if (start <= now && now <= end) return { active: true, daysLeft: Math.ceil((end - now) / 86400000), target: end };
   const nextStart = now < start ? start : new Date(start.getTime() + intervalMs);
-  return { active: false, daysUntil: Math.ceil((nextStart - now) / 86400000) };
+  return { active: false, daysUntil: Math.ceil((nextStart - now) / 86400000), target: nextStart };
 }
 async function pfDashLoadData() {
   const res = await fetch(`${location.origin}/tai-item/index.html`);
@@ -1301,8 +1332,8 @@ function pfDashBuildHtml(data) {
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
     todayRows.push(pfDashRow('🕊️', rv.active
-      ? `旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中（あと${rv.daysLeft}日）`
-      : `旅の精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まであと${rv.daysUntil}日`));
+      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中（<b>${pfDashCountdown(rv.target)}</b>）`
+      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで（<b>${pfDashCountdown(rv.target)}</b>）`));
   }
   const shard = pfDashShardInfo();
   if (shard.hasShard) {
@@ -1310,26 +1341,25 @@ function pfDashBuildHtml(data) {
     const colorLabel = shard.isRed ? '赤闇' : '黒闇';
     const realmLabel = SHARD_REALM_JA[shard.realm];
     const times = shard.occurrences.map(pfDashFormatShardTime).join(' / ');
-    todayRows.push(pfDashRow(icon, `${colorLabel}（<b>${realmLabel}</b>）が出現：${times}`));
+    const soon = pfDashSoonestFuture(shard.occurrences);
+    const countdownHtml = soon ? `<br>次まで：<b>${pfDashCountdown(soon)}</b>` : '';
+    todayRows.push(pfDashRow(icon, `${colorLabel}（<b>${realmLabel}</b>）が出現：${times}${countdownHtml}`));
   } else {
     todayRows.push(pfDashRow('🌑', '本日は闇の破片の出現はありません'));
   }
   const candleRealm = pfDashGrandCandleRealm();
-  todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b>`));
-  todayRows.push(pfDashRow('🌋', `ウニ焼き：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(5))}`));
-  todayRows.push(pfDashRow('🍞', `パン焼き：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(35))}`));
-  todayRows.push(pfDashRow('🐢', `亀闇：次回 ${pfDashFormatShardTime(pfDashNextEvenHourEvent(50))}`));
+  todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b>（次の変更まで <b>${pfDashCountdown(pfDashNextPacificMidnight())}</b>）`));
+  todayRows.push(pfDashRow('🌋', `ウニ焼き：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(5))}</b>`));
+  todayRows.push(pfDashRow('🍞', `パン焼き：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(35))}</b>`));
+  todayRows.push(pfDashRow('🐢', `亀闇：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(50))}</b>`));
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
-  const edenDays = pfDashNextEdenResetDays();
-  const edenText = edenDays === 0 ? '本日リセット' : `あと${edenDays}日でリセット`;
-  const weekHtml = pfDashRow('🌩️', `原罪：羽ばたく光の週間上限が${edenText}<br><span style="font-size:11.5px; color:var(--text-2);">毎週日曜0時・太平洋時間</span>`);
+  const weekHtml = pfDashRow('🌩️', `原罪：羽ばたく光の週間上限のリセットまで <b>${pfDashCountdown(pfDashNextEdenResetTarget())}</b><br><span style="font-size:11.5px; color:var(--text-2);">毎週日曜0時・太平洋時間</span>`);
 
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
-    const daysLeft = Math.max(0, Math.ceil((end - new Date()) / 86400000));
-    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まであと${daysLeft}日`);
+    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まで <b>${pfDashCountdown(end)}</b>`);
   } else {
     monthHtml = `<div class="dash-empty">シーズン情報が取得できませんでした</div>`;
   }
@@ -1341,16 +1371,29 @@ function pfDashBuildHtml(data) {
 }
 let pfDashCache = null;
 let pfDashLoading = null;
+let pfDashTimer = null;
+function pfDashStartTimer() {
+  pfDashStopTimer();
+  pfDashTimer = setInterval(() => {
+    if (!pfDashCache) return;
+    const body = document.getElementById('dashBody');
+    if (body) body.innerHTML = pfDashBuildHtml(pfDashCache);
+  }, 1000);
+}
+function pfDashStopTimer() {
+  if (pfDashTimer) { clearInterval(pfDashTimer); pfDashTimer = null; }
+}
 async function pfDashOpen() {
   document.getElementById('dashModalOverlay').classList.add('show');
   const body = document.getElementById('dashBody');
-  if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); return; }
+  if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); return; }
   body.innerHTML = `<div class="pf-hint">読み込み中…</div>`;
   try {
     if (!pfDashLoading) pfDashLoading = pfDashLoadData();
     const data = await pfDashLoading;
     pfDashCache = data;
     body.innerHTML = pfDashBuildHtml(data);
+    pfDashStartTimer();
   } catch (e) {
     console.error('pfDashOpen', e);
     body.innerHTML = `<div class="dash-empty">読み込みに失敗しました</div>`;
@@ -1358,6 +1401,7 @@ async function pfDashOpen() {
 }
 function pfDashClose() {
   document.getElementById('dashModalOverlay').classList.remove('show');
+  pfDashStopTimer();
 }
 
 // 名前変更中・削除確認中のプロフィールID（ポップアップブロックの影響を受ける
