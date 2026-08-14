@@ -224,6 +224,8 @@
     .dash-row-icon { flex-shrink: 0; }
     .dash-row-text { flex: 1; min-width: 0; }
     .dash-row b { color: var(--blue); }
+    .dash-countdown { display: block; margin-top: 3px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--blue); }
+    .dash-note { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--text-2); }
     .dash-empty { font-size: 12.5px; color: var(--text-2); padding: 2px 2px 4px; }
     .pf-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
       z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -1331,9 +1333,10 @@ function pfDashBuildHtml(data) {
   });
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
-    todayRows.push(pfDashRow('🕊️', rv.active
-      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中（<b>${pfDashCountdown(rv.target)}</b>）`
-      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで（<b>${pfDashCountdown(rv.target)}</b>）`));
+    const revisitLabel = rv.active
+      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中`
+      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで`;
+    todayRows.push(pfDashRow('🕊️', `${revisitLabel}<span class="dash-countdown">${pfDashCountdown(rv.target)}</span>`));
   }
   const shard = pfDashShardInfo();
   if (shard.hasShard) {
@@ -1342,24 +1345,24 @@ function pfDashBuildHtml(data) {
     const realmLabel = SHARD_REALM_JA[shard.realm];
     const times = shard.occurrences.map(pfDashFormatShardTime).join(' / ');
     const soon = pfDashSoonestFuture(shard.occurrences);
-    const countdownHtml = soon ? `<br>次まで：<b>${pfDashCountdown(soon)}</b>` : '';
+    const countdownHtml = soon ? `<span class="dash-countdown">次まで ${pfDashCountdown(soon)}</span>` : '';
     todayRows.push(pfDashRow(icon, `${colorLabel}（<b>${realmLabel}</b>）が出現：${times}${countdownHtml}`));
   } else {
     todayRows.push(pfDashRow('🌑', '本日は闇の破片の出現はありません'));
   }
   const candleRealm = pfDashGrandCandleRealm();
-  todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b>（次の変更まで <b>${pfDashCountdown(pfDashNextPacificMidnight())}</b>）`));
-  todayRows.push(pfDashRow('🌋', `ウニ焼き：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(5))}</b>`));
-  todayRows.push(pfDashRow('🍞', `パン焼き：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(35))}</b>`));
-  todayRows.push(pfDashRow('🐢', `亀闇：次回まで <b>${pfDashCountdown(pfDashNextEvenHourEvent(50))}</b>`));
+  todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b><span class="dash-countdown">次の変更まで ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
+  todayRows.push(pfDashRow('🌋', `ウニ焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(5))}</span>`));
+  todayRows.push(pfDashRow('🍞', `パン焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(35))}</span>`));
+  todayRows.push(pfDashRow('🐢', `亀闇<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(50))}</span>`));
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
-  const weekHtml = pfDashRow('🌩️', `原罪：羽ばたく光の週間上限のリセットまで <b>${pfDashCountdown(pfDashNextEdenResetTarget())}</b><br><span style="font-size:11.5px; color:var(--text-2);">毎週日曜0時・太平洋時間</span>`);
+  const weekHtml = pfDashRow('🌩️', `原罪：羽ばたく光の週間上限のリセットまで<span class="dash-countdown">${pfDashCountdown(pfDashNextEdenResetTarget())}</span><span class="dash-note">毎週日曜0時・太平洋時間</span>`);
 
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
-    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まで <b>${pfDashCountdown(end)}</b>`);
+    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まで<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
   } else {
     monthHtml = `<div class="dash-empty">シーズン情報が取得できませんでした</div>`;
   }
