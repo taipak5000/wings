@@ -1377,19 +1377,6 @@ function pfDashRow(icon, html) {
 }
 function pfDashBuildHtml(data) {
   const todayRows = [];
-  if (data.season && data.season.name && data.season.endDate && new Date() < new Date(data.season.endDate)) {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(data.season.name)}</b> が開催中`));
-  }
-  pfDashActiveScheduledEvents(data.eventSchedule).forEach(ev => {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(ev.name)}</b> が開催中<span class="dash-countdown">終了まで ${pfDashCountdown(new Date(ev.end))}</span>`));
-  });
-  const rv = pfDashRevisitStatus(data.revisit);
-  if (rv && data.revisit) {
-    const revisitLabel = rv.active
-      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中`
-      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで`;
-    todayRows.push(pfDashRow('🕊️', `${revisitLabel}<span class="dash-countdown">${pfDashCountdown(rv.target)}</span>`));
-  }
   const shard = pfDashShardInfo();
   if (shard.hasShard) {
     const icon = shard.isRed ? '🔴' : '⚫';
@@ -1414,6 +1401,19 @@ function pfDashBuildHtml(data) {
   todayRows.push(pfDashRow('🌋', `ウニ焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(5))}</span>`));
   todayRows.push(pfDashRow('🍞', `パン焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(35))}</span>`));
   todayRows.push(pfDashRow('🐢', `亀闇<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(50))}</span>`));
+  if (data.season && data.season.name && data.season.endDate && new Date() < new Date(data.season.endDate)) {
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(data.season.name)}</b> が開催中`));
+  }
+  pfDashActiveScheduledEvents(data.eventSchedule).forEach(ev => {
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(ev.name)}</b> が開催中<span class="dash-countdown">終了まで ${pfDashCountdown(new Date(ev.end))}</span>`));
+  });
+  const rv = pfDashRevisitStatus(data.revisit);
+  if (rv && data.revisit) {
+    const revisitLabel = rv.active
+      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中`
+      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで`;
+    todayRows.push(pfDashRow('🕊️', `${revisitLabel}<span class="dash-countdown">${pfDashCountdown(rv.target)}</span>`));
+  }
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
   let weekHtml = pfDashRow('🌩️', `原罪：週間リセットまで<span class="dash-countdown">${pfDashCountdown(pfDashNextEdenResetTarget())}</span><span class="dash-note">毎週日曜0時・太平洋時間</span>`);
