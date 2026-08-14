@@ -1236,6 +1236,23 @@ function pfDashFormatShardTime(d) {
   const hh = String(d.getHours()).padStart(2, '0'), mi = String(d.getMinutes()).padStart(2, '0');
   return `${mm}/${dd} ${hh}:${mi}`;
 }
+
+// 日替わり大キャンドル（キャンドルのかたまり）の出現エリア予測。
+// 太平洋時間0時に、草原→雨林→峡谷→荒野→書庫の順で毎日切り替わる固定ローテーション
+// （Sky公式Xアカウント@thatskygameJPが「太平洋標準時の0時に更新」と明言済み）。
+// 2026-08-13（太平洋時間の日付）が荒野だったことを起点に計算する。
+const GRAND_CANDLE_ANCHOR_DATE = new Date(2026, 7, 13);
+const GRAND_CANDLE_ANCHOR_REALM_IDX = 3;
+function pfDashGrandCandleRealm() {
+  const pacNow = pfDashPacificNow();
+  const today = new Date(pacNow);
+  today.setHours(0, 0, 0, 0);
+  const anchor = new Date(GRAND_CANDLE_ANCHOR_DATE);
+  anchor.setHours(0, 0, 0, 0);
+  const daysSince = Math.round((today - anchor) / 86400000);
+  const idx = (((GRAND_CANDLE_ANCHOR_REALM_IDX + daysSince) % 5) + 5) % 5;
+  return SHARD_REALMS[idx];
+}
 function pfDashRevisitStatus(schedule) {
   if (!schedule || !schedule.anchorStart || !schedule.anchorEnd) return null;
   const start0 = new Date(schedule.anchorStart);
@@ -1282,6 +1299,8 @@ function pfDashBuildHtml(data) {
   } else {
     todayRows.push(pfDashRow('🌑', '本日は闇の破片の出現はありません'));
   }
+  const candleRealm = pfDashGrandCandleRealm();
+  todayRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b>`));
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
 
   const edenDays = pfDashNextEdenResetDays();
