@@ -507,6 +507,7 @@
       </div>
       <div id="pfCurrencyBody"></div>
     </div>
+    <button type="button" class="pf-icon-btn" style="width:100%; margin-top:10px; padding:8px;" onclick="dmOpenModal()">💾 データのバックアップ・復元・削除</button>
     <button type="button" class="pf-close-btn" onclick="pfCloseModal()">閉じる</button>
   </div>
 </div>
@@ -516,6 +517,23 @@
     <h3>🗓️ 今日・今週・今月</h3>
     <div id="dashBody"><div class="pf-hint">読み込み中…</div></div>
     <button type="button" class="pf-close-btn" onclick="pfDashClose()">閉じる</button>
+  </div>
+</div>
+
+<!-- ▸ データのバックアップ・復元・削除モーダル -->
+<div class="pf-modal-overlay" id="dmModalOverlay" onclick="if(event.target===this) dmCloseModal()">
+  <div class="pf-modal-card">
+    <h3>💾 データのバックアップ・復元・削除</h3>
+    <div class="pf-hint" style="margin:0 0 14px;">このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。</div>
+    <button type="button" class="pf-add-btn" style="width:100%; margin-bottom:8px;" onclick="dmExport()">⬇️ データをエクスポート（ファイルに保存）</button>
+    <input type="file" id="dmImportFile" accept="application/json" style="display:none" onchange="dmImportFileSelected(event)">
+    <button type="button" class="pf-icon-btn" style="width:100%; margin-bottom:8px; padding:8px;" onclick="document.getElementById('dmImportFile').click()">⬆️ ファイルからインポート</button>
+    <div id="dmImportConfirmArea"></div>
+    <div id="dmWipeArea">
+      <button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()">🗑️ 全データを削除</button>
+    </div>
+    <div id="dmStatus" class="pf-hint"></div>
+    <button type="button" class="pf-close-btn" onclick="dmCloseModal()">閉じる</button>
   </div>
 </div>
 
@@ -1641,6 +1659,112 @@ function pfCloseModal() {
   pfEditingId = null;
   pfDeletingId = null;
   document.getElementById('pfModalOverlay').classList.remove('show');
+}
+
+/* ================================================================
+   💾 データのエクスポート/インポート/全削除
+   localStorage は taipak5000.github.io 配下の全ツールで共有されているため、
+   ここで書き出す/読み込む/消す内容はこのサイトだけでなく item・wings・
+   companion・spirit-catalog 等すべてのデータが対象になる。
+   ================================================================ */
+function dmOpenModal() {
+  document.getElementById('dmStatus').textContent = '';
+  document.getElementById('dmImportConfirmArea').innerHTML = '';
+  dmWipeConfirming = false;
+  dmRenderWipeArea();
+  document.getElementById('dmModalOverlay').classList.add('show');
+}
+function dmCloseModal() {
+  document.getElementById('dmModalOverlay').classList.remove('show');
+}
+
+function dmExport() {
+  const dump = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    dump[key] = localStorage.getItem(key);
+  }
+  const payload = {
+    exportedFrom: 'taipak5000.github.io',
+    exportedAt: new Date().toISOString(),
+    data: dump
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `sky-tools-backup_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  document.getElementById('dmStatus').textContent = `書き出しました（${Object.keys(dump).length}件のキー）。`;
+}
+
+let dmPendingImport = null;
+function dmImportFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(reader.result); } catch (e) {
+      document.getElementById('dmStatus').textContent = 'ファイルの読み込みに失敗しました（JSON形式ではありません）。';
+      return;
+    }
+    const data = parsed && parsed.data && typeof parsed.data === 'object' ? parsed.data : null;
+    if (!data) {
+      document.getElementById('dmStatus').textContent = 'このツールで書き出したファイルではないようです。';
+      return;
+    }
+    dmPendingImport = data;
+    const count = Object.keys(data).length;
+    document.getElementById('dmImportConfirmArea').innerHTML = `
+      <div class="pf-row" style="flex-wrap: wrap;">
+        <span class="pf-row-confirm-text">${count}件のキーをインポートします。現在保存されているデータは上書きされます（インポートするファイルに無いキーはそのまま残ります）。よろしいですか？</span>
+        <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="dmConfirmImport()">インポート実行</button>
+        <button type="button" class="pf-icon-btn" onclick="dmCancelImport()">取消</button>
+      </div>`;
+  };
+  reader.readAsText(file);
+}
+function dmCancelImport() {
+  dmPendingImport = null;
+  document.getElementById('dmImportConfirmArea').innerHTML = '';
+}
+function dmConfirmImport() {
+  if (!dmPendingImport) return;
+  Object.keys(dmPendingImport).forEach(key => {
+    localStorage.setItem(key, dmPendingImport[key]);
+  });
+  dmPendingImport = null;
+  document.getElementById('dmImportConfirmArea').innerHTML = '';
+  document.getElementById('dmStatus').textContent = 'インポートしました。ページを再読み込みします…';
+  setTimeout(() => location.reload(), 800);
+}
+
+let dmWipeConfirming = false;
+function dmRenderWipeArea() {
+  const area = document.getElementById('dmWipeArea');
+  if (!dmWipeConfirming) {
+    area.innerHTML = `<button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()">🗑️ 全データを削除</button>`;
+    return;
+  }
+  area.innerHTML = `
+    <div class="pf-row" style="flex-wrap: wrap;">
+      <span class="pf-row-confirm-text">すべてのプロフィール・所持アイテム・お気に入り・精霊ツリーの進捗など、このブラウザに保存されている全データを削除します。この操作は取り消せません。先にエクスポートしておくことをおすすめします。本当に削除しますか？</span>
+      <button type="button" class="pf-icon-btn pf-row-btn-danger" onclick="dmConfirmWipe()">完全に削除する</button>
+      <button type="button" class="pf-icon-btn" onclick="dmCancelWipe()">取消</button>
+    </div>`;
+}
+function dmStartWipe() { dmWipeConfirming = true; dmRenderWipeArea(); }
+function dmCancelWipe() { dmWipeConfirming = false; dmRenderWipeArea(); }
+function dmConfirmWipe() {
+  localStorage.clear();
+  document.getElementById('dmStatus').textContent = '削除しました。ページを再読み込みします…';
+  setTimeout(() => location.reload(), 800);
 }
 
 /* ================================================================
