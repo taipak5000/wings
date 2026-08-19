@@ -11,6 +11,20 @@
   <meta name="theme-color" content="#FF9500">
   <title id="pageTitleTag">羽トラッカー - Sky所持率管理</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // 🌓 描画前にテーマを確定させ、ダークモード時に一瞬でも明るい背景が表示される「ちらつき」を防止する
+    // （'sky_app_theme' は taipak5000.github.io 系ツール共通のキー。sky_app_langと同様、
+    //   プロフィールに依存しない端末単位の設定のため nsKey() は使わない）
+    (function () {
+      try {
+        var saved = localStorage.getItem('sky_app_theme');
+        var isDark = saved ? (saved === 'dark') : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
   <style>
     :root {
       --bg:        #F2F2F7;
@@ -29,6 +43,25 @@
       --r:         16px;
       --r-sm:      10px;
     }
+
+    /* 🌙 ダークモード用のカラー上書き（:root の値は変更せず、[data-theme="dark"] 時だけ上書きする） */
+    [data-theme="dark"] {
+      --bg:        #000000;
+      --card:      #1C1C1E;
+      --sep:       rgba(255,255,255,0.14);
+      --orange:    #FF9F0A;
+      --orange-d:  #FFB340;
+      --orange-bg: rgba(255,159,10,0.16);
+      --blue:      #0A84FF;
+      --blue-bg:   rgba(10,132,255,0.16);
+      --green:     #30D158;
+      --green-bg:  rgba(48,209,88,0.16);
+      --text:      #F2F2F7;
+      --text-2:    #98989D;
+      --text-3:    #636366;
+    }
+    /* nav のすりガラス背景は --bg の直接コピーなので、ここだけ個別に上書きする */
+    [data-theme="dark"] nav { background: rgba(0,0,0,0.72); }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     a { text-decoration:none; color:inherit; -webkit-tap-highlight-color:transparent; }
@@ -258,6 +291,13 @@
     .pf-hint { font-size: 11.5px; color: var(--text-2); line-height: 1.5; margin: 12px 0 0; }
     .pf-close-btn { display: block; width: 100%; margin-top: 16px; background: var(--bg); border: 1px solid var(--sep);
       color: var(--text); border-radius: var(--r-sm); padding: 10px; font-size: 14px; cursor: pointer; }
+    .theme-toggle-btn { background: var(--card); border: 1px solid var(--sep); color: var(--text);
+      padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 20px; cursor: pointer;
+      flex-shrink: 0; white-space: nowrap; }
+    .theme-toggle-btn:hover { background: var(--sep); }
+    .settings-key { flex-shrink: 0; min-width: 30px; text-align: center; font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+      background: var(--card); border: 1px solid var(--sep); border-radius: 5px; padding: 2px 6px; color: var(--text); }
     .pf-row-input { flex: 1; background: var(--bg); border: 1px solid var(--blue); border-radius: 6px;
       padding: 6px 8px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; min-width: 0; }
     .pf-row-confirm-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -694,6 +734,45 @@
   </div>
 </div>
 
+<!-- ▸ ⚙️ 表示設定モーダル（ダークモード・キーボードショートカット） -->
+<div class="pf-modal-overlay" id="settingsModalOverlay" onclick="if(event.target===this) settingsCloseModal()">
+  <div class="pf-modal-card">
+    <h3 data-i18n="settingsModalTitle">⚙️ 表示設定</h3>
+
+    <div class="dash-section">
+      <p class="dash-section-label" data-i18n="settingsDisplayLabel">🌙 表示</p>
+      <div class="dash-row" style="align-items:center;">
+        <span class="dash-row-icon">🌙</span>
+        <span class="dash-row-text" data-i18n="settingsDarkModeLabel">ダークモード</span>
+        <button type="button" class="theme-toggle-btn" id="settingsThemeToggleBtn" onclick="toggleTheme()">🌙 ダーク</button>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <p class="dash-section-label" data-i18n="settingsShortcutsLabel">⌨️ キーボードショートカット</p>
+      <div class="dash-row" style="align-items:center;">
+        <span class="dash-row-icon">⌨️</span>
+        <span class="dash-row-text" data-i18n="settingsShortcutsEnableLabel">ショートカットを有効にする</span>
+        <input type="checkbox" id="settingsShortcutsCheckbox" onchange="settingsSaveShortcutsPref()" style="width:19px; height:19px; flex-shrink:0; cursor:pointer; accent-color:var(--blue);">
+      </div>
+      <div class="dash-row">
+        <span class="settings-key">?</span>
+        <span class="dash-row-text" data-i18n="settingsShortcutOpen">この設定を開く</span>
+      </div>
+      <div class="dash-row">
+        <span class="settings-key">D</span>
+        <span class="dash-row-text" data-i18n="settingsShortcutTheme">ダークモード切替</span>
+      </div>
+      <div class="dash-row">
+        <span class="settings-key">Esc</span>
+        <span class="dash-row-text" data-i18n="settingsShortcutEscape">開いているウィンドウを閉じる</span>
+      </div>
+    </div>
+
+    <button type="button" class="pf-close-btn" onclick="settingsCloseModal()" data-i18n="pfCloseBtn">閉じる</button>
+  </div>
+</div>
+
 <script>
 /* ================================================================
    🌐 UI言語切替（日本語 / English）
@@ -767,6 +846,17 @@ const I18N = {
     pfBackupOpenBtn: '💾 データのバックアップ・復元・削除',
     pfBarActiveSuffix: 'に切替中（タップで切替）',
     pfDashBtnTitle: '今日・今週・今月ダッシュボード',
+    settingsBtnTitle: '表示設定',
+    settingsModalTitle: '⚙️ 表示設定',
+    settingsDisplayLabel: '🌙 表示',
+    settingsDarkModeLabel: 'ダークモード',
+    themeToggleDark: '🌙 ダーク',
+    themeToggleLight: '☀️ ライト',
+    settingsShortcutsLabel: '⌨️ キーボードショートカット',
+    settingsShortcutsEnableLabel: 'ショートカットを有効にする',
+    settingsShortcutOpen: 'この設定を開く',
+    settingsShortcutTheme: 'ダークモード切替',
+    settingsShortcutEscape: '開いているウィンドウを閉じる',
     pfAccountColorTitle: 'アカウントカラー',
     pfResetColorTitle: 'カラーを初期値に戻す',
     pfRenameTitle: '名前を変更',
@@ -977,6 +1067,17 @@ const I18N = {
     pfBackupOpenBtn: 'Backup / restore / erase data',
     pfBarActiveSuffix: 'active (tap to switch)',
     pfDashBtnTitle: 'Today / this week / this month',
+    settingsBtnTitle: 'Display Settings',
+    settingsModalTitle: '⚙️ Display Settings',
+    settingsDisplayLabel: '🌙 Display',
+    settingsDarkModeLabel: 'Dark Mode',
+    themeToggleDark: '🌙 Dark',
+    themeToggleLight: '☀️ Light',
+    settingsShortcutsLabel: '⌨️ Keyboard Shortcuts',
+    settingsShortcutsEnableLabel: 'Enable keyboard shortcuts',
+    settingsShortcutOpen: 'Open this settings panel',
+    settingsShortcutTheme: 'Toggle dark mode',
+    settingsShortcutEscape: 'Close the open window',
     pfAccountColorTitle: 'Account color',
     pfResetColorTitle: 'Reset color to default',
     pfRenameTitle: 'Rename',
@@ -1164,6 +1265,7 @@ function toggleLang() {
   if (document.getElementById('dashModalOverlay').classList.contains('show') && pfDashCache) {
     document.getElementById('dashBody').innerHTML = pfDashBuildHtml(pfDashCache);
   }
+  if (document.getElementById('settingsModalOverlay').classList.contains('show')) { syncSettingsModalUI(); }
 }
 
 /* ================================================================
@@ -2006,7 +2108,8 @@ function pfRenderBar() {
   if (!bar) return;
   bar.innerHTML = `
     <span class="pf-bar-text" onclick="pfOpenModal()">🗂️ <b>${escapeHtml(pfDisplayName(profile))}</b> ${t('pfBarActiveSuffix')}</span>
-    <button type="button" class="pf-dash-btn" onclick="pfDashOpen()" title="${escapeAttr(t('pfDashBtnTitle'))}">🗓️</button>`;
+    <button type="button" class="pf-dash-btn" onclick="pfDashOpen()" title="${escapeAttr(t('pfDashBtnTitle'))}">🗓️</button>
+    <button type="button" class="pf-dash-btn" onclick="settingsOpenModal()" title="${escapeAttr(t('settingsBtnTitle'))}">⚙️</button>`;
 }
 
 /* ================================================================
@@ -2935,7 +3038,7 @@ function pfRenderModal() {
       return `
         <div class="pf-row" style="flex-wrap: wrap;">
           <input type="text" class="pf-row-input" id="pfEditInput" value="${nameEsc}" maxlength="30"
-            onkeydown="if(event.key==='Enter') pfConfirmRenameInline('${p.id}'); if(event.key==='Escape') pfCancelRowState();">
+            onkeydown="if(event.key==='Enter') pfConfirmRenameInline('${p.id}'); if(event.key==='Escape') { event.stopPropagation(); pfCancelRowState(); }">
           <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="pfConfirmRenameInline('${p.id}')">${t('pfRenameSaveBtn')}</button>
           <button type="button" class="pf-icon-btn" onclick="pfCancelRowState()">${t('pfCancelBtn')}</button>
         </div>`;
@@ -3377,6 +3480,98 @@ function closeSidebarMobile() {
   document.getElementById('sidebar').classList.remove('sidebar-open');
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
+
+/* ================================================================
+   ⚙️ 表示設定（ダークモード・キーボードショートカット）
+   'sky_app_theme'・'sky_shortcuts_enabled' は taipak5000.github.io 系ツール
+   共通のキー（sky_app_langと同様、プロフィールに依存しない端末単位の設定の
+   ため nsKey() は使わない）。
+   ================================================================ */
+const THEME_KEY = 'sky_app_theme';
+const SHORTCUTS_KEY = 'sky_shortcuts_enabled';
+
+function isDarkMode() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+function applyThemeToDOM(isDark) {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+}
+function toggleTheme() {
+  const next = !isDarkMode();
+  applyThemeToDOM(next);
+  try { localStorage.setItem(THEME_KEY, next ? 'dark' : 'light'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
+  syncSettingsModalUI();
+}
+
+// ⌨️ '?'・'d'・Esc ショートカットが有効かどうかを、その都度localStorageから直接判定する
+// （他タブ・他サイトでの変更もすぐ反映されるようキャッシュしない）。未設定（null）の場合は有効扱い。
+function skyShortcutsEnabled() {
+  try {
+    const v = localStorage.getItem(SHORTCUTS_KEY);
+    return v === null ? true : v === '1';
+  } catch (e) { return true; }
+}
+function settingsSaveShortcutsPref() {
+  const checkbox = document.getElementById('settingsShortcutsCheckbox');
+  try { localStorage.setItem(SHORTCUTS_KEY, (checkbox && checkbox.checked) ? '1' : '0'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
+}
+
+// 表示設定モーダル内の表示（ダークモード切替ボタンの文言・ショートカット有効チェックボックス）を
+// 現在の状態に同期する
+function syncSettingsModalUI() {
+  const themeBtn = document.getElementById('settingsThemeToggleBtn');
+  if (themeBtn) themeBtn.textContent = isDarkMode() ? t('themeToggleDark') : t('themeToggleLight');
+  const checkbox = document.getElementById('settingsShortcutsCheckbox');
+  if (checkbox) checkbox.checked = skyShortcutsEnabled();
+}
+
+function settingsOpenModal() {
+  syncSettingsModalUI();
+  document.getElementById('settingsModalOverlay').classList.add('show');
+}
+function settingsCloseModal() {
+  document.getElementById('settingsModalOverlay').classList.remove('show');
+}
+
+// ⌨️ 全ツール共通のキーボードショートカット（?＝表示設定を開く／d,D＝ダークモード切替／
+// Esc＝開いているモーダルを閉じる）。Escはテキスト入力中でも常に有効（ダイアログを閉じるのは
+// ユーザーの期待に沿うため）かつショートカット無効設定の影響を受けない。?とdは、テキスト入力中は
+// 通常の文字入力として使えるようガードし、ショートカットが無効化されていれば発火しない。
+function closeTopmostOpenModal() {
+  const isShown = id => { const el = document.getElementById(id); return el && el.classList.contains('show'); };
+  if (isShown('settingsModalOverlay')) { settingsCloseModal(); return; }
+  if (isShown('imagePreviewModal')) { closeImagePreviewModal(); return; }
+  if (isShown('customizeModal')) { closeCustomizeModal(); return; }
+  if (isShown('iconCustomModal')) { pfIconCloseModal(); return; }
+  if (isShown('dmModalOverlay')) { dmCloseModal(); return; }
+  if (isShown('dashModalOverlay')) { pfDashClose(); return; }
+  if (isShown('pfModalOverlay')) {
+    // 行編集・削除確認中（pfEditingId／pfDeletingId）はモーダルごと閉じず、その行の編集状態だけを
+    // キャンセルする（#pfEditInput側のonkeydown="...Escape→pfCancelRowState()"がstopPropagation()
+    // している場合はそもそもここまで届かないが、念のためモーダル側でも同じ判定をしておく）
+    if (pfEditingId !== null || pfDeletingId !== null) { pfCancelRowState(); } else { pfCloseModal(); }
+    return;
+  }
+  if (isShown('confirmOverlay')) { closeConfirmModal(); return; }
+}
+
+document.addEventListener('keydown', function (e) {
+  if (e.repeat) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tgt = e.target;
+  const isTyping = tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
+
+  if (e.key === 'Escape') {
+    closeTopmostOpenModal();
+    return;
+  }
+
+  if (isTyping) return;
+  if (!skyShortcutsEnabled()) return;
+
+  if (e.key === '?') { e.preventDefault(); settingsOpenModal(); return; }
+  if (e.key === 'd' || e.key === 'D') { e.preventDefault(); toggleTheme(); return; }
+});
 
 document.addEventListener('DOMContentLoaded', applyI18n);
 document.addEventListener('DOMContentLoaded', pfRenderBar);
