@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="羽トラッカー">
   <meta name="theme-color" content="#FF9500">
-  <title>羽トラッカー - Sky所持率管理</title>
+  <title id="pageTitleTag">羽トラッカー - Sky所持率管理</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -53,6 +53,12 @@
       display: flex; align-items: center; gap: 6px; white-space: nowrap;
     }
     @media (min-width: 850px) { .sidebar-toggle-btn { visibility: hidden; } }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .lang-toggle-btn {
+      background: var(--card); border: 1px solid var(--sep); border-radius: var(--r-sm);
+      padding: 6px 10px; font-size: 12.5px; font-weight: 700; color: var(--text);
+      white-space: nowrap;
+    }
 
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 499; }
     .sidebar-overlay.show { display: block; animation: fadeIn 0.2s ease; }
@@ -385,8 +391,11 @@
 <div class="pf-tint-overlay" aria-hidden="true"></div>
 
 <nav>
-  <div class="nav-title">🪽 羽トラッカー</div>
-  <button class="sidebar-toggle-btn" onclick="openSidebarMobile()">☰ ツール</button>
+  <div class="nav-title" data-i18n="navTitle">🪽 羽トラッカー</div>
+  <div class="nav-right">
+    <button type="button" class="lang-toggle-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
+    <button class="sidebar-toggle-btn" onclick="openSidebarMobile()" data-i18n="sidebarHamburger">☰ ツール</button>
+  </div>
 </nav>
 
 <div class="pf-bar" id="pfBar"></div>
@@ -397,51 +406,51 @@
 
   <aside class="sidebar" id="sidebar">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-      <div class="sidebar-section-label" style="margin-bottom:0;">🔗 関連ツール</div>
-      <button class="sidebar-close-btn" onclick="closeSidebarMobile()">×</button>
+      <div class="sidebar-section-label" style="margin-bottom:0;" data-i18n="sidebarRelatedTools">🔗 関連ツール</div>
+      <button class="sidebar-close-btn" onclick="closeSidebarMobile()" data-i18n="sidebarClose">×</button>
     </div>
     <nav>
-      <a href="https://taipak5000.github.io/tai-item/" class="sidebar-nav-link">📁 アイテム所持管理</a>
-      <a href="https://taipak5000.github.io/tai-emote/" class="sidebar-nav-link">🎭 エモート所持率管理</a>
-      <a href="https://taipak5000.github.io/share/" class="sidebar-nav-link">📍 創作物管理ツール</a>
-      <a href="https://taipak5000.github.io/tai-nomacan/" class="sidebar-nav-link">🕯️ ノマキャン計算機</a>
-      <a href="https://taipak5000.github.io/star-candle/" class="sidebar-nav-link">🕯️ 星のキャンドル計算機</a>
-      <a href="https://taipak5000.github.io/companion/" class="sidebar-nav-link">✨ 精霊同行ツール</a>
-      <a href="https://taipak5000.github.io/wings/" class="sidebar-nav-link current-tool">🪽 羽トラッカー</a>
-      <a href="https://taipak5000.github.io/tai-transfer/" class="sidebar-nav-link">🔄 データ引継ぎ</a>
+      <a href="https://taipak5000.github.io/tai-item/" class="sidebar-nav-link" data-i18n="toolItem">📁 アイテム所持管理</a>
+      <a href="https://taipak5000.github.io/tai-emote/" class="sidebar-nav-link" data-i18n="toolEmote">🎭 エモート所持率管理</a>
+      <a href="https://taipak5000.github.io/share/" class="sidebar-nav-link" data-i18n="toolShare">📍 創作物管理ツール</a>
+      <a href="https://taipak5000.github.io/tai-nomacan/" class="sidebar-nav-link" data-i18n="toolNomacan">🕯️ ノマキャン計算機</a>
+      <a href="https://taipak5000.github.io/star-candle/" class="sidebar-nav-link" data-i18n="toolStarCandle">🕯️ 星のキャンドル計算機</a>
+      <a href="https://taipak5000.github.io/companion/" class="sidebar-nav-link" data-i18n="toolCompanion">✨ 精霊同行ツール</a>
+      <a href="https://taipak5000.github.io/wings/" class="sidebar-nav-link current-tool" data-i18n="toolWings">🪽 羽トラッカー</a>
+      <a href="https://taipak5000.github.io/tai-transfer/" class="sidebar-nav-link" data-i18n="toolDataTransfer">🔄 データ引継ぎ</a>
     </nav>
     <div style="margin-top:18px; padding-top:14px; border-top:0.5px solid var(--sep);">
-      <div class="sidebar-section-label">📱 ホーム画面アイコン</div>
-      <button type="button" class="sidebar-nav-link" style="width:100%; box-sizing:border-box; border:1px solid var(--sep); background:var(--bg); cursor:pointer; justify-content:center;" onclick="pfIconOpenModal()">🎨 アイコンを<br>カスタマイズ</button>
+      <div class="sidebar-section-label" data-i18n="sidebarHomeIcon">📱 ホーム画面アイコン</div>
+      <button type="button" class="sidebar-nav-link" style="width:100%; box-sizing:border-box; border:1px solid var(--sep); background:var(--bg); cursor:pointer; justify-content:center;" onclick="pfIconOpenModal()" data-i18n="sidebarCustomizeIcon">🎨 アイコンを<br>カスタマイズ</button>
     </div>
   </aside>
 
   <div class="wrap">
 
-    <div class="notice-card">
+    <div class="notice-card" data-i18n="noticeMain">
       精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている<b>光の子</b>を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>
       また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。
     </div>
 
     <div class="summary-card">
-      <div class="summary-title">光の翼の合計</div>
+      <div class="summary-title" data-i18n="summaryTitle">光の翼の合計</div>
       <div class="summary-grid">
         <div>
-          <div class="summary-item-label">もらった光の翼（合計）</div>
+          <div class="summary-item-label" data-i18n="summaryGotLabel">もらった光の翼（合計）</div>
           <div class="summary-item-value" id="sumFeathersAll">0枚</div>
           <div class="summary-item-sub" id="sumFeathersAllSub">季節精霊 + 恒常精霊 + 光の子</div>
         </div>
         <div>
-          <div class="summary-item-label">翼に使った星のキャンドル</div>
+          <div class="summary-item-label" data-i18n="summaryCandlesLabel">翼に使った星のキャンドル</div>
           <div class="summary-item-value" id="sumCandles">0本</div>
-          <div class="summary-item-sub">光の翼1枚 = 星のキャンドル2本（季節精霊の場合）</div>
+          <div class="summary-item-sub" data-i18n="summaryCandlesSub">光の翼1枚 = 星のキャンドル2本（季節精霊の場合）</div>
         </div>
       </div>
     </div>
 
     <div class="cape-card">
-      <div class="cape-card-title">✦ ケープレベル</div>
-      <div class="cape-card-sub" id="capeSummary">読み込み中…</div>
+      <div class="cape-card-title" data-i18n="capeCardTitle">✦ ケープレベル</div>
+      <div class="cape-card-sub" id="capeSummary" data-i18n="dashLoading">読み込み中…</div>
       <div class="cape-level-label" id="capeLevelLabel"></div>
       <div class="cape-pips" id="capePips">
         <!-- JSで動的に生成 -->
@@ -449,23 +458,23 @@
     </div>
 
     <div class="share-btn-row">
-      <button type="button" class="share-btn twitter" onclick="shareOverallOnTwitter()">📤🖼️ Xで画像を共有</button>
-      <button type="button" class="share-btn customize" onclick="openCustomizeModal()">🎨 カスタマイズして共有</button>
+      <button type="button" class="share-btn twitter" onclick="shareOverallOnTwitter()" data-i18n="shareTwitterBtn">📤🖼️ Xで画像を共有</button>
+      <button type="button" class="share-btn customize" onclick="openCustomizeModal()" data-i18n="shareCustomizeBtn">🎨 カスタマイズして共有</button>
     </div>
 
     <div class="mode-tabs">
-      <button class="mode-tab active" id="tabWings" onclick="switchMode('wings')">🪽 精霊の羽</button>
-      <button class="mode-tab" id="tabLightChildren" onclick="switchMode('lightChildren')">👶 光の子</button>
+      <button class="mode-tab active" id="tabWings" onclick="switchMode('wings')" data-i18n="tabWings">🪽 精霊の羽</button>
+      <button class="mode-tab" id="tabLightChildren" onclick="switchMode('lightChildren')" data-i18n="tabLightChildren">👶 光の子</button>
     </div>
 
     <div id="wingsMode">
 
-      <p class="sec-label">季節ごとの精霊一覧</p>
+      <p class="sec-label" data-i18n="seasonSectionLabel">季節ごとの精霊一覧</p>
       <div class="sticky-section">
         <div class="notice-card sticky-notice" id="sumFeathersSeasonWrap">
           <div class="notice-head">
-            <span>季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分</span>
-            <button class="filter-toggle-btn" id="seasonFilterBtn" onclick="toggleSeasonFilter()">未取得のみ表示</button>
+            <span data-i18n="seasonSummaryLabel">季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分</span>
+            <button class="filter-toggle-btn" id="seasonFilterBtn" onclick="toggleSeasonFilter()" data-i18n="filterUnownedOnly">未取得のみ表示</button>
           </div>
         </div>
         <div id="seasonList">
@@ -473,17 +482,17 @@
         </div>
       </div>
 
-      <div class="notice-card" style="margin-top:16px;">
+      <div class="notice-card" style="margin-top:16px;" data-i18n="seasonReturnEntityNote">
         砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。
       </div>
 
-      <p class="sec-label">恒常精霊のツリー（地方の精霊）</p>
+      <p class="sec-label" data-i18n="permSectionLabel">恒常精霊のツリー（地方の精霊）</p>
       <div class="sticky-section">
         <div class="notice-card sticky-notice" id="sumFeathersPermWrap">
-          各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。<br>
+          <span data-i18n="permHint">各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。</span><br>
           <div class="notice-head">
-            <span><b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本</span>
-            <button class="filter-toggle-btn" id="permFilterBtn" onclick="togglePermFilter()">未取得のみ表示</button>
+            <span data-i18n="permSummaryLabel"><b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本</span>
+            <button class="filter-toggle-btn" id="permFilterBtn" onclick="togglePermFilter()" data-i18n="filterUnownedOnly">未取得のみ表示</button>
           </div>
         </div>
         <div id="realmList">
@@ -495,16 +504,16 @@
 
     <div id="lightChildrenMode" style="display:none;">
 
-      <p class="sec-label">地方ごとの光の子一覧</p>
+      <p class="sec-label" data-i18n="lightChildrenSectionLabel">地方ごとの光の子一覧</p>
       <div class="sticky-section">
         <div class="notice-card sticky-notice" id="sumLightChildrenWrap">
-          光の子1体につき光の翼1枚がもらえます（星のキャンドルは不要）。地方ごと・場所ごとにチェックしてください。<br>
+          <span data-i18n="lightChildrenHint">光の子1体につき光の翼1枚がもらえます（星のキャンドルは不要）。地方ごと・場所ごとにチェックしてください。</span><br>
           <div class="notice-head">
-            <span><b id="sumLightChildren">0 / 124</b>体 発見済み</span>
+            <span data-i18n="lightChildrenSummaryLabel"><b id="sumLightChildren">0 / 124</b>体 発見済み</span>
             <span style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()">未取得のみ表示</button>
-              <button class="filter-toggle-btn success" onclick="markAllLightChildren()">光の子を全エリア取得済みにする</button>
-              <button class="filter-toggle-btn danger" onclick="resetAllLightChildren()">光の子を全リセット</button>
+              <button class="filter-toggle-btn" id="lightChildrenFilterBtn" onclick="toggleLightChildrenFilter()" data-i18n="filterUnownedOnly">未取得のみ表示</button>
+              <button class="filter-toggle-btn success" onclick="markAllLightChildren()" data-i18n="lightChildrenMarkAllBtn">光の子を全エリア取得済みにする</button>
+              <button class="filter-toggle-btn danger" onclick="resetAllLightChildren()" data-i18n="lightChildrenResetAllBtn">光の子を全リセット</button>
             </span>
           </div>
         </div>
@@ -519,24 +528,24 @@
 </div><!-- /.app-layout -->
 
 <footer style="text-align:center; padding:24px 16px; color:var(--text-2); font-size:13px; border-top:1px solid var(--sep); margin-top:40px; line-height:1.6;">
-  このサイトはSky 星を紡ぐ子どもたちの非公式ファンサイトです。thatgamecompanyは一切関与していません。<br>
-  作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;">@Skyzztai</a>　／　<a href="https://odaibako.net/u/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;">リクエストフォーム</a><br>
+  <span data-i18n="footerDisclaimer">このサイトはSky 星を紡ぐ子どもたちの非公式ファンサイトです。thatgamecompanyは一切関与していません。</span><br>
+  <span data-i18n="footerCreditLabel">作成・ご意見:</span> <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;">@Skyzztai</a>　／　<a href="https://odaibako.net/u/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;" data-i18n="footerRequestForm">リクエストフォーム</a><br>
   <span style="color:var(--text-2); font-size:12px; margin-top:4px; display:inline-block;">
-    参考:
-    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E6%97%85%E3%81%99%E3%82%8B%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">旅する精霊 (Sky Wiki 日本語)</a>
+    <span data-i18n="footerReferenceLabel">参考:</span>
+    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E6%97%85%E3%81%99%E3%82%8B%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiTravelingJa">旅する精霊 (Sky Wiki 日本語)</a>
     ／
-    <a href="https://sky-children-of-the-light.fandom.com/wiki/Traveling_Spirit" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">Traveling Spirits (Sky Wiki 英語)</a>
+    <a href="https://sky-children-of-the-light.fandom.com/wiki/Traveling_Spirit" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiTravelingEn">Traveling Spirits (Sky Wiki 英語)</a>
     ／
-    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E9%80%9A%E5%B8%B8%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">通常精霊 (Sky Wiki 日本語)</a>
+    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E9%80%9A%E5%B8%B8%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiRegularJa">通常精霊 (Sky Wiki 日本語)</a>
     ／
-    <a href="https://sky-children-of-the-light.fandom.com/wiki/Regular_Spirit" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">Regular Spirits (Sky Wiki 英語)</a>
+    <a href="https://sky-children-of-the-light.fandom.com/wiki/Regular_Spirit" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiRegularEn">Regular Spirits (Sky Wiki 英語)</a>
     ／
-    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E5%85%89%E3%81%AE%E5%AD%90" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">光の子 (Sky Wiki 日本語)</a>
+    <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E5%85%89%E3%81%AE%E5%AD%90" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiChildrenJa">光の子 (Sky Wiki 日本語)</a>
     ／
-    <a href="https://sky-children-of-the-light.fandom.com/wiki/Children_of_Light" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">Children of Light (Sky Wiki 英語)</a>
+    <a href="https://sky-children-of-the-light.fandom.com/wiki/Children_of_Light" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiChildrenEn">Children of Light (Sky Wiki 英語)</a>
   </span><br>
   <span style="color:var(--text-2); font-size:12px; margin-top:4px; display:inline-block;">
-    <a href="https://taipak5000.github.io/tai-info/" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">⚙️ 設定・更新情報・クレジット・プライバシーポリシー</a>
+    <a href="https://taipak5000.github.io/tai-info/" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerInfoLink">⚙️ 設定・更新情報・クレジット・プライバシーポリシー</a>
   </span>
 </footer>
 
@@ -546,7 +555,7 @@
   <div class="confirm-box">
     <div class="confirm-message" id="confirmMessage"></div>
     <div class="confirm-actions">
-      <button type="button" class="confirm-btn cancel" onclick="closeConfirmModal()">キャンセル</button>
+      <button type="button" class="confirm-btn cancel" onclick="closeConfirmModal()" data-i18n="genericCancel">キャンセル</button>
       <button type="button" class="confirm-btn ok" id="confirmOkBtn">OK</button>
     </div>
   </div>
@@ -554,70 +563,70 @@
 
 <div class="pf-modal-overlay" id="pfModalOverlay" onclick="if(event.target===this) pfCloseModal()">
   <div class="pf-modal-card">
-    <h3>🗂️ プロフィール（保存枠）</h3>
+    <h3 data-i18n="pfModalTitle">🗂️ プロフィール（保存枠）</h3>
     <div id="pfModalBody"></div>
     <div class="pf-add-row">
-      <input type="text" class="pf-input" id="pfNewName" placeholder="例: サブ垢1" maxlength="30">
-      <button type="button" class="pf-add-btn" onclick="pfAddProfile()">追加</button>
+      <input type="text" class="pf-input" id="pfNewName" placeholder="例: サブ垢1" maxlength="30" data-i18n-placeholder="pfNewNamePlaceholder">
+      <button type="button" class="pf-add-btn" onclick="pfAddProfile()" data-i18n="pfAddBtn">追加</button>
     </div>
-    <div class="pf-hint">プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。</div>
+    <div class="pf-hint" data-i18n="pfSwitchHint">プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。</div>
     <div class="pf-currency-section">
       <div class="pf-currency-title" onclick="pfToggleCurrency()">
-        <span>💰 所持通貨</span>
+        <span data-i18n="currencySectionLabel">💰 所持通貨</span>
         <span class="pf-currency-toggle-label" id="pfCurrencyToggleLabel">閉じる ▲</span>
       </div>
       <div id="pfCurrencyBody"></div>
     </div>
-    <button type="button" class="pf-icon-btn" style="width:100%; margin-top:10px; padding:8px;" onclick="dmOpenModal()">💾 データのバックアップ・復元・削除</button>
-    <button type="button" class="pf-close-btn" onclick="pfCloseModal()">閉じる</button>
+    <button type="button" class="pf-icon-btn" style="width:100%; margin-top:10px; padding:8px;" onclick="dmOpenModal()" data-i18n="pfBackupOpenBtn">💾 データのバックアップ・復元・削除</button>
+    <button type="button" class="pf-close-btn" onclick="pfCloseModal()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
 <div class="pf-modal-overlay" id="dashModalOverlay" onclick="if(event.target===this) pfDashClose()">
   <div class="pf-modal-card">
-    <h3>🗓️ 今日・今週・今月</h3>
-    <div id="dashBody"><div class="pf-hint">読み込み中…</div></div>
-    <button type="button" class="pf-close-btn" onclick="pfDashClose()">閉じる</button>
+    <h3 data-i18n="dashModalTitle">🗓️ 今日・今週・今月</h3>
+    <div id="dashBody"><div class="pf-hint" data-i18n="dashLoading">読み込み中…</div></div>
+    <button type="button" class="pf-close-btn" onclick="pfDashClose()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
 <!-- ▸ データのバックアップ・復元・削除モーダル -->
 <div class="pf-modal-overlay" id="dmModalOverlay" onclick="if(event.target===this) dmCloseModal()">
   <div class="pf-modal-card">
-    <h3>💾 データのバックアップ・復元・削除</h3>
-    <div class="pf-hint" style="margin:0 0 14px;">このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。</div>
-    <button type="button" class="pf-add-btn" style="width:100%; margin-bottom:8px;" onclick="dmExport()">⬇️ データをエクスポート（ファイルに保存）</button>
+    <h3 data-i18n="backupModalTitle">💾 データのバックアップ・復元・削除</h3>
+    <div class="pf-hint" style="margin:0 0 14px;" data-i18n="backupHint">このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。</div>
+    <button type="button" class="pf-add-btn" style="width:100%; margin-bottom:8px;" onclick="dmExport()" data-i18n="backupExportBtn">⬇️ データをエクスポート（ファイルに保存）</button>
     <input type="file" id="dmImportFile" accept="application/json" style="display:none" onchange="dmImportFileSelected(event)">
-    <button type="button" class="pf-icon-btn" style="width:100%; margin-bottom:8px; padding:8px;" onclick="document.getElementById('dmImportFile').click()">⬆️ ファイルからインポート</button>
+    <button type="button" class="pf-icon-btn" style="width:100%; margin-bottom:8px; padding:8px;" onclick="document.getElementById('dmImportFile').click()" data-i18n="backupImportBtn">⬆️ ファイルからインポート</button>
     <div id="dmImportConfirmArea"></div>
     <div id="dmWipeArea">
-      <button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()">🗑️ 全データを削除</button>
+      <button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()" data-i18n="backupWipeBtn">🗑️ 全データを削除</button>
     </div>
     <div id="dmStatus" class="pf-hint"></div>
-    <button type="button" class="pf-close-btn" onclick="dmCloseModal()">閉じる</button>
+    <button type="button" class="pf-close-btn" onclick="dmCloseModal()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
 <!-- ▸ ホーム画面アイコンカスタマイズモーダル -->
 <div class="pf-modal-overlay" id="iconCustomModal" onclick="if(event.target===this) pfIconCloseModal()">
   <div class="pf-modal-card">
-    <h3>🎨 ホーム画面アイコンをカスタマイズ</h3>
+    <h3 data-i18n="iconModalTitle">🎨 ホーム画面アイコンをカスタマイズ</h3>
 
-    <div class="pf-hint" style="margin-top:0;">
+    <div class="pf-hint" style="margin-top:0;" data-i18n="iconInstructions">
       スマホの「ホーム画面に追加」をしたときのアイコンを、好きな絵文字や画像に変更できます。<br>
       <b>追加する前に</b>設定してください。追加した後に変更しても、既に追加済みのアイコンは自動更新されません（変更したい場合は一度削除して追加し直してください）。
     </div>
 
     <div style="display:flex; gap:8px; margin:14px 0;">
-      <button type="button" class="pf-icon-btn" id="iconModeEmojiBtn" onclick="pfIconSetMode('emoji')" style="flex:1; padding:8px;">😀 絵文字</button>
-      <button type="button" class="pf-icon-btn" id="iconModeImageBtn" onclick="pfIconSetMode('image')" style="flex:1; padding:8px;">🖼️ 画像</button>
+      <button type="button" class="pf-icon-btn" id="iconModeEmojiBtn" onclick="pfIconSetMode('emoji')" style="flex:1; padding:8px;" data-i18n="iconEmojiModeBtn">😀 絵文字</button>
+      <button type="button" class="pf-icon-btn" id="iconModeImageBtn" onclick="pfIconSetMode('image')" style="flex:1; padding:8px;" data-i18n="iconImageModeBtn">🖼️ 画像</button>
     </div>
 
     <div id="iconEmojiPanel">
-      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;">絵文字</p>
+      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;" data-i18n="iconEmojiLabel">絵文字</p>
       <input type="text" id="iconEmojiInput" maxlength="8" value="🪽" oninput="pfIconUpdatePreview()"
         style="font-size:28px; text-align:center; width:100%; padding:10px; border-radius:var(--r-sm); border:1px solid var(--sep); background:var(--bg); color:var(--text); box-sizing:border-box;">
-      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:10px 0 6px;">背景色</p>
+      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:10px 0 6px;" data-i18n="iconBgColorLabel">背景色</p>
       <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
         <button type="button" onclick="pfIconPickSwatch('#007AFF')" style="width:32px; height:32px; border-radius:50%; background:#007AFF; border:2px solid transparent;"></button>
         <button type="button" onclick="pfIconPickSwatch('#34C759')" style="width:32px; height:32px; border-radius:50%; background:#34C759; border:2px solid transparent;"></button>
@@ -632,22 +641,22 @@
         <button type="button" onclick="pfIconPickSwatch('#32ADE6')" style="width:32px; height:32px; border-radius:50%; background:#32ADE6; border:2px solid transparent;"></button>
         <button type="button" onclick="pfIconPickSwatch('#48484A')" style="width:32px; height:32px; border-radius:50%; background:#48484A; border:2px solid transparent;"></button>
       </div>
-      <p style="font-size:11.5px; color:var(--text-2); margin:0 0 6px;">🎨 タップして好きな色を自由に選ぶこともできます</p>
+      <p style="font-size:11.5px; color:var(--text-2); margin:0 0 6px;" data-i18n="iconFreeColorHint">🎨 タップして好きな色を自由に選ぶこともできます</p>
       <input type="color" id="iconBgColorInput" value="#007AFF" oninput="pfIconUpdatePreview()" style="width:100%; height:40px; border:none; border-radius:var(--r-sm); background:none;">
     </div>
 
     <div id="iconImagePanel" style="display:none;">
-      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;">画像をアップロード</p>
+      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;" data-i18n="iconUploadImageLabel">画像をアップロード</p>
       <input type="file" id="iconImageInput" accept="image/*" onchange="pfIconHandleFile(event)">
     </div>
 
     <div style="display:flex; flex-direction:column; align-items:center; margin:18px 0;">
-      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;">プレビュー</p>
+      <p style="font-size:12px; font-weight:700; color:var(--text-2); margin:0 0 6px;" data-i18n="iconPreviewLabel">プレビュー</p>
       <canvas id="iconPreviewCanvas" width="96" height="96" style="border-radius:22px; box-shadow:0 2px 8px rgba(0,0,0,0.15);"></canvas>
     </div>
 
-    <button type="button" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px;" onclick="pfIconSave()">保存して適用</button>
-    <button type="button" class="pf-close-btn" onclick="pfIconReset()">デフォルトに戻す</button>
+    <button type="button" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px;" onclick="pfIconSave()" data-i18n="iconSaveBtn">保存して適用</button>
+    <button type="button" class="pf-close-btn" onclick="pfIconReset()" data-i18n="iconResetBtn">デフォルトに戻す</button>
     <div id="iconSaveStatus" style="text-align:center; font-size:12px; color:var(--text-2); margin-top:10px;"></div>
   </div>
 </div>
@@ -655,16 +664,16 @@
 <!-- ▸ 共有画像カスタマイズモーダル -->
 <div class="pf-modal-overlay" id="customizeModal" onclick="if(event.target===this) closeCustomizeModal()">
   <div class="pf-modal-card">
-    <h3>🎨 画像をカスタマイズ</h3>
+    <h3 data-i18n="customizeModalTitle">🎨 画像をカスタマイズ</h3>
 
-    <div class="customize-section-label">背景テーマ</div>
+    <div class="customize-section-label" data-i18n="customizeThemeLabel">背景テーマ</div>
     <div class="theme-swatch-row" id="themeSwatchRow"><!-- JS --></div>
 
-    <div class="customize-section-label">コメント（任意）</div>
-    <textarea id="customizeComment" class="customize-comment-input" maxlength="120" placeholder="例）プレイヤーネーム：〇〇（未入力の場合は通常の文言になります）"></textarea>
+    <div class="customize-section-label" data-i18n="customizeCommentLabel">コメント（任意）</div>
+    <textarea id="customizeComment" class="customize-comment-input" maxlength="120" placeholder="例）プレイヤーネーム：〇〇（未入力の場合は通常の文言になります）" data-i18n-placeholder="customizeCommentPlaceholder"></textarea>
 
-    <button type="button" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; margin-top:16px;" onclick="shareOverallOnTwitter(true)">📤🖼️ この設定でXへ画像を共有</button>
-    <button type="button" class="pf-close-btn" onclick="closeCustomizeModal()">閉じる</button>
+    <button type="button" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; margin-top:16px;" onclick="shareOverallOnTwitter(true)" data-i18n="customizeShareBtn">📤🖼️ この設定でXへ画像を共有</button>
+    <button type="button" class="pf-close-btn" onclick="closeCustomizeModal()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
@@ -675,106 +684,750 @@
 
     <p class="pf-hint" style="margin-top:0;" id="previewHintText">画像を長押し（PCの場合は右クリック）して「画像を保存」を選んでください</p>
 
-    <img id="previewImg" class="preview-img" src="" alt="保存用の画像" />
+    <img id="previewImg" class="preview-img" src="" alt="保存用の画像" data-i18n-alt="previewImgAlt" />
 
-    <a id="previewDownloadLink" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; display:block; text-align:center; text-decoration:none;" href="" download="">⬇️ ダウンロード</a>
+    <a id="previewDownloadLink" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; display:block; text-align:center; text-decoration:none;" href="" download="" data-i18n="previewDownloadBtn">⬇️ ダウンロード</a>
     <div id="previewTwitterRow" style="display:none; margin-top:8px;">
-      <a id="previewTwitterLink" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; display:block; text-align:center; text-decoration:none; background:#000;" href="" target="_blank" rel="noopener noreferrer">📤 Xの投稿画面を開く</a>
+      <a id="previewTwitterLink" class="pf-add-btn" style="width:100%; box-sizing:border-box; padding:10px; display:block; text-align:center; text-decoration:none; background:#000;" href="" target="_blank" rel="noopener noreferrer" data-i18n="previewTwitterBtn">📤 Xの投稿画面を開く</a>
     </div>
-    <button type="button" class="pf-close-btn" onclick="closeImagePreviewModal()">閉じる</button>
+    <button type="button" class="pf-close-btn" onclick="closeImagePreviewModal()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
 <script>
 /* ================================================================
+   🌐 UI言語切替（日本語 / English）
+   'sky_app_lang' は taipak5000.github.io 系ツール共通のキー（sky_app_themeと同様、
+   プロフィールに依存しない端末単位の設定のため nsKey() は使わない）。
+   ================================================================ */
+const LANG_KEY = 'sky_app_lang';
+let LANG = localStorage.getItem(LANG_KEY) || 'ja';
+
+// L(): { ja, en } 形式のオブジェクトから現在の表示言語の文字列を返す
+function L(obj) {
+  if (!obj) return '';
+  if (LANG === 'en' && obj.en) return obj.en;
+  return obj.ja;
+}
+
+const I18N = {
+  ja: {
+    navTitle: '🪽 羽トラッカー',
+    sidebarHamburger: '☰ ツール',
+    sidebarRelatedTools: '🔗 関連ツール',
+    sidebarClose: '×',
+    toolItem: '📁 アイテム所持管理',
+    toolEmote: '🎭 エモート所持率管理',
+    toolShare: '📍 創作物管理ツール',
+    toolNomacan: '🕯️ ノマキャン計算機',
+    toolStarCandle: '🕯️ 星のキャンドル計算機',
+    toolCompanion: '✨ 精霊同行ツール',
+    toolWings: '🪽 羽トラッカー',
+    toolDataTransfer: '🔄 データ引継ぎ',
+    sidebarHomeIcon: '📱 ホーム画面アイコン',
+    sidebarCustomizeIcon: '🎨 アイコンを<br>カスタマイズ',
+    langToggleBtn: 'EN',
+
+    pageTitle: '羽トラッカー - Sky所持率管理',
+
+    noticeMain: '精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている<b>光の子</b>を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。',
+    summaryTitle: '光の翼の合計',
+    summaryGotLabel: 'もらった光の翼（合計）',
+    summaryGotSubTemplate: '季節精霊 {season} + 恒常精霊 {perm} + 光の子 {light} + 転生 {rebirth}',
+    summaryCandlesLabel: '翼に使った星のキャンドル',
+    summaryCandlesSub: '光の翼1枚 = 星のキャンドル2本（季節精霊の場合）',
+    capeCardTitle: '✦ ケープレベル',
+    shareTwitterBtn: '📤🖼️ Xで画像を共有',
+    shareCustomizeBtn: '🎨 カスタマイズして共有',
+    tabWings: '🪽 精霊の羽',
+    tabLightChildren: '👶 光の子',
+    seasonSectionLabel: '季節ごとの精霊一覧',
+    seasonSummaryLabel: '季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分',
+    filterUnownedOnly: '未取得のみ表示',
+    seasonReturnEntityNote: '砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。',
+    permSectionLabel: '恒常精霊のツリー（地方の精霊）',
+    permHint: '各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。',
+    permSummaryLabel: '<b id="sumFeathersPerm">0 / 49</b>枚 開放済み ／ 使った星のキャンドル <b id="sumPermCandles">0</b>本',
+    lightChildrenSectionLabel: '地方ごとの光の子一覧',
+    lightChildrenHint: '光の子1体につき光の翼1枚がもらえます（星のキャンドルは不要）。地方ごと・場所ごとにチェックしてください。',
+    lightChildrenSummaryLabel: '<b id="sumLightChildren">0 / 124</b>体 発見済み',
+    lightChildrenMarkAllBtn: '光の子を全エリア取得済みにする',
+    lightChildrenResetAllBtn: '光の子を全リセット',
+    areaSelectAllBtn: '全選択',
+    areaResetBtn: 'リセット',
+    lightChildrenPreparing: 'データを準備中です。しばらくお待ちください。',
+    lightChildrenNoMatch: '条件に一致する光の子がいません。',
+
+    genericCancel: 'キャンセル',
+    pfCloseBtn: '閉じる',
+    pfModalTitle: '🗂️ プロフィール（保存枠）',
+    pfNewNamePlaceholder: '例: サブ垢1',
+    pfAddBtn: '追加',
+    pfSwitchHint: 'プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。',
+    pfBackupOpenBtn: '💾 データのバックアップ・復元・削除',
+    pfBarActiveSuffix: 'に切替中（タップで切替）',
+    pfDashBtnTitle: '今日・今週・今月ダッシュボード',
+    pfAccountColorTitle: 'アカウントカラー',
+    pfResetColorTitle: 'カラーを初期値に戻す',
+    pfRenameTitle: '名前を変更',
+    pfRenameSaveBtn: '保存',
+    pfCancelBtn: '取消',
+    pfDeleteConfirmTemplate: '「{name}」を削除しますか？（一覧からの削除のみで、保存済みデータはブラウザ内に残ります）',
+    pfDeleteBtn: '削除',
+    pfDefaultName: 'メイン',
+
+    currencySectionLabel: '💰 所持通貨',
+    currencyToggleOpen: '開く ▼',
+    currencyToggleClose: '閉じる ▲',
+    currencyCandle: 'キャンドル',
+    currencyHeart: 'ハート',
+    currencyAscendedCandle: '星のキャンドル',
+    currencySeasonCandle: 'シーズンキャンドル',
+    currencyGiftPass: 'ギフトパス',
+
+    dashModalTitle: '🗓️ 今日・今週・今月',
+    dashLoading: '読み込み中…',
+    dashLoadFailed: '読み込みに失敗しました',
+    dashSectionDaily: 'デイリー',
+    dashSectionToday: '今日',
+    dashSectionWeek: '今週',
+    dashSectionMonth: '今月',
+    dashNextIn: '次まで',
+    dashNextEventIn: '次回まで',
+    dashNoShardToday: '本日は闇の破片の出現はありません',
+    dashRedShard: '赤闇',
+    dashBlackShard: '黒闇',
+    dashShardErupts: 'が出現',
+    dashShardLineTemplate: '{color}（<b>{realm}・{location}</b>）が出現：',
+    dashGrandCandle: '大キャンドル',
+    dashChangesIn: '次の変更まで',
+    dashQuestSeasonCandle: 'クエスト・シーズンキャンドル',
+    dashGeyser: 'ウニ焼き',
+    dashBreadBaking: 'パン焼き',
+    dashTurtleDarkness: '亀闇',
+    dashCurrentlyActive: 'が開催中',
+    dashEndsIn: '終了まで',
+    dashSeasonEndsInSuffix: '終了まで',
+    dashRevisitSpirit: '再訪精霊',
+    dashRevisitHereNow: 'が来訪中',
+    dashRevisitReturnsIn: 'の次回来訪まで',
+    dashNoCurrentSeasonEvent: '現在開催中の季節・イベントはありません',
+    dashEyeOfEden: '原罪',
+    dashWeeklyResetIn: '週間リセットまで',
+    dashEverySundayPacific: '毎週日曜0時・太平洋時間',
+    dashNextUpdate: '次回アップデート予定',
+    dashSeasonLoadFailed: 'シーズン情報が取得できませんでした',
+    dashDayUnit: '日',
+    labelSep: '：',
+
+    realmPrairie: '草原',
+    realmForest: '雨林',
+    realmValley: '峡谷',
+    realmWasteland: '捨てられた地',
+    realmVault: '書庫',
+
+    backupModalTitle: '💾 データのバックアップ・復元・削除',
+    backupHint: 'このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。',
+    backupExportBtn: '⬇️ データをエクスポート（ファイルに保存）',
+    backupImportBtn: '⬆️ ファイルからインポート',
+    backupWipeBtn: '🗑️ 全データを削除',
+    backupExportSuccessTemplate: '書き出しました（{n}件のキー）。',
+    backupImportFileReadError: 'ファイルの読み込みに失敗しました（JSON形式ではありません）。',
+    backupImportFileInvalid: 'このツールで書き出したファイルではないようです。',
+    backupImportConfirmTemplate: '{n}件のキーをインポートします。現在保存されているデータは上書きされます（インポートするファイルに無いキーはそのまま残ります）。よろしいですか？',
+    backupImportExecuteBtn: 'インポート実行',
+    backupImportSuccess: 'インポートしました。ページを再読み込みします…',
+    backupWipeConfirmText: 'すべてのプロフィール・所持アイテム・お気に入り・精霊ツリーの進捗など、このブラウザに保存されている全データを削除します。この操作は取り消せません。先にエクスポートしておくことをおすすめします。本当に削除しますか？',
+    backupWipeExecuteBtn: '完全に削除する',
+    backupWipeSuccess: '削除しました。ページを再読み込みします…',
+
+    iconModalTitle: '🎨 ホーム画面アイコンをカスタマイズ',
+    iconInstructions: 'スマホの「ホーム画面に追加」をしたときのアイコンを、好きな絵文字や画像に変更できます。<br><b>追加する前に</b>設定してください。追加した後に変更しても、既に追加済みのアイコンは自動更新されません（変更したい場合は一度削除して追加し直してください）。',
+    iconEmojiModeBtn: '😀 絵文字',
+    iconImageModeBtn: '🖼️ 画像',
+    iconEmojiLabel: '絵文字',
+    iconBgColorLabel: '背景色',
+    iconFreeColorHint: '🎨 タップして好きな色を自由に選ぶこともできます',
+    iconUploadImageLabel: '画像をアップロード',
+    iconPreviewLabel: 'プレビュー',
+    iconResetBtn: 'デフォルトに戻す',
+    iconSaveBtn: '保存して適用',
+    iconSaveStatusSelectImage: '画像を選択してください',
+    iconSaveStatusFailed: '保存に失敗しました(容量オーバーの可能性があります)',
+    iconSaveStatusSuccess: '✅ 保存しました。これでホーム画面に追加すると反映されます',
+    iconSaveStatusReset: 'デフォルトのアイコンに戻しました',
+
+    footerDisclaimer: 'このサイトはSky 星を紡ぐ子どもたちの非公式ファンサイトです。thatgamecompanyは一切関与していません。',
+    footerCreditLabel: '作成・ご意見:',
+    footerRequestForm: 'リクエストフォーム',
+    footerReferenceLabel: '参考:',
+    footerWikiTravelingJa: '旅する精霊 (Sky Wiki 日本語)',
+    footerWikiTravelingEn: 'Traveling Spirits (Sky Wiki 英語)',
+    footerWikiRegularJa: '通常精霊 (Sky Wiki 日本語)',
+    footerWikiRegularEn: 'Regular Spirits (Sky Wiki 英語)',
+    footerWikiChildrenJa: '光の子 (Sky Wiki 日本語)',
+    footerWikiChildrenEn: 'Children of Light (Sky Wiki 英語)',
+    footerInfoLink: '⚙️ 設定・更新情報・クレジット・プライバシーポリシー',
+
+    customizeModalTitle: '🎨 画像をカスタマイズ',
+    customizeThemeLabel: '背景テーマ',
+    customizeCommentLabel: 'コメント（任意）',
+    customizeCommentPlaceholder: '例）プレイヤーネーム：〇〇（未入力の場合は通常の文言になります）',
+    customizeShareBtn: '📤🖼️ この設定でXへ画像を共有',
+
+    previewModalTitleSave: '🖼️ 画像を保存',
+    previewModalTitleSaveShare: '🖼️ 画像を保存してXへ投稿',
+    previewHintSave: '画像を長押し（PCの場合は右クリック）して「画像を保存」を選んでください',
+    previewHintSaveShare: '① 下の「ダウンロード」で画像を保存 → ② 「Xの投稿画面を開く」を押して、保存した画像を添付して投稿してください',
+    previewDownloadBtn: '⬇️ ダウンロード',
+    previewTwitterBtn: '📤 Xの投稿画面を開く',
+    previewImgAlt: '保存用の画像',
+
+    toastSaved: '保存しました',
+    toastAreaSelected: 'エリアをまとめて選択しました',
+    toastAreaReset: 'エリアをリセットしました',
+    toastResetAllLightChildren: '光の子をすべてリセットしました',
+    toastMarkAllLightChildren: '光の子を全エリア取得済みにしました',
+    confirmResetAllLightChildren: '光の子のチェックをすべてリセットします。よろしいですか？',
+    confirmMarkAllLightChildren: '光の子を全エリア一気に取得済みにします。よろしいですか？',
+
+    imageGenerating: '画像を生成中…',
+    imageSavedToast: '画像を保存しました！',
+    imageSharedToast: '共有しました！',
+    imageSaveFailed: '画像の保存に失敗しました',
+
+    seasonBadgeTemplate: '{got} / {total} 体',
+    permBadgeTemplate: '{got} / {total} 枚',
+    lightChildrenBadgeTemplate: '{got} / {total} 体',
+    sheetCountTemplate: '{n}枚',
+    candleCountTemplate: '{n}本',
+    tier1Template: '（Tier1・星のキャンドル{n}本）',
+    tier2Template: '（Tier2・星のキャンドル{n}本）',
+    capeSummaryMaxTemplate: '現在 光の翼 {total}枚 — 最大ケープレベル {max} に到達済み！',
+    capeSummaryTemplate: '現在 光の翼 {total}枚（レベル{next}まであと {remain}枚）',
+
+    exportCardBrand: '🪽 羽トラッカー',
+    exportCardHeroValueTemplate: '{n}枚',
+    exportCardHeroLabel: '光の翼 合計',
+    exportCardNumsTemplate: '季節精霊 {season} ・ 恒常精霊 {perm}',
+    exportCardSubTemplate: 'ケープレベル {level}',
+    exportCardDateTemplate: '{y}年{m}月{d}日作成',
+    tweetTextTemplate: '光の翼を{n}枚集めました！（ケープレベル{level}）\nあなたは何枚集めてる？✨\n\n{url}\n{hashtag}',
+
+    themeNameBlue: 'ブルー',
+    themeNameOrange: 'オレンジ',
+    themeNameGreen: 'グリーン',
+    themeNamePurple: 'パープル',
+    themeNamePink: 'ピンク',
+    themeNameDark: 'ダーク',
+  },
+  en: {
+    navTitle: '🪽 Wing Tracker',
+    sidebarHamburger: '☰ Tools',
+    sidebarRelatedTools: '🔗 Related Tools',
+    sidebarClose: '×',
+    toolItem: '📁 Item Collection',
+    toolEmote: '🎭 Emote Collection',
+    toolShare: '📍 Creation Manager',
+    toolNomacan: '🕯️ Nomacan Calculator',
+    toolStarCandle: '🕯️ Star Candle Calculator',
+    toolCompanion: '✨ Spirit Companion Tool',
+    toolWings: '🪽 Wing Tracker',
+    toolDataTransfer: '🔄 Data Transfer',
+    sidebarHomeIcon: '📱 Home Screen Icon',
+    sidebarCustomizeIcon: '🎨 Customize Icon',
+    langToggleBtn: '日本語',
+
+    pageTitle: 'Wing Tracker - Sky Collection Tracker',
+
+    noticeMain: 'Track the <b>Winged Light</b> you receive the first time a <b>Revisit</b> Spirit returns (costs 2 Star Candles), checked off by season and spirit. Finding a hidden <b>Child of Light</b> in a realm also grants 1 Winged Light each.<br>Also, reincarnating at <b>Eye of Eden</b> adds 1 more Winged Light on top of what you\'ve given to Spirits, so the <b>Cape Level</b> calculation below includes this +1.',
+    summaryTitle: 'Total Winged Light',
+    summaryGotLabel: 'Winged Light received (total)',
+    summaryGotSubTemplate: 'Seasonal {season} + Regular {perm} + Children of Light {light} + Rebirth {rebirth}',
+    summaryCandlesLabel: 'Star Candles spent on wings',
+    summaryCandlesSub: '1 Winged Light = 2 Star Candles (for Seasonal Spirits)',
+    capeCardTitle: '✦ Cape Level',
+    shareTwitterBtn: '📤🖼️ Share image on X',
+    shareCustomizeBtn: '🎨 Customize & share',
+    tabWings: '🪽 Spirit Wings',
+    tabLightChildren: '👶 Children of Light',
+    seasonSectionLabel: 'Seasonal Spirits by Season',
+    seasonSummaryLabel: 'Seasonal Spirits · Revisit Winged Light: <b id="sumFeathersSeason">0 / 0</b>',
+    filterUnownedOnly: 'Show unowned only',
+    seasonReturnEntityNote: 'For the Season of Shattering, Season of Revival, Season of Moomin, and Season of Nesting, the Revisit target is a "seasonal entity" (like a mannequin or display) rather than a normal Seasonal Spirit. Please let us know if any names are wrong or missing.',
+    permSectionLabel: 'Regular Spirit Trees (Realm Spirits)',
+    permHint: 'Each of the 37 Regular Spirits across the realms has one Winged Light on its friendship tree (Tier 1); 12 of them also have an additional Tier 2 Winged Light. The number of Star Candles needed to unlock each varies by spirit.',
+    permSummaryLabel: '<b id="sumFeathersPerm">0 / 49</b> unlocked / Star Candles used: <b id="sumPermCandles">0</b>',
+    lightChildrenSectionLabel: 'Children of Light by Realm',
+    lightChildrenHint: 'Each Child of Light grants 1 Winged Light (no Star Candles needed). Check them off by realm and location.',
+    lightChildrenSummaryLabel: '<b id="sumLightChildren">0 / 124</b> found',
+    lightChildrenMarkAllBtn: 'Mark all areas found',
+    lightChildrenResetAllBtn: 'Reset all Children of Light',
+    areaSelectAllBtn: 'Select all',
+    areaResetBtn: 'Reset',
+    lightChildrenPreparing: 'Data is being prepared. Please check back soon.',
+    lightChildrenNoMatch: 'No Children of Light match the current filter.',
+
+    genericCancel: 'Cancel',
+    pfCloseBtn: 'Close',
+    pfModalTitle: '🗂️ Profiles',
+    pfNewNamePlaceholder: 'e.g. Sub Account 1',
+    pfAddBtn: 'Add',
+    pfSwitchHint: 'Switching profiles swaps your Spirit Wings and Children of Light records to the selected profile\'s data (everything is stored locally in this browser).',
+    pfBackupOpenBtn: 'Backup / restore / erase data',
+    pfBarActiveSuffix: 'active (tap to switch)',
+    pfDashBtnTitle: 'Today / this week / this month',
+    pfAccountColorTitle: 'Account color',
+    pfResetColorTitle: 'Reset color to default',
+    pfRenameTitle: 'Rename',
+    pfRenameSaveBtn: 'Save',
+    pfCancelBtn: 'Cancel',
+    pfDeleteConfirmTemplate: 'Delete "{name}"? (This only removes it from the list — its saved data stays in this browser.)',
+    pfDeleteBtn: 'Delete',
+    pfDefaultName: 'Main',
+
+    currencySectionLabel: '💰 Owned Currency',
+    currencyToggleOpen: 'Open ▼',
+    currencyToggleClose: 'Close ▲',
+    currencyCandle: 'Candles',
+    currencyHeart: 'Hearts',
+    currencyAscendedCandle: 'Star Candles',
+    currencySeasonCandle: 'Season Candles',
+    currencyGiftPass: 'Gift Pass',
+
+    dashModalTitle: '🗓️ Today / This Week / This Month',
+    dashLoading: 'Loading…',
+    dashLoadFailed: 'Failed to load',
+    dashSectionDaily: 'Daily',
+    dashSectionToday: 'Today',
+    dashSectionWeek: 'This Week',
+    dashSectionMonth: 'This Month',
+    dashNextIn: 'Next in',
+    dashNextEventIn: 'Next in',
+    dashNoShardToday: 'No shard eruptions today',
+    dashRedShard: 'Red Shard',
+    dashBlackShard: 'Black Shard',
+    dashShardErupts: ' erupts',
+    dashShardLineTemplate: '{color} (<b>{realm} · {location}</b>) erupts: ',
+    dashGrandCandle: 'Grand Candle',
+    dashChangesIn: 'Changes in',
+    dashQuestSeasonCandle: 'Quest & Season Candle',
+    dashGeyser: 'Geyser',
+    dashBreadBaking: 'Bread Baking',
+    dashTurtleDarkness: 'Turtle Darkness',
+    dashCurrentlyActive: ' is currently active',
+    dashEndsIn: 'Ends in',
+    dashSeasonEndsInSuffix: ' ends in',
+    dashRevisitSpirit: 'Revisit Spirit',
+    dashRevisitHereNow: ' is here now',
+    dashRevisitReturnsIn: ' returns in',
+    dashNoCurrentSeasonEvent: 'No current seasons or events',
+    dashEyeOfEden: 'Eye of Eden',
+    dashWeeklyResetIn: 'Weekly reset in',
+    dashEverySundayPacific: 'Every Sunday 00:00 Pacific Time',
+    dashNextUpdate: 'Next Update',
+    dashSeasonLoadFailed: 'Could not load season info',
+    dashDayUnit: 'd',
+    labelSep: ': ',
+
+    realmPrairie: 'Prairie',
+    realmForest: 'Forest',
+    realmValley: 'Valley',
+    realmWasteland: 'Wasteland',
+    realmVault: 'Vault',
+
+    backupModalTitle: '💾 Backup / Restore / Erase Data',
+    backupHint: 'Back up, restore, or erase all locally-stored data for the taipak5000.github.io tool suite (item, wings, companion, spirit-catalog, etc.) at once. This covers all profiles together.',
+    backupExportBtn: '⬇️ Export data (save to file)',
+    backupImportBtn: '⬆️ Import from file',
+    backupWipeBtn: '🗑️ Erase all data',
+    backupExportSuccessTemplate: 'Exported ({n} keys).',
+    backupImportFileReadError: 'Failed to read file (not valid JSON).',
+    backupImportFileInvalid: 'This doesn\'t look like a file exported from this tool.',
+    backupImportConfirmTemplate: 'Import {n} keys? Currently stored data will be overwritten for matching keys (keys not present in the file are left as-is). Continue?',
+    backupImportExecuteBtn: 'Import',
+    backupImportSuccess: 'Imported. Reloading…',
+    backupWipeConfirmText: 'This will erase ALL locally stored data (profiles, owned items, favorites, spirit tree progress, etc.) across the whole tool suite. This cannot be undone. Exporting a backup first is recommended. Really erase everything?',
+    backupWipeExecuteBtn: 'Erase everything',
+    backupWipeSuccess: 'Erased. Reloading…',
+
+    iconModalTitle: '🎨 Customize Home Screen Icon',
+    iconInstructions: 'You can change the icon used when adding this site to your phone\'s home screen. Set this up before adding it — changing it afterward won\'t update an icon that\'s already been added (remove and re-add it if you want to change it later).',
+    iconEmojiModeBtn: '😀 Emoji',
+    iconImageModeBtn: '🖼️ Image',
+    iconEmojiLabel: 'Emoji',
+    iconBgColorLabel: 'Background Color',
+    iconFreeColorHint: '🎨 Or tap below to pick any color freely',
+    iconUploadImageLabel: 'Upload Image',
+    iconPreviewLabel: 'Preview',
+    iconResetBtn: 'Reset to Default',
+    iconSaveBtn: 'Save & Apply',
+    iconSaveStatusSelectImage: 'Please select an image',
+    iconSaveStatusFailed: 'Failed to save (storage may be full)',
+    iconSaveStatusSuccess: '✅ Saved. This will apply the next time you add this to your home screen',
+    iconSaveStatusReset: 'Reset to the default icon',
+
+    footerDisclaimer: 'This is an unofficial fan site for Sky: Children of the Light. thatgamecompany is not involved in any way.',
+    footerCreditLabel: 'Created by / feedback:',
+    footerRequestForm: 'Request form',
+    footerReferenceLabel: 'References:',
+    footerWikiTravelingJa: 'Traveling Spirits (Sky Wiki Japanese)',
+    footerWikiTravelingEn: 'Traveling Spirits (Sky Wiki English)',
+    footerWikiRegularJa: 'Regular Spirits (Sky Wiki Japanese)',
+    footerWikiRegularEn: 'Regular Spirits (Sky Wiki English)',
+    footerWikiChildrenJa: 'Children of Light (Sky Wiki Japanese)',
+    footerWikiChildrenEn: 'Children of Light (Sky Wiki English)',
+    footerInfoLink: '⚙️ Settings / What\'s New / Credits / Privacy Policy',
+
+    customizeModalTitle: '🎨 Customize Image',
+    customizeThemeLabel: 'Background Theme',
+    customizeCommentLabel: 'Comment (optional)',
+    customizeCommentPlaceholder: 'e.g. Player name: XX (leave blank to use the default text)',
+    customizeShareBtn: '📤🖼️ Share image on X with these settings',
+
+    previewModalTitleSave: '🖼️ Save Image',
+    previewModalTitleSaveShare: '🖼️ Save Image & Post to X',
+    previewHintSave: 'Press and hold the image (or right-click on PC) and choose "Save Image"',
+    previewHintSaveShare: '① Save the image with "Download" below → ② Tap "Open X post screen" and attach the saved image to your post',
+    previewDownloadBtn: '⬇️ Download',
+    previewTwitterBtn: '📤 Open X post screen',
+    previewImgAlt: 'Image to save',
+
+    toastSaved: 'Saved',
+    toastAreaSelected: 'Selected all in this area',
+    toastAreaReset: 'Reset this area',
+    toastResetAllLightChildren: 'Reset all Children of Light',
+    toastMarkAllLightChildren: 'Marked all Children of Light as found',
+    confirmResetAllLightChildren: 'This will reset all Children of Light checkmarks. Continue?',
+    confirmMarkAllLightChildren: 'This will mark all Children of Light as found at once. Continue?',
+
+    imageGenerating: 'Generating image…',
+    imageSavedToast: 'Image saved!',
+    imageSharedToast: 'Shared!',
+    imageSaveFailed: 'Failed to save the image',
+
+    seasonBadgeTemplate: '{got} / {total}',
+    permBadgeTemplate: '{got} / {total}',
+    lightChildrenBadgeTemplate: '{got} / {total}',
+    sheetCountTemplate: '{n}',
+    candleCountTemplate: '{n}',
+    tier1Template: ' (Tier 1 · {n} Star Candle{unit})',
+    tier2Template: ' (Tier 2 · {n} Star Candle{unit})',
+    capeSummaryMaxTemplate: 'Currently {total} Winged Light — reached the max Cape Level {max}!',
+    capeSummaryTemplate: 'Currently {total} Winged Light (need {remain} more for Level {next})',
+
+    exportCardBrand: '🪽 Wing Tracker',
+    exportCardHeroValueTemplate: '{n}',
+    exportCardHeroLabel: 'Total Winged Light',
+    exportCardNumsTemplate: 'Seasonal {season} · Regular {perm}',
+    exportCardSubTemplate: 'Cape Level {level}',
+    exportCardDateTemplate: 'Created {m}/{d}/{y}',
+    tweetTextTemplate: 'I\'ve collected {n} Winged Light! (Cape Level {level})\nHow many have you collected? ✨\n\n{url}\n{hashtag}',
+
+    themeNameBlue: 'Blue',
+    themeNameOrange: 'Orange',
+    themeNameGreen: 'Green',
+    themeNamePurple: 'Purple',
+    themeNamePink: 'Pink',
+    themeNameDark: 'Dark',
+  }
+};
+
+function t(key, vars) {
+  let s = (I18N[LANG] && I18N[LANG][key] !== undefined) ? I18N[LANG][key] : I18N.ja[key];
+  if (s === undefined) return key;
+  if (vars) {
+    Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+  }
+  return s;
+}
+
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  const titleTag = document.getElementById('pageTitleTag');
+  if (titleTag) titleTag.textContent = t('pageTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+  document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.getAttribute('data-i18n-alt')); });
+  const langBtn = document.getElementById('langToggleBtn');
+  if (langBtn) langBtn.textContent = t('langToggleBtn');
+}
+
+function toggleLang() {
+  LANG = LANG === 'ja' ? 'en' : 'ja';
+  localStorage.setItem(LANG_KEY, LANG);
+  applyI18n();
+  pfRenderBar();
+  render();
+  if (document.getElementById('pfModalOverlay').classList.contains('show')) { pfRenderModal(); pfRenderCurrency(); }
+  if (document.getElementById('dashModalOverlay').classList.contains('show') && pfDashCache) {
+    document.getElementById('dashBody').innerHTML = pfDashBuildHtml(pfDashCache);
+  }
+}
+
+/* ================================================================
    季節ごとの季節精霊リスト（実装順）
    ================================================================ */
+// 各精霊名は { ja, en } のペアで保持する。英語名は公式Sky Wikiの表記に合わせているが、
+// 一部（下記コメント参照）はWiki上で直接確認できず、文脈から推定した訳のため要確認。
 const SEASON_SPIRITS = [
-  { season: '感謝の季節', spirits: ['おませな漂流者', '屈伸する導師', '挑戦的な表現者', '飛び跳ねる舞踏家', '敬礼する守護者', '礼を尽くす祈祷師'] },
-  { season: '光の探求者の季節', spirits: ['おんぶする光探求者', 'ダブルタッチの光採取者', 'くつろぐ開拓者', 'くるりと舞う優勝者', '蟹の語り部', '静けさを望む光学者'] },
-  { season: '想いを編む季節', spirits: ['音と舞う幼子', '紙ふぶき好きのいとこ', 'ぽんぽんする若者', '煌きを放つ親', '訴えかける親', '祖たる賢者'] },
-  { season: 'リズムが弾ける季節', spirits: ['一座の進行役', '祝祭の旋舞家', 'うっとりするような旅役者', '一座の曲芸師', '敬意を表す楽師', '思慮深き座長'] },
-  { season: '魔法の季節', spirits: ['うなずく壁画師', '無頓着な錬金術師', '蟹歩きの名人', 'こけおどしの農家', '居眠りする大工', 'けんかごっこ好きの植物採集者'] },
-  { season: '楽園の季節', spirits: ['海月の語り部', '引っ込み思案な読書家', '奮い立つ怖いもの知らず', 'ハイキングする気むずかし屋', '感謝する貝殻収集家', 'くつろぐ日光浴者'] },
-  { season: '預言者の季節', spirits: ['水の預言者', '地の預言者', '風の預言者', '火の預言者'] },
-  { season: '夢かなう季節', spirits: ['舞い踊る表現者', '旋舞の師匠', 'そっと覗く郵便屋', 'ハグ好きの隠者'] },
-  { season: '大樹に集う季節', spirits: ['とまどう植物学者', 'したり顔の生徒', '臆病な見習い士官', '行進する冒険家', '含み笑いのスカウト', '夢見がちな森の民'] },
-  { season: '星の王子さまの季節', spirits: ['手招く支配者', 'ご満悦のうぬぼれ屋', '体をほぐす点燈夫', 'うなだれる戦士', 'くしゃみする地理学者', '星の収集家'] },
-  { season: '羽ばたく季節', spirits: ['快活な誘導手', '光の語り部', '工夫好きの風鈴職人', '腕利きの工匠'] },
-  { season: '深淵の季節', spirits: ['繊細な漁師', '動じない提督', 'おっちょこちょいな水夫長', '豪快に笑う砲手'] },
-  { season: '表現者たちの季節', spirits: ['一生懸命な舞台美術家', '忘れっぽい劇作家', 'のんびり屋の音楽家', '慎み深い踊り手'] },
-  { season: '砕ケル闇ノ季節', spirits: ['万古の光（海月）', '万古の光（マンタ）', '万古の闇（暗黒竜）', '万古の闇（蝕む闇）'] },
-  { season: 'AURORAの季節', spirits: ['駆けゆく旅人', '覚醒の採掘者', '慈愛の戦士', '希望の君'] },
-  { season: '追慕の季節', spirits: ['喪失の初老', '懇願する幼子', 'ぬき足の茶人', '傷ついた戦士'] },
-  { season: 'ならいの季節', spirits: ['風変わりなひとり好き', 'ぐるぐる回るいたずらっ子', '物憂げなとぼとぼ歩き', '活発すぎる頑張り屋'] },
-  { season: '瞬きの季節', spirits: ['頼もしい自然保護官', '上機嫌な地質学者', '節制の修行者', '夜鳥の語り部'] },
-  { season: '復古の季節', spirits: ['見捨てられた隠れ家の残響', '忘れ去られた楽園のなごり', '寂れたオアシスの面影', '失われし村の記憶'] },
-  { season: '九色の鹿の季節', spirits: ['薬草採集人', '狩人', '国王', '王女'] },
-  { season: '巣づくりの季節', spirits: ['巣づくりのサンルーム', '巣づくりのロフト', '巣づくりの吹き抜け', '巣づくりの小部屋'] },
-  { season: '重なる音色の季節', spirits: ['駆けだしのピアニスト', '駆けだしのチェリスト', '音楽家たちの遺産', '栄光のピアニスト', '栄光のチェリスト'] },
-  { season: 'ムーミンの季節', spirits: ['慈愛の安らぎ', '自己の確立', '冒険の心', '包容力の源'] },
-  { season: '光に染まる季節', spirits: ['光に染まる飛び跳ねる舞踏家', '光に染まる挑戦的な表現者', '光に染まる礼を尽くす祈祷師'] },
-  { season: '青い鳥の季節', spirits: ['神聖な祖たる賢者', '衣装をまとう紙ふぶき好きのいとこ', '高貴なぽんぽんする若者', '懐かしむ煌きを放つ親', '木こりの訴えかける親'] },
-  { season: 'ふたつの灯火の季節　前編', spirits: ['心優しき玩具職人', '機知に富む隠とん者', '厳格なマナティ飼い', '手負いの巡回兵', '寄り添うお友だち'] },
-  { season: '渡りの季節', spirits: ['渡りの鐘職人', '渡りの鳥の語り部', '渡りのマンタの語り部', '渡りの蝶々使い', '渡りの海月の語り部'] },
-  { season: '光の修繕者の季節', spirits: ['光修繕する優勝者', '光修繕する光採取者', '光修繕する光学者', '光修繕する開拓者'] },
-  { season: 'カーニバルの季節', spirits: ['カーニバルの曲芸師', 'カーニバルの旋舞家', 'カーニバルの旅役者', 'カーニバルの謎解き座長'] },
-  { season: 'ゴッホの季節', spirits: ['芸術の思い出', 'オランダの思い出', '喜びの思い出', '素朴な思い出'] },
+  { season: { ja: '感謝の季節', en: 'Season of Gratitude' }, spirits: [
+    { ja: 'おませな漂流者', en: 'Sassy Drifter' },
+    { ja: '屈伸する導師', en: 'Stretching Guru' },
+    { ja: '挑戦的な表現者', en: 'Provoking Performer' },
+    { ja: '飛び跳ねる舞踏家', en: 'Leaping Dancer' },
+    { ja: '敬礼する守護者', en: 'Saluting Protector' },
+    { ja: '礼を尽くす祈祷師', en: 'Greeting Shaman' },
+  ] },
+  { season: { ja: '光の探求者の季節', en: 'Season of Lightseekers' }, spirits: [
+    { ja: 'おんぶする光探求者', en: 'Piggyback Lightseeker' },
+    { ja: 'ダブルタッチの光採取者', en: 'Doublefive Light Catcher' },
+    { ja: 'くつろぐ開拓者', en: 'Laidback Pioneer' },
+    { ja: 'くるりと舞う優勝者', en: 'Twirling Champion' },
+    { ja: '蟹の語り部', en: 'Crab Whisperer' },
+    { ja: '静けさを望む光学者', en: 'Shushing Light Scholar' },
+  ] },
+  { season: { ja: '想いを編む季節', en: 'Season of Belonging' }, spirits: [
+    { ja: '音と舞う幼子', en: 'Boogie Kid' },
+    { ja: '紙ふぶき好きのいとこ', en: 'Confetti Cousin' },
+    { ja: 'ぽんぽんする若者', en: 'Hairtousle Teen' },
+    { ja: '煌きを放つ親', en: 'Sparkler Parent' },
+    { ja: '訴えかける親', en: 'Pleaful Parent' },
+    { ja: '祖たる賢者', en: 'Wise Grandparent' },
+  ] },
+  { season: { ja: 'リズムが弾ける季節', en: 'Season of Rhythm' }, spirits: [
+    { ja: '一座の進行役', en: 'Troupe Greeter' }, // 未確認: 文脈からの推定訳
+    { ja: '祝祭の旋舞家', en: 'Festival Whirling Dancer' }, // 未確認: 文脈からの推定訳
+    { ja: 'うっとりするような旅役者', en: 'Admiring Actor' }, // 未確認: 文脈からの推定訳
+    { ja: '一座の曲芸師', en: 'Troupe Juggler' },
+    { ja: '敬意を表す楽師', en: 'Respectful Pianist' },
+    { ja: '思慮深き座長', en: 'Thoughtful Director' },
+  ] },
+  { season: { ja: '魔法の季節', en: 'Season of Enchantment' }, spirits: [
+    { ja: 'うなずく壁画師', en: 'Nodding Muralist' },
+    { ja: '無頓着な錬金術師', en: 'Indifferent Alchemist' },
+    { ja: '蟹歩きの名人', en: 'Crab Walker' },
+    { ja: 'こけおどしの農家', en: 'Scarecrow Farmer' },
+    { ja: '居眠りする大工', en: 'Snoozing Carpenter' },
+    { ja: 'けんかごっこ好きの植物採集者', en: 'Playfighting Herbalist' },
+  ] },
+  { season: { ja: '楽園の季節', en: 'Season of Sanctuary' }, spirits: [
+    { ja: '海月の語り部', en: 'Jellyfish Whisperer' }, // 未確認: 文脈からの推定訳
+    { ja: '引っ込み思案な読書家', en: 'Timid Bookworm' }, // 未確認: 文脈からの推定訳
+    { ja: '奮い立つ怖いもの知らず', en: 'Rallying Daredevil' }, // 未確認: 文脈からの推定訳
+    { ja: 'ハイキングする気むずかし屋', en: 'Hiking Grouch' },
+    { ja: '感謝する貝殻収集家', en: 'Grateful Shell Collector' },
+    { ja: 'くつろぐ日光浴者', en: 'Chill Sunbather' },
+  ] },
+  { season: { ja: '預言者の季節', en: 'Season of Prophecy' }, spirits: [
+    { ja: '水の預言者', en: 'Prophet of Water' },
+    { ja: '地の預言者', en: 'Prophet of Earth' },
+    { ja: '風の預言者', en: 'Prophet of Air' },
+    { ja: '火の預言者', en: 'Prophet of Fire' },
+  ] },
+  { season: { ja: '夢かなう季節', en: 'Season of Dreams' }, spirits: [
+    { ja: '舞い踊る表現者', en: 'Dancing Performer' }, // 未確認: 文脈からの推定訳
+    { ja: '旋舞の師匠', en: 'Whirling Dance Master' }, // 未確認: 文脈からの推定訳
+    { ja: 'そっと覗く郵便屋', en: 'Peeking Postman' },
+    { ja: 'ハグ好きの隠者', en: 'Bearhug Hermit' },
+  ] },
+  { season: { ja: '大樹に集う季節', en: 'Season of Assembly' }, spirits: [
+    { ja: 'とまどう植物学者', en: 'Baffled Botanist' },
+    { ja: 'したり顔の生徒', en: 'Scolding Student' },
+    { ja: '臆病な見習い士官', en: 'Scaredy Cadet' },
+    { ja: '行進する冒険家', en: 'Marching Adventurer' },
+    { ja: '含み笑いのスカウト', en: 'Chuckling Scout' },
+    { ja: '夢見がちな森の民', en: 'Daydream Forester' },
+  ] },
+  { season: { ja: '星の王子さまの季節', en: 'Season of The Little Prince' }, spirits: [
+    { ja: '手招く支配者', en: 'Beckoning Ruler' },
+    { ja: 'ご満悦のうぬぼれ屋', en: 'Gloating Narcissist' },
+    { ja: '体をほぐす点燈夫', en: 'Stretching Lamplighter' },
+    { ja: 'うなだれる戦士', en: 'Slouching Soldier' },
+    { ja: 'くしゃみする地理学者', en: 'Sneezing Geographer' },
+    { ja: '星の収集家', en: 'Star Collector' },
+  ] },
+  { season: { ja: '羽ばたく季節', en: 'Season of Flight' }, spirits: [
+    { ja: '快活な誘導手', en: 'Lively Navigator' },
+    { ja: '光の語り部', en: 'Light Whisperer' }, // 未確認: 文脈からの推定訳
+    { ja: '工夫好きの風鈴職人', en: 'Inventive Wind Chime Maker' }, // 未確認: 文脈からの推定訳
+    { ja: '腕利きの工匠', en: 'Skilled Craftsman' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: '深淵の季節', en: 'Season of Abyss' }, spirits: [
+    { ja: '繊細な漁師', en: 'Anxious Angler' }, // 一部推定: Wiki上でAnxious Anglerが本季節の精霊と確認できたが、このJA名との対応は推定
+    { ja: '動じない提督', en: 'Unfazed Admiral' }, // 未確認: 文脈からの推定訳
+    { ja: 'おっちょこちょいな水夫長', en: 'Clumsy Boatswain' }, // 未確認: 文脈からの推定訳
+    { ja: '豪快に笑う砲手', en: 'Boisterous Gunner' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: '表現者たちの季節', en: 'Season of Performance' }, spirits: [
+    { ja: '一生懸命な舞台美術家', en: 'Frantic Stagehand' },
+    { ja: '忘れっぽい劇作家', en: 'Forgetful Storyteller' },
+    { ja: 'のんびり屋の音楽家', en: 'Mellow Musician' },
+    { ja: '慎み深い踊り手', en: 'Modest Dancer' },
+  ] },
+  { season: { ja: '砕ケル闇ノ季節', en: 'Season of Shattering' }, spirits: [
+    { ja: '万古の光（海月）', en: 'Ancient Light (Jellyfish)' },
+    { ja: '万古の光（マンタ）', en: 'Ancient Light (Manta)' },
+    { ja: '万古の闇（暗黒竜）', en: 'Ancient Darkness (Dark Dragon)' },
+    { ja: '万古の闇（蝕む闇）', en: 'Ancient Darkness (Consuming Darkness)' },
+  ] },
+  { season: { ja: 'AURORAの季節', en: 'Season of AURORA' }, spirits: [
+    { ja: '駆けゆく旅人', en: 'Running Wayfarer' },
+    { ja: '覚醒の採掘者', en: 'Mindful Miner' },
+    { ja: '慈愛の戦士', en: 'Warrior of Love' },
+    { ja: '希望の君', en: 'Seed of Hope' },
+  ] },
+  { season: { ja: '追慕の季節', en: 'Season of Remembrance' }, spirits: [
+    { ja: '喪失の初老', en: 'Bereft Veteran' },
+    { ja: '懇願する幼子', en: 'Pleading Youngster' }, // 未確認: 文脈からの推定訳
+    { ja: 'ぬき足の茶人', en: 'Tiptoeing Tea-Brewer' },
+    { ja: '傷ついた戦士', en: 'Wounded Warrior' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: 'ならいの季節', en: 'Season of Passage' }, spirits: [
+    { ja: '風変わりなひとり好き', en: 'Quirky Loner' }, // 未確認: 文脈からの推定訳
+    { ja: 'ぐるぐる回るいたずらっ子', en: 'Spinning Prankster' }, // 未確認: 文脈からの推定訳
+    { ja: '物憂げなとぼとぼ歩き', en: 'Melancholic Wanderer' }, // 未確認: 文脈からの推定訳
+    { ja: '活発すぎる頑張り屋', en: 'Overeager Try-Hard' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: '瞬きの季節', en: 'Season of Moments' }, spirits: [
+    { ja: '頼もしい自然保護官', en: 'Reassuring Ranger' },
+    { ja: '上機嫌な地質学者', en: 'Jolly Geologist' },
+    { ja: '節制の修行者', en: 'Ascetic Monk' },
+    { ja: '夜鳥の語り部', en: 'Nightbird Whisperer' },
+  ] },
+  { season: { ja: '復古の季節', en: 'Season of Revival' }, spirits: [
+    { ja: '見捨てられた隠れ家の残響', en: 'Echo of an Abandoned Refuge' },
+    { ja: '忘れ去られた楽園のなごり', en: 'Remnant of a Forgotten Haven' },
+    { ja: '寂れたオアシスの面影', en: 'Vestige of a Deserted Oasis' },
+    { ja: '失われし村の記憶', en: 'Memory of a Lost Village' },
+  ] },
+  { season: { ja: '九色の鹿の季節', en: 'Season of the Nine-Colored Deer' }, spirits: [
+    { ja: '薬草採集人', en: 'Herb Gatherer' },
+    { ja: '狩人', en: 'Hunter' },
+    { ja: '国王', en: 'Feudal Lord' },
+    { ja: '王女', en: 'Princess' },
+  ] },
+  { season: { ja: '巣づくりの季節', en: 'Season of Nesting' }, spirits: [
+    { ja: '巣づくりのサンルーム', en: 'Nesting Solarium' },
+    { ja: '巣づくりのロフト', en: 'Nesting Loft' },
+    { ja: '巣づくりの吹き抜け', en: 'Nesting Atrium' },
+    { ja: '巣づくりの小部屋', en: 'Nesting Nook' },
+  ] },
+  { season: { ja: '重なる音色の季節', en: 'Season of Duets' }, spirits: [
+    { ja: '駆けだしのピアニスト', en: 'Novice Pianist' }, // 未確認: 文脈からの推定訳
+    { ja: '駆けだしのチェリスト', en: 'Novice Cellist' }, // 未確認: 文脈からの推定訳
+    { ja: '音楽家たちの遺産', en: "Musicians' Legacy" }, // 未確認: 文脈からの推定訳
+    { ja: '栄光のピアニスト', en: 'Glorious Pianist' }, // 未確認: 文脈からの推定訳
+    { ja: '栄光のチェリスト', en: 'Glorious Cellist' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: 'ムーミンの季節', en: 'Season of Moomin' }, spirits: [
+    { ja: '慈愛の安らぎ', en: 'Comfort of Compassion' }, // 未確認: 文脈からの推定訳
+    { ja: '自己の確立', en: 'Discovery of Self' }, // 未確認: 文脈からの推定訳
+    { ja: '冒険の心', en: 'Spirit of Adventure' },
+    { ja: '包容力の源', en: 'Inspiration of Inclusion' },
+  ] },
+  { season: { ja: '光に染まる季節', en: 'Season of Radiance' }, spirits: [
+    { ja: '光に染まる飛び跳ねる舞踏家', en: 'Radiance Leaping Dancer' },
+    { ja: '光に染まる挑戦的な表現者', en: 'Radiance Provoking Performer' },
+    { ja: '光に染まる礼を尽くす祈祷師', en: 'Radiance Greeting Shaman' },
+  ] },
+  { season: { ja: '青い鳥の季節', en: 'Season of the Blue Bird' }, spirits: [
+    { ja: '神聖な祖たる賢者', en: 'Divining Wise Grandparent' },
+    { ja: '衣装をまとう紙ふぶき好きのいとこ', en: 'Costumed Confetti Cousin' },
+    { ja: '高貴なぽんぽんする若者', en: 'Royal Hairtousle Teen' },
+    { ja: '懐かしむ煌きを放つ親', en: 'Nostalgic Sparkler Parent' },
+    { ja: '木こりの訴えかける親', en: 'Woodcutting Pleaful Parent' },
+  ] },
+  { season: { ja: 'ふたつの灯火の季節　前編', en: 'Season of The Two Embers - Part 1' }, spirits: [
+    { ja: '心優しき玩具職人', en: 'Tender Toymaker' },
+    { ja: '機知に富む隠とん者', en: 'Resourceful Recluse' },
+    { ja: '厳格なマナティ飼い', en: 'Strict Manatee Keeper' }, // 未確認: 文脈からの推定訳
+    { ja: '手負いの巡回兵', en: 'Wounded Patrolman' }, // 未確認: 文脈からの推定訳
+    { ja: '寄り添うお友だち', en: 'Snuggling Companion' }, // 未確認: 文脈からの推定訳
+  ] },
+  { season: { ja: '渡りの季節', en: 'Season of Migration' }, spirits: [
+    { ja: '渡りの鐘職人', en: 'Migrating Bellmaker' },
+    { ja: '渡りの鳥の語り部', en: 'Migrating Bird Whisperer' },
+    { ja: '渡りのマンタの語り部', en: 'Migrating Manta Whisperer' },
+    { ja: '渡りの蝶々使い', en: 'Migrating Butterfly Charmer' },
+    { ja: '渡りの海月の語り部', en: 'Migrating Jelly Whisperer' },
+  ] },
+  { season: { ja: '光の修繕者の季節', en: 'Season of Lightmending' }, spirits: [
+    { ja: '光修繕する優勝者', en: 'Lightmending Champion' }, // 一部推定: パターンからの推定（Season of Lightseekersの対応精霊名より）
+    { ja: '光修繕する光採取者', en: 'Lightmending Light Catcher' },
+    { ja: '光修繕する光学者', en: 'Lightmending Light Scholar' }, // 一部推定: パターンからの推定
+    { ja: '光修繕する開拓者', en: 'Lightmending Pioneer' }, // 一部推定: パターンからの推定
+  ] },
+  { season: { ja: 'カーニバルの季節', en: 'Season of Carnival' }, spirits: [
+    { ja: 'カーニバルの曲芸師', en: 'Carnival Juggler' },
+    { ja: 'カーニバルの旋舞家', en: 'Carnival Athletic Dancer' },
+    { ja: 'カーニバルの旅役者', en: 'Carnival Stunt Actor' },
+    { ja: 'カーニバルの謎解き座長', en: 'Carnival Puzzle Director' },
+  ] },
+  { season: { ja: 'ゴッホの季節', en: 'Dear Van Gogh' }, spirits: [
+    { ja: '芸術の思い出', en: 'Artistic Memory' },
+    { ja: 'オランダの思い出', en: 'Dutch Memory' },
+    { ja: '喜びの思い出', en: 'Joyful Memory' },
+    { ja: '素朴な思い出', en: 'Rustic Memory' }, // 未確認: 文脈からの推定訳
+  ] },
 ];
 
 /* ================================================================
    恒常精霊（地方の精霊）リスト — 37体、うち12体はTier2の光の翼も追加である
    t1/t2 は光の翼の開放に必要な星のキャンドルの本数（精霊ごとに異なる）
    ================================================================ */
+// 精霊名は { ja, en } のペアで保持する。realmは短縮形（Prairie/Forest/Valley/Wasteland/Vault）を
+// 使用し、共通辞書 I18N の realmPrairie 等と表記をそろえている（孤島のみ本リスト固有のためIsle of Dawnとする）。
 const REALM_SPIRITS = [
-  { realm: '孤島', spirits: [
-    { name: '指差すキャンドル職人', t1: 1 },
-    { name: '固辞する航行者', t1: 1 },
-    { name: '先導する星読み', t1: 1 },
+  { realm: { ja: '孤島', en: 'Isle of Dawn' }, spirits: [
+    { name: { ja: '指差すキャンドル職人', en: 'Pointing Candlemaker' }, t1: 1 },
+    { name: { ja: '固辞する航行者', en: 'Rejecting Voyager' }, t1: 1 },
+    { name: { ja: '先導する星読み', en: 'Ushering Stargazer' }, t1: 1 },
   ] },
-  { realm: '草原', spirits: [
-    { name: '賞賛する鐘の造り手', t1: 1 },
-    { name: '鳥の語り部', t1: 2 },
-    { name: '蝶々使い', t1: 1, t2: 3 },
-    { name: '式典の礼拝者', t1: 1 },
-    { name: '疲弊した荷積み人', t1: 1 },
-    { name: '笑う光採取者', t1: 2 },
-    { name: '寝不足の造舟師', t1: 1 },
-    { name: '手を振る鐘の造り手', t1: 2, t2: 6 },
+  { realm: { ja: '草原', en: 'Prairie' }, spirits: [
+    { name: { ja: '賞賛する鐘の造り手', en: 'Applauding Bellmaker' }, t1: 1 },
+    { name: { ja: '鳥の語り部', en: 'Bird Whisperer' }, t1: 2 },
+    { name: { ja: '蝶々使い', en: 'Butterfly Charmer' }, t1: 1, t2: 3 },
+    { name: { ja: '式典の礼拝者', en: 'Ceremonial Worshiper' }, t1: 1 },
+    { name: { ja: '疲弊した荷積み人', en: 'Exhausted Dock Worker' }, t1: 1 },
+    { name: { ja: '笑う光採取者', en: 'Laughing Light Catcher' }, t1: 2 },
+    { name: { ja: '寝不足の造舟師', en: 'Sleepy Shipwright' }, t1: 1 }, // 未確認: 文脈からの推定訳
+    { name: { ja: '手を振る鐘の造り手', en: 'Waving Bellmaker' }, t1: 2, t2: 6 }, // 一部推定: 賞賛する鐘の造り手と対になる名として推定
   ] },
-  { realm: '雨林', spirits: [
-    { name: '反省する木こり', t1: 1 },
-    { name: '恥じらう探鉱者', t1: 1 },
-    { name: 'うろたえる狩人', t1: 3, t2: 9 },
-    { name: 'かくれんぼ提唱者', t1: 3, t2: 6 },
-    { name: '怒れる運び人', t1: 2, t2: 6 },
-    { name: '凍える先駆者', t1: 2 },
-    { name: '涙ぐむ光坑夫', t1: 1, t2: 3 },
-    { name: '鯨の語り部', t1: 1 },
+  { realm: { ja: '雨林', en: 'Forest' }, spirits: [
+    { name: { ja: '反省する木こり', en: 'Apologetic Lumberjack' }, t1: 1 },
+    { name: { ja: '恥じらう探鉱者', en: 'Blushing Prospector' }, t1: 1 },
+    { name: { ja: 'うろたえる狩人', en: 'Dismayed Hunter' }, t1: 3, t2: 9 },
+    { name: { ja: 'かくれんぼ提唱者', en: "Hide'n'Seek Pioneer" }, t1: 3, t2: 6 },
+    { name: { ja: '怒れる運び人', en: 'Pouty Porter' }, t1: 2, t2: 6 },
+    { name: { ja: '凍える先駆者', en: 'Shivering Trailblazer' }, t1: 2 },
+    { name: { ja: '涙ぐむ光坑夫', en: 'Tearful Light Miner' }, t1: 1, t2: 3 },
+    { name: { ja: '鯨の語り部', en: 'Whale Whisperer' }, t1: 1 },
   ] },
-  { realm: '峡谷', spirits: [
-    { name: '宙返りをする優勝者', t1: 2 },
-    { name: 'お辞儀をするメダリスト', t1: 2 },
-    { name: '応援する観客', t1: 2 },
-    { name: '自信に満ちた観光客', t1: 2 },
-    { name: '逆立ちする怖いもの知らず', t1: 3, t2: 9 },
-    { name: 'マンタの語り部', t1: 1 },
-    { name: '誇り高き勝者', t1: 3, t2: 9 },
+  { realm: { ja: '峡谷', en: 'Valley' }, spirits: [
+    { name: { ja: '宙返りをする優勝者', en: 'Backflipping Champion' }, t1: 2 },
+    { name: { ja: 'お辞儀をするメダリスト', en: 'Bowing Medalist' }, t1: 2 },
+    { name: { ja: '応援する観客', en: 'Cheerful Spectator' }, t1: 2 },
+    { name: { ja: '自信に満ちた観光客', en: 'Confident Tourist' }, t1: 2 }, // 未確認: 文脈からの推定訳
+    { name: { ja: '逆立ちする怖いもの知らず', en: 'Handstanding Daredevil' }, t1: 3, t2: 9 }, // 未確認: 文脈からの推定訳
+    { name: { ja: 'マンタの語り部', en: 'Manta Whisperer' }, t1: 1 },
+    { name: { ja: '誇り高き勝者', en: 'Proud Victor' }, t1: 3, t2: 9 },
   ] },
-  { realm: '捨てられた地', spirits: [
-    { name: '勇敢な戦士', t1: 2, t2: 6 },
-    { name: '昏倒する戦士', t1: 2 },
-    { name: '怯える難民', t1: 1 },
-    { name: '警戒する斥候', t1: 2 },
-    { name: '敬礼する隊長', t1: 3 },
-    { name: '隠れ潜む生存者', t1: 4, t2: 12 },
+  { realm: { ja: '捨てられた地', en: 'Wasteland' }, spirits: [
+    { name: { ja: '勇敢な戦士', en: 'Brave Warrior' }, t1: 2, t2: 6 }, // 未確認: 文脈からの推定訳
+    { name: { ja: '昏倒する戦士', en: 'Fainting Warrior' }, t1: 2 },
+    { name: { ja: '怯える難民', en: 'Frightened Refugee' }, t1: 1 },
+    { name: { ja: '警戒する斥候', en: 'Lookout Scout' }, t1: 2 },
+    { name: { ja: '敬礼する隊長', en: 'Saluting Captain' }, t1: 3 },
+    { name: { ja: '隠れ潜む生存者', en: 'Stealthy Survivor' }, t1: 4, t2: 12 },
   ] },
-  { realm: '書庫', spirits: [
-    { name: '念動力の使い手', t1: 2 },
-    { name: '瞑想する修道士', t1: 3 },
-    { name: '記憶の語り部', t1: 4, t2: 12 },
-    { name: '敬けんな賢人', t1: 2 },
-    { name: '祈る侍者', t1: 3, t2: 9 },
+  { realm: { ja: '書庫', en: 'Vault' }, spirits: [
+    { name: { ja: '念動力の使い手', en: 'Levitating Adept' }, t1: 2 },
+    { name: { ja: '瞑想する修道士', en: 'Meditating Monastic' }, t1: 3 },
+    { name: { ja: '記憶の語り部', en: 'Memory Whisperer' }, t1: 4, t2: 12 },
+    { name: { ja: '敬けんな賢人', en: 'Polite Scholar' }, t1: 2 },
+    { name: { ja: '祈る侍者', en: 'Praying Acolyte' }, t1: 3, t2: 9 }, // 未確認: 文脈からの推定訳
   ] },
 ];
 
@@ -793,10 +1446,10 @@ const CAPE_LEVELS = [1, 2, 5, 10, 20, 35, 55, 75, 100, 120, 150, 200, 250];
 // no close-up exists there either).
 const LIGHT_CHILDREN = [
   {
-    realm: '花鳥郷',
+    realm: { ja: '花鳥郷', en: 'Aviary Village' },
     areas: [
       {
-        area: 'さすらいカーニバル',
+        area: { ja: 'さすらいカーニバル', en: 'Wandering Carnival' },
         children: [
           { id: 'aviary_1', label: '花鳥郷 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/47/Carnival-Winged-Light-1.jpg/revision/latest/scale-to-width-down/204?cb=20260417140555' },
           { id: 'aviary_2', label: '花鳥郷 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/34/Carnival-Winged-Light-2.jpg/revision/latest/scale-to-width-down/204?cb=20260417140556' },
@@ -805,10 +1458,10 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '孤島',
+    realm: { ja: '孤島', en: 'Isle of Dawn' },
     areas: [
       {
-        area: '孤島台地（砂丘）',
+        area: { ja: '孤島台地（砂丘）', en: 'Isle Plateau (Sand Dunes)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'isle_1', label: '孤島 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/ca/IMG_5816.JPG/revision/latest/scale-to-width-down/209?cb=20230703223929' },
           { id: 'isle_2', label: '孤島 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c2/StarIsle01.jpg/revision/latest/scale-to-width-down/204?cb=20190803001822' },
@@ -818,13 +1471,13 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '孤島の見晴らし台（蝶々の洞窟）',
+        area: { ja: '孤島の見晴らし台（蝶々の洞窟）', en: 'Isle Overlook (Butterfly Cave)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'isle_5', label: '孤島 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/46/IMG_5445.JPG/revision/latest/scale-to-width-down/209?cb=20230703224815' },
         ]
       },
       {
-        area: '預言者の石窟',
+        area: { ja: '預言者の石窟', en: 'Cave of Prophecies' },
         children: [
           { id: 'isle_6', label: '孤島 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6a/WL_water_trial.jpg/revision/latest/scale-to-width-down/209?cb=20230704012826' },
           { id: 'isle_7', label: '孤島 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/84/Trial_of_Earth_WL.jpg/revision/latest/scale-to-width-down/209?cb=20230705220526' },
@@ -835,10 +1488,10 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '草原',
+    realm: { ja: '草原', en: 'Prairie' },
     areas: [
       {
-        area: '蝶々の住処',
+        area: { ja: '蝶々の住処', en: 'Butterfly Fields' },
         children: [
           { id: 'prairie_1', label: '草原 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c3/Butterflyfieldsstar3far.jpg/revision/latest/scale-to-width-down/167?cb=20241011010252' },
           { id: 'prairie_2', label: '草原 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/ca/StarPrairie01.jpeg/revision/latest/scale-to-width-down/204?cb=20190803002305' },
@@ -846,7 +1499,7 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '草原の村',
+        area: { ja: '草原の村', en: 'Prairie Village' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'prairie_4', label: '草原 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/StarPrairie06.jpg/revision/latest/scale-to-width-down/204?cb=20190803002525' },
           { id: 'prairie_5', label: '草原 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6e/StarPrairie07.jpg/revision/latest/scale-to-width-down/204?cb=20190803002526' },
@@ -854,34 +1507,34 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '草原高地（8人エレベーター）',
+        area: { ja: '草原高地（8人エレベーター）', en: 'Prairie Highlands (8-Player Elevator)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'prairie_7', label: '草原 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1f/8playerpuzzlestar.JPG/revision/latest/scale-to-width-down/209?cb=20230703072031' },
         ]
       },
       {
-        area: '草原の神殿',
+        area: { ja: '草原の神殿', en: 'Prairie Temple' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'prairie_8', label: '草原 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d3/StarPrairie011.jpg/revision/latest/scale-to-width-down/209?cb=20230703233809' },
           { id: 'prairie_9', label: '草原 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0b/StarPrairie012.jpg/revision/latest/scale-to-width-down/209?cb=20230703233859' },
         ]
       },
       {
-        area: '草原の洞窟',
+        area: { ja: '草原の洞窟', en: 'Prairie Caves' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'prairie_10', label: '草原 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/17/StarPrairie09.jpg/revision/latest/scale-to-width-down/204?cb=20190803003035' },
           { id: 'prairie_11', label: '草原 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6d/StarPrairie010.jpg/revision/latest/scale-to-width-down/204?cb=20190803003036' },
         ]
       },
       {
-        area: '鳥の巣（鳥の塔）',
+        area: { ja: '鳥の巣（鳥の塔）', en: 'Bird Nest (Bird Tower)' },
         children: [
           { id: 'prairie_12', label: '草原 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/16/StarPrairie4.jpg/revision/latest/scale-to-width-down/209?cb=20230707034626' },
           { id: 'prairie_13', label: '草原 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9c/StarPrairie5.jpg/revision/latest/scale-to-width-down/209?cb=20230707034705' },
         ]
       },
       {
-        area: '楽園の島々',
+        area: { ja: '楽園の島々', en: 'Sanctuary Islands' },
         children: [
           { id: 'prairie_14', label: '草原 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5d/Prairie_sanctuary_WL1.jpeg/revision/latest/scale-to-width-down/125?cb=20200626232203' },
           { id: 'prairie_15', label: '草原 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/59/Prairie_sanctuary_WL2.jpeg/revision/latest/scale-to-width-down/209?cb=20230707050926' },
@@ -894,7 +1547,7 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '草原連峰',
+        area: { ja: '草原連峰', en: 'Prairie Peaks' },
         children: [
           { id: 'prairie_22', label: '草原 光の子22', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/10/Prairie-Peaks-WL1.jpg/revision/latest/scale-to-width-down/209?cb=20230628152954' },
           { id: 'prairie_23', label: '草原 光の子23', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2f/Prairie-Peaks-WL3.jpg/revision/latest/scale-to-width-down/209?cb=20230628152956' },
@@ -904,17 +1557,17 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '雨林',
+    realm: { ja: '雨林', en: 'Forest' },
     areas: [
       {
-        area: '雨林の前庭（雨林の開拓地）',
+        area: { ja: '雨林の前庭（雨林の開拓地）', en: 'Forest Entrance (Forest Clearing)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_1', label: '雨林 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/63/StarForest01.jpg/revision/latest/scale-to-width-down/204?cb=20190803003514' },
           { id: 'forest_2', label: '雨林 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/85/StarForest02.jpg/revision/latest/scale-to-width-down/204?cb=20190803003515' },
         ]
       },
       {
-        area: '雨林の小川',
+        area: { ja: '雨林の小川', en: 'Forest Brook' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_3', label: '雨林 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/85/StarForest03.jpeg/revision/latest/scale-to-width-down/209?cb=20230711030827' },
           { id: 'forest_4', label: '雨林 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f2/StarForest04.jpeg/revision/latest/scale-to-width-down/209?cb=20230707232933' },
@@ -923,7 +1576,7 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '雨林の墓場',
+        area: { ja: '雨林の墓場', en: 'Forest Graveyard' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_7', label: '雨林 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ac/StarForest010.jpg/revision/latest/scale-to-width-down/204?cb=20190803011411' },
           { id: 'forest_8', label: '雨林 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/66/StarForest09.jpg/revision/latest/scale-to-width-down/204?cb=20190803011409' },
@@ -931,20 +1584,20 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '高台広場（雨の途切れる地）',
+        area: { ja: '高台広場（雨の途切れる地）', en: 'Elevated Clearing (Sunny Spell)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_10', label: '雨林 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/94/StarForest07.jpg/revision/latest/scale-to-width-down/209?cb=20230711025937' },
           { id: 'forest_11', label: '雨林 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f6/StarForest08.jpg/revision/latest/scale-to-width-down/209?cb=20230709035049' },
         ]
       },
       {
-        area: '青い鳥劇場',
+        area: { ja: '青い鳥劇場', en: 'Blue Bird Theater' },
         children: [
           { id: 'forest_12', label: '雨林 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4c/Blue-Bird-Winged-Light-Location.jpg/revision/latest/scale-to-width-down/204?cb=20250421174747' },
         ]
       },
       {
-        area: '雨林の大空洞（雨林の地下洞）',
+        area: { ja: '雨林の大空洞（雨林の地下洞）', en: 'Forest Cavern (Forest Underground Cave)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_13', label: '雨林 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/54/Caverns_star1.jpg/revision/latest/scale-to-width-down/209?cb=20230708022634' },
           { id: 'forest_14', label: '雨林 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e0/Caverns_star3.jpg/revision/latest/scale-to-width-down/209?cb=20230708022753' },
@@ -953,20 +1606,20 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '聖なる池（雨林の端）',
+        area: { ja: '聖なる池（雨林の端）', en: 'Sacred Pond (Edge of the Forest)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_17', label: '雨林 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2b/StarForest012.jpg/revision/latest/scale-to-width-down/204?cb=20190803011413' },
         ]
       },
       {
-        area: 'ツリーハウス',
+        area: { ja: 'ツリーハウス', en: 'Treehouse' },
         children: [
           { id: 'forest_18', label: '雨林 光の子18', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/78/SOA-Winglight-2.jpg/revision/latest/scale-to-width-down/209?cb=20230708050149' },
           { id: 'forest_19', label: '雨林 光の子19', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/73/SOA-Winglight-1.jpg/revision/latest/scale-to-width-down/209?cb=20230708050236' },
         ]
       },
       {
-        area: '風の街道',
+        area: { ja: '風の街道', en: 'Wind Paths' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'forest_20', label: '雨林 光の子20', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f3/SOF-Winglight-1.png/revision/latest/scale-to-width-down/209?cb=20230708071606' },
           { id: 'forest_21', label: '雨林 光の子21', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0c/Migration-WingedLight-in-Windpath.png/revision/latest/scale-to-width-down/204?cb=20251020122821' },
@@ -975,10 +1628,10 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '峡谷',
+    realm: { ja: '峡谷', en: 'Valley' },
     areas: [
       {
-        area: '凍った湖（アイスリンク）',
+        area: { ja: '凍った湖（アイスリンク）', en: 'Frozen Lake (Ice Rink)' },
         children: [
           { id: 'valley_1', label: '峡谷 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/47/StarValley01.jpg/revision/latest/scale-to-width-down/204?cb=20190803011525' },
           { id: 'valley_2', label: '峡谷 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/08/StarValley02.jpg/revision/latest/scale-to-width-down/204?cb=20190803011525' },
@@ -986,40 +1639,40 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '峡谷の陸通り（陸のレース）',
+        area: { ja: '峡谷の陸通り（陸のレース）', en: 'Valley Passage (Land Race)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'valley_4', label: '峡谷 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/ff/StarValley09.jpg/revision/latest/scale-to-width-down/204?cb=20190803221727' },
         ]
       },
       {
-        area: '城塞都市',
+        area: { ja: '城塞都市', en: 'Citadel' },
         children: [
           { id: 'valley_5', label: '峡谷 光の子5', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d6/StarValley04.jpg/revision/latest/scale-to-width-down/204?cb=20190803011528' },
           { id: 'valley_6', label: '峡谷 光の子6', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/69/StarValley05.jpeg/revision/latest/scale-to-width-down/204?cb=20190803011529' },
         ]
       },
       {
-        area: '峡谷の空通り（空のレース）',
+        area: { ja: '峡谷の空通り（空のレース）', en: 'Valley Skyway (Sky Race)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'valley_7', label: '峡谷 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/38/StarValley06.jpg/revision/latest/scale-to-width-down/204?cb=20190803011529' },
           { id: 'valley_8', label: '峡谷 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c1/StarValley07.jpeg/revision/latest/scale-to-width-down/204?cb=20190803221725' },
         ]
       },
       {
-        area: '円形劇場',
+        area: { ja: '円形劇場', en: 'Coliseum' },
         children: [
           { id: 'valley_9', label: '峡谷 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5d/StarValley08.jpg/revision/latest/scale-to-width-down/204?cb=20190803221725' },
           { id: 'valley_10', label: '峡谷 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e3/Screenshot_20201223-184359_Sky.jpg/revision/latest/scale-to-width-down/204?cb=20201224021445' },
         ]
       },
       {
-        area: '峡谷の神殿',
+        area: { ja: '峡谷の神殿', en: 'Valley Temple' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'valley_11', label: '峡谷 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9f/Temple_WL_11.jpg/revision/latest/scale-to-width-down/209?cb=20230708223004' },
         ]
       },
       {
-        area: '夢見の町',
+        area: { ja: '夢見の町', en: 'Village of Dreams' },
         children: [
           { id: 'valley_12', label: '峡谷 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8f/SKY_20210105_115647_.jpg/revision/latest/scale-to-width-down/209?cb=20230708223216' },
           { id: 'valley_13', label: '峡谷 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bc/Valley_Wl_13.jpg/revision/latest/scale-to-width-down/209?cb=20230708223514' },
@@ -1027,14 +1680,14 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '隠者の峠',
+        area: { ja: '隠者の峠', en: 'Hermit Valley' },
         children: [
           { id: 'valley_15', label: '峡谷 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0c/WingLight4.jpg/revision/latest/scale-to-width-down/209?cb=20230708224309' },
           { id: 'valley_16', label: '峡谷 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/80/Hermit_Valley_WL_16.jpg/revision/latest/scale-to-width-down/209?cb=20230708230955' },
         ]
       },
       {
-        area: '夢見の劇場',
+        area: { ja: '夢見の劇場', en: 'Dream Theater' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'valley_17', label: '峡谷 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/41/Season_of_Performance_-_WingedLight.png/revision/latest/scale-to-width-down/209?cb=20230708231217' },
         ]
@@ -1042,17 +1695,17 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '捨てられた地',
+    realm: { ja: '捨てられた地', en: 'Wasteland' },
     areas: [
       {
-        area: '外郭（倒壊した祠）',
+        area: { ja: '外郭（倒壊した祠）', en: 'Outer Wall (Collapsed Shrine)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'wasteland_1', label: '捨てられた地 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/45/StarWasteland01.jpg/revision/latest/scale-to-width-down/204?cb=20190803221906' },
           { id: 'wasteland_2', label: '捨てられた地 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/7b/StarWasteland02.jpg/revision/latest/scale-to-width-down/209?cb=20230710041928' },
         ]
       },
       {
-        area: '墓所',
+        area: { ja: '墓所', en: 'Graveyard' },
         children: [
           { id: 'wasteland_3', label: '捨てられた地 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b8/StarWasteland03.jpg/revision/latest/scale-to-width-down/209?cb=20230710042216' },
           { id: 'wasteland_4', label: '捨てられた地 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ed/StarWasteland04.jpg/revision/latest/scale-to-width-down/204?cb=20190803221908' },
@@ -1063,14 +1716,14 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '戦場',
+        area: { ja: '戦場', en: 'Battlefield' },
         children: [
           { id: 'wasteland_9', label: '捨てられた地 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/ff/StarWasteland012.jpg/revision/latest/scale-to-width-down/204?cb=20190803223900' },
           { id: 'wasteland_10', label: '捨てられた地 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ac/StarWasteland013.jpg/revision/latest/scale-to-width-down/204?cb=20190803223901' },
         ]
       },
       {
-        area: '蟹の沼地（座礁船）',
+        area: { ja: '蟹の沼地（座礁船）', en: 'Crab Marsh (Shipwreck)' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'wasteland_11', label: '捨てられた地 光の子11', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d0/StarWasteland09.jpeg/revision/latest/scale-to-width-down/204?cb=20190803222735' },
           { id: 'wasteland_12', label: '捨てられた地 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8a/StarWasteland010.jpg/revision/latest/scale-to-width-down/204?cb=20190803222736' },
@@ -1078,20 +1731,20 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '捨てられた地の神殿',
+        area: { ja: '捨てられた地の神殿', en: 'Wasteland Temple' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'wasteland_14', label: '捨てられた地 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/35/StarWasteland014.jpg/revision/latest/scale-to-width-down/204?cb=20190803223902' },
         ]
       },
       {
-        area: '忘れられた方舟',
+        area: { ja: '忘れられた方舟', en: 'Forgotten Ark' },
         children: [
           { id: 'wasteland_15', label: '捨てられた地 光の子15', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/69/Forgotten_ark_star_1.jpg/revision/latest/scale-to-width-down/188?cb=20200707194829' },
           { id: 'wasteland_16', label: '捨てられた地 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/14/Forgotten_ark_star_2.jpg/revision/latest/scale-to-width-down/188?cb=20200707194904' },
         ]
       },
       {
-        area: '秘宝の環礁',
+        area: { ja: '秘宝の環礁', en: 'Treasure Reef' },
         children: [
           { id: 'wasteland_17', label: '捨てられた地 光の子17', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/81/Season_of_Abyss_-_Winglight_1.jpg/revision/latest/scale-to-width-down/209?cb=20211220014236' },
           { id: 'wasteland_18', label: '捨てられた地 光の子18', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dd/Season_of_Abyss_-_Winglight2.jpg/revision/latest/scale-to-width-down/209?cb=20211220014249' },
@@ -1100,17 +1753,17 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '書庫',
+    realm: { ja: '書庫', en: 'Vault' },
     areas: [
       {
-        area: '1〜3階',
+        area: { ja: '1〜3階', en: 'Floors 1-3' },
         children: [
           { id: 'vault_1', label: '書庫 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/96/StarVault01.jpg/revision/latest/scale-to-width-down/209?cb=20230711011811' },
           { id: 'vault_2', label: '書庫 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/05/StarVault02.jpg/revision/latest/scale-to-width-down/209?cb=20230711011913' },
         ]
       },
       {
-        area: '4階〜最上階',
+        area: { ja: '4階〜最上階', en: 'Floor 4 - Top Floor' },
         children: [
           { id: 'vault_3', label: '書庫 光の子3', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ea/StarVault03.jpg/revision/latest/scale-to-width-down/204?cb=20190803230810' },
           { id: 'vault_4', label: '書庫 光の子4', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3a/Vaultnewstarfloor4.jpg/revision/latest/scale-to-width-down/183?cb=20200519163418' },
@@ -1119,14 +1772,14 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '資料庫',
+        area: { ja: '資料庫', en: 'Archives' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'vault_7', label: '書庫 光の子7', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b6/Vaultstar2.jpg/revision/latest/scale-to-width-down/167?cb=20200320013416' },
           { id: 'vault_8', label: '書庫 光の子8', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/78/Vaultstar3.jpg/revision/latest/scale-to-width-down/167?cb=20200320013449' },
         ]
       },
       {
-        area: '星月夜の砂漠',
+        area: { ja: '星月夜の砂漠', en: 'Starlight Desert' },
         children: [
           { id: 'vault_9', label: '書庫 光の子9', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/66/SOTLP-Winglight-1.jpg/revision/latest/scale-to-width-down/198?cb=20210606020353' },
           { id: 'vault_10', label: '書庫 光の子10', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c4/SOTLP-Winglight-2.jpg/revision/latest/scale-to-width-down/198?cb=20210606020354' },
@@ -1134,13 +1787,13 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: '君憶う保存庫',
+        area: { ja: '君憶う保存庫', en: 'Chamber of Remembrance' }, // 未確認: 文脈からの推定訳
         children: [
           { id: 'vault_12', label: '書庫 光の子12', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/db/SOR-Winglight-1.png/revision/latest/scale-to-width-down/204?cb=20230116104621' },
         ]
       },
       {
-        area: '三日月オアシス',
+        area: { ja: '三日月オアシス', en: 'Crescent Oasis' },
         children: [
           { id: 'vault_13', label: '書庫 光の子13', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/21/Crescent-Oasis-WL1.jpg/revision/latest/scale-to-width-down/204?cb=20231222213208' },
           { id: 'vault_14', label: '書庫 光の子14', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d6/Crescent-Oasis-WL2.jpg/revision/latest/scale-to-width-down/204?cb=20231222212155' },
@@ -1148,7 +1801,7 @@ const LIGHT_CHILDREN = [
         ]
       },
       {
-        area: 'ムーミン谷',
+        area: { ja: 'ムーミン谷', en: 'Moominvalley' },
         children: [
           { id: 'vault_16', label: '書庫 光の子16', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c8/Season-of-Moomin-Winged-Light.jpg/revision/latest/scale-to-width-down/204?cb=20241009011144' },
         ]
@@ -1156,10 +1809,10 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: '暴風域',
+    realm: { ja: '暴風域', en: 'Eye of Eden' },
     areas: [
       {
-        area: '暴風域',
+        area: { ja: '暴風域', en: 'Eye of Eden' },
         children: [
           { id: 'eden_1', label: '暴風域 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d3/StarEden01.jpg/revision/latest/scale-to-width-down/209?cb=20230709035814' },
           { id: 'eden_2', label: '暴風域 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bb/StarEden02.jpg/revision/latest/scale-to-width-down/204?cb=20190803224259' },
@@ -1176,10 +1829,10 @@ const LIGHT_CHILDREN = [
     ]
   },
   {
-    realm: 'いにしえの追想',
+    realm: { ja: 'いにしえの追想', en: 'Void of Shattering' },
     areas: [
       {
-        area: 'いにしえの追想',
+        area: { ja: 'いにしえの追想', en: 'Void of Shattering' },
         children: [
           { id: 'shard_1', label: 'いにしえの追想 光の子1', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/12/SoShattering-Winged-Light-Jellyfish-Void.jpg/revision/latest/scale-to-width-down/193?cb=20220829003247' },
           { id: 'shard_2', label: 'いにしえの追想 光の子2', img: 'https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/fe/SOShattering-Winged-light-crab-void.jpg/revision/latest/scale-to-width-down/209?cb=20220624235010' },
@@ -1243,6 +1896,11 @@ function ensureProfilesInit() {
   return list;
 }
 function getActiveProfileId() { return localStorage.getItem(ACTIVE_PROFILE_KEY) || DEFAULT_PROFILE_ID; }
+// 「メイン」プロフィールの初期名だけは表示時に翻訳する（ユーザーが改名した場合は
+// そのままの文字列を表示する。保存されているデータ自体は書き換えない）。
+function pfDisplayName(p) {
+  return (p.id === DEFAULT_PROFILE_ID && p.name === 'メイン') ? t('pfDefaultName') : p.name;
+}
 function getActiveProfile() {
   const list = ensureProfilesInit();
   return list.find(p => p.id === getActiveProfileId()) || list[0];
@@ -1347,8 +2005,8 @@ function pfRenderBar() {
   pfApplyThemeColor(profile.color);
   if (!bar) return;
   bar.innerHTML = `
-    <span class="pf-bar-text" onclick="pfOpenModal()">🗂️ <b>${escapeHtml(profile.name)}</b> に切替中（タップで切替）</span>
-    <button type="button" class="pf-dash-btn" onclick="pfDashOpen()" title="今日・今週・今月ダッシュボード">🗓️</button>`;
+    <span class="pf-bar-text" onclick="pfOpenModal()">🗂️ <b>${escapeHtml(pfDisplayName(profile))}</b> ${t('pfBarActiveSuffix')}</span>
+    <button type="button" class="pf-dash-btn" onclick="pfDashOpen()" title="${escapeAttr(t('pfDashBtnTitle'))}">🗓️</button>`;
 }
 
 /* ================================================================
@@ -1380,16 +2038,21 @@ function pfDashNextEdenResetTarget() {
 // 闇の破片（赤闇・黒闇）の出現予測。コミュニティ製の予測ツール
 // https://github.com/PlutoyDev/sky-shards （src/data/shard.ts）のアルゴリズムを
 // 忠実に移植したもの。月の日付・曜日だけから決定論的に計算できるため手動更新データは不要。
+// realm名の表示は共通辞書 I18N の realmPrairie 等（canonical shard-realm訳）を使う。srLabel()参照。
 const SHARD_REALM_JA = { prairie: '草原', forest: '雨林', valley: '峡谷', wasteland: '捨てられた地', vault: '書庫' };
+function srLabel(realmKey) {
+  const map = { prairie: 'realmPrairie', forest: 'realmForest', valley: 'realmValley', wasteland: 'realmWasteland', vault: 'realmVault' };
+  return t(map[realmKey]);
+}
 const SHARD_REALMS = ['prairie', 'forest', 'valley', 'wasteland', 'vault'];
 // 各出現グループごとの、レルム内の具体的な出現エリア名（9-bit.jpの闇の破片場所一覧と
-// PlutoyDev/sky-shardsのshardsInfo.mapsを突き合わせて確認したもの）
+// PlutoyDev/sky-shardsのshardsInfo.mapsを突き合わせて確認したもの）。値は { ja, en } ペア。
 const SHARD_LOCATIONS = [
-  { prairie: '蝶々の住処', forest: '小川', valley: 'スケートリンク', wasteland: '最初のエリア', vault: '星月夜の砂漠' },
-  { prairie: '神殿エリア', forest: '神殿前', valley: 'スケートリンク', wasteland: '戦場', vault: '星月夜の砂漠' },
-  { prairie: '洞窟', forest: '神殿奥', valley: '夢見の町', wasteland: '墓所', vault: '海月の入り江' },
-  { prairie: '鳥の巣', forest: 'ツリーハウス', valley: '夢見の町', wasteland: '座礁船', vault: '海月の入り江' },
-  { prairie: '楽園の島々', forest: '晴れ間', valley: '隠者の峠', wasteland: '忘れられた方舟', vault: '海月の入り江' },
+  { prairie: { ja: '蝶々の住処', en: 'Butterfly Fields' }, forest: { ja: '小川', en: 'Brook' }, valley: { ja: 'スケートリンク', en: 'Ice Rink' }, wasteland: { ja: '最初のエリア', en: 'First Area' }, vault: { ja: '星月夜の砂漠', en: 'Starlight Desert' } },
+  { prairie: { ja: '神殿エリア', en: 'Temple Area' }, forest: { ja: '神殿前', en: 'Temple Approach' }, valley: { ja: 'スケートリンク', en: 'Ice Rink' }, wasteland: { ja: '戦場', en: 'Battlefield' }, vault: { ja: '星月夜の砂漠', en: 'Starlight Desert' } },
+  { prairie: { ja: '洞窟', en: 'Caves' }, forest: { ja: '神殿奥', en: 'Behind the Temple' }, valley: { ja: '夢見の町', en: 'Village of Dreams' }, wasteland: { ja: '墓所', en: 'Graveyard' }, vault: { ja: '海月の入り江', en: 'Jellyfish Cove' } },
+  { prairie: { ja: '鳥の巣', en: 'Bird Nest' }, forest: { ja: 'ツリーハウス', en: 'Treehouse' }, valley: { ja: '夢見の町', en: 'Village of Dreams' }, wasteland: { ja: '座礁船', en: 'Shipwreck' }, vault: { ja: '海月の入り江', en: 'Jellyfish Cove' } },
+  { prairie: { ja: '楽園の島々', en: 'Sanctuary Islands' }, forest: { ja: '晴れ間', en: 'Clearing' }, valley: { ja: '隠者の峠', en: 'Hermit Valley' }, wasteland: { ja: '忘れられた方舟', en: 'Forgotten Ark' }, vault: { ja: '海月の入り江', en: 'Jellyfish Cove' } },
 ];
 const SHARD_GROUPS = [
   { noShardWkDay: [6, 0], intervalH: 8, offsetH: 1, offsetM: 50 },
@@ -1501,7 +2164,7 @@ function pfDashCountdown(target) {
   const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
   const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
   const ss = String(totalSec % 60).padStart(2, '0');
-  return days > 0 ? `${days}日 ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+  return days > 0 ? `${days}${t('dashDayUnit')} ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
 }
 
 // 複数の未来時刻候補から一番近いものを選ぶ（全て過去なら null）
@@ -1552,68 +2215,70 @@ function pfDashBuildHtml(data) {
   const shard = pfDashShardInfo();
   if (shard.hasShard) {
     const icon = shard.isRed ? '🔴' : '⚫';
-    const colorLabel = shard.isRed ? '赤闇' : '黒闇';
-    const realmLabel = SHARD_REALM_JA[shard.realm];
-    const locationLabel = shard.location;
+    const colorLabel = shard.isRed ? t('dashRedShard') : t('dashBlackShard');
+    const realmLabel = srLabel(shard.realm);
+    const locationLabel = L(shard.location);
     const now = new Date();
     const times = shard.occurrences.map(occ => {
       const past = occ.getTime() <= now.getTime();
       return `<span class="dash-shard-time${past ? ' past' : ''}">${pfDashFormatShardTime(occ)}</span>`;
     }).join(' / ');
     const soon = pfDashSoonestFuture(shard.occurrences) || pfDashNextShardTime();
-    const countdownHtml = soon ? `<span class="dash-countdown">次まで ${pfDashCountdown(soon)}</span>` : '';
-    dailyRows.push(pfDashRow(icon, `${colorLabel}（<b>${realmLabel}・${locationLabel}</b>）が出現：<span class="dash-shard-times">${times}</span>${countdownHtml}`));
+    const countdownHtml = soon ? `<span class="dash-countdown">${t('dashNextIn')} ${pfDashCountdown(soon)}</span>` : '';
+    dailyRows.push(pfDashRow(icon, t('dashShardLineTemplate', { color: colorLabel, realm: realmLabel, location: locationLabel }) + `<span class="dash-shard-times">${times}</span>${countdownHtml}`));
   } else {
     const nextShard = pfDashNextShardTime();
-    const nextHtml = nextShard ? `<span class="dash-countdown">次まで ${pfDashCountdown(nextShard)}</span>` : '';
-    dailyRows.push(pfDashRow('🌑', `本日は闇の破片の出現はありません${nextHtml}`));
+    const nextHtml = nextShard ? `<span class="dash-countdown">${t('dashNextIn')} ${pfDashCountdown(nextShard)}</span>` : '';
+    dailyRows.push(pfDashRow('🌑', `${t('dashNoShardToday')}${nextHtml}`));
   }
   const candleRealm = pfDashGrandCandleRealm();
-  dailyRows.push(pfDashRow('🕯️', `大キャンドル：<b>${SHARD_REALM_JA[candleRealm]}</b><span class="dash-countdown">次の変更まで ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
+  dailyRows.push(pfDashRow('🕯️', `${t('dashGrandCandle')}${t('labelSep')}<b>${srLabel(candleRealm)}</b><span class="dash-countdown">${t('dashChangesIn')} ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
   const questCandleRealm = pfDashGrandCandleRealm(-1);
-  dailyRows.push(pfDashRow('📜', `クエスト・シーズンキャンドル：<b>${SHARD_REALM_JA[questCandleRealm]}</b><span class="dash-countdown">次の変更まで ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
-  dailyRows.push(pfDashRow('🌋', `ウニ焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(5))}</span>`));
-  dailyRows.push(pfDashRow('🍞', `パン焼き<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(35))}</span>`));
-  dailyRows.push(pfDashRow('🐢', `亀闇<span class="dash-countdown">次回まで ${pfDashCountdown(pfDashNextEvenHourEvent(50))}</span>`));
+  dailyRows.push(pfDashRow('📜', `${t('dashQuestSeasonCandle')}${t('labelSep')}<b>${srLabel(questCandleRealm)}</b><span class="dash-countdown">${t('dashChangesIn')} ${pfDashCountdown(pfDashNextPacificMidnight())}</span>`));
+  dailyRows.push(pfDashRow('🌋', `${t('dashGeyser')}<span class="dash-countdown">${t('dashNextEventIn')} ${pfDashCountdown(pfDashNextEvenHourEvent(5))}</span>`));
+  dailyRows.push(pfDashRow('🍞', `${t('dashBreadBaking')}<span class="dash-countdown">${t('dashNextEventIn')} ${pfDashCountdown(pfDashNextEvenHourEvent(35))}</span>`));
+  dailyRows.push(pfDashRow('🐢', `${t('dashTurtleDarkness')}<span class="dash-countdown">${t('dashNextEventIn')} ${pfDashCountdown(pfDashNextEvenHourEvent(50))}</span>`));
   const dailyHtml = dailyRows.join('');
 
+  // 注: data.season.name / ev.name / data.revisit.name は item(tai-item)側のindex.htmlから
+  // fetchして取得した日本語のみのデータで、このリポジトリの範囲外のため翻訳していない。
   const todayRows = [];
   if (data.season && data.season.name && data.season.endDate && new Date() < new Date(data.season.endDate)) {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(data.season.name)}</b> が開催中`));
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(data.season.name)}</b>${t('dashCurrentlyActive')}`));
   }
   pfDashActiveScheduledEvents(data.eventSchedule).forEach(ev => {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(ev.name)}</b> が開催中<span class="dash-countdown">終了まで ${pfDashCountdown(new Date(ev.end))}</span>`));
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(ev.name)}</b>${t('dashCurrentlyActive')}<span class="dash-countdown">${t('dashEndsIn')} ${pfDashCountdown(new Date(ev.end))}</span>`));
   });
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
     const revisitLabel = rv.active
-      ? `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」が来訪中`
-      : `再訪精霊 「<b>${escapeHtml(data.revisit.name)}</b>」の次回来訪まで`;
+      ? `${t('dashRevisitSpirit')} 「<b>${escapeHtml(data.revisit.name)}</b>」${t('dashRevisitHereNow')}`
+      : `${t('dashRevisitSpirit')} 「<b>${escapeHtml(data.revisit.name)}</b>」${t('dashRevisitReturnsIn')}`;
     todayRows.push(pfDashRow('🕊️', `${revisitLabel}<span class="dash-countdown">${pfDashCountdown(rv.target)}</span>`));
   }
-  const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">現在開催中の季節・イベントはありません</div>`;
+  const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">${t('dashNoCurrentSeasonEvent')}</div>`;
 
-  let weekHtml = pfDashRow('🌩️', `原罪：週間リセットまで<span class="dash-countdown">${pfDashCountdown(pfDashNextEdenResetTarget())}</span><span class="dash-note">毎週日曜0時・太平洋時間</span>`);
+  let weekHtml = pfDashRow('🌩️', `${t('dashEyeOfEden')}${t('labelSep')}${t('dashWeeklyResetIn')}<span class="dash-countdown">${pfDashCountdown(pfDashNextEdenResetTarget())}</span><span class="dash-note">${t('dashEverySundayPacific')}</span>`);
   if (data.nextUpdate && data.nextUpdate.date) {
     const updateTarget = new Date(data.nextUpdate.date);
     if (new Date() < updateTarget) {
-      weekHtml += pfDashRow('🔧', `次回アップデート予定<span class="dash-countdown">${pfDashCountdown(updateTarget)}</span>`);
+      weekHtml += pfDashRow('🔧', `${t('dashNextUpdate')}<span class="dash-countdown">${pfDashCountdown(updateTarget)}</span>`);
     }
   }
 
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
-    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」終了まで<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
+    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」${t('dashSeasonEndsInSuffix')}<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
   } else {
-    monthHtml = `<div class="dash-empty">シーズン情報が取得できませんでした</div>`;
+    monthHtml = `<div class="dash-empty">${t('dashSeasonLoadFailed')}</div>`;
   }
 
   return `
-    <div class="dash-section"><p class="dash-section-label">デイリー</p>${dailyHtml}</div>
-    <div class="dash-section"><p class="dash-section-label">今日</p>${todayHtml}</div>
-    <div class="dash-section"><p class="dash-section-label">今週</p>${weekHtml}</div>
-    <div class="dash-section"><p class="dash-section-label">今月</p>${monthHtml}</div>`;
+    <div class="dash-section"><p class="dash-section-label">${t('dashSectionDaily')}</p>${dailyHtml}</div>
+    <div class="dash-section"><p class="dash-section-label">${t('dashSectionToday')}</p>${todayHtml}</div>
+    <div class="dash-section"><p class="dash-section-label">${t('dashSectionWeek')}</p>${weekHtml}</div>
+    <div class="dash-section"><p class="dash-section-label">${t('dashSectionMonth')}</p>${monthHtml}</div>`;
 }
 let pfDashCache = null;
 let pfDashLoading = null;
@@ -1633,7 +2298,7 @@ async function pfDashOpen() {
   document.getElementById('dashModalOverlay').classList.add('show');
   const body = document.getElementById('dashBody');
   if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); return; }
-  body.innerHTML = `<div class="pf-hint">読み込み中…</div>`;
+  body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
   try {
     if (!pfDashLoading) pfDashLoading = pfDashLoadData();
     const data = await pfDashLoading;
@@ -1642,7 +2307,7 @@ async function pfDashOpen() {
     pfDashStartTimer();
   } catch (e) {
     console.error('pfDashOpen', e);
-    body.innerHTML = `<div class="dash-empty">読み込みに失敗しました</div>`;
+    body.innerHTML = `<div class="dash-empty">${t('dashLoadFailed')}</div>`;
   }
 }
 function pfDashClose() {
@@ -1663,11 +2328,11 @@ let pfDeletingId = null;
    新規キー（skyCurrencyExtra_v1）で管理する。
    ================================================================ */
 const PF_CURRENCY_FIELDS = [
-  { key: 'candle',         icon: '🕯️', label: 'キャンドル' },
-  { key: 'heart',          icon: '💗', label: 'ハート' },
-  { key: 'ascendedCandle', icon: '🕯️✨', label: '星のキャンドル' },
-  { key: 'seasonCandle',   icon: '🕯️🍂', label: 'シーズンキャンドル' },
-  { key: 'giftPass',       icon: '🎟️', label: 'ギフトパス' },
+  { key: 'candle',         icon: '🕯️', labelKey: 'currencyCandle' },
+  { key: 'heart',          icon: '💗', labelKey: 'currencyHeart' },
+  { key: 'ascendedCandle', icon: '🕯️✨', labelKey: 'currencyAscendedCandle' },
+  { key: 'seasonCandle',   icon: '🕯️🍂', labelKey: 'currencySeasonCandle' },
+  { key: 'giftPass',       icon: '🎟️', labelKey: 'currencyGiftPass' },
 ];
 function pfCompanionDataKey() {
   const id = getActiveProfileId();
@@ -1723,7 +2388,7 @@ function pfRenderCurrency() {
   const c = pfLoadCurrency();
   body.innerHTML = PF_CURRENCY_FIELDS.map(f => `
     <div class="pf-currency-row">
-      <span class="pf-currency-label">${f.icon} ${f.label}</span>
+      <span class="pf-currency-label">${f.icon} ${t(f.labelKey)}</span>
       <input type="number" min="0" class="pf-currency-input" value="${c[f.key]}"
         onchange="pfSaveCurrencyField('${f.key}', this.value)">
     </div>`).join('');
@@ -1739,7 +2404,7 @@ function pfSyncCurrencyToggleUI() {
   const body = document.getElementById('pfCurrencyBody');
   const label = document.getElementById('pfCurrencyToggleLabel');
   if (body) body.style.display = pfCurrencyOpen ? '' : 'none';
-  if (label) label.textContent = pfCurrencyOpen ? '閉じる ▲' : '開く ▼';
+  if (label) label.textContent = pfCurrencyOpen ? t('currencyToggleClose') : t('currencyToggleOpen');
 }
 
 function pfOpenModal() {
@@ -1793,7 +2458,7 @@ function dmExport() {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  document.getElementById('dmStatus').textContent = `書き出しました（${Object.keys(dump).length}件のキー）。`;
+  document.getElementById('dmStatus').textContent = t('backupExportSuccessTemplate', { n: Object.keys(dump).length });
 }
 
 let dmPendingImport = null;
@@ -1805,21 +2470,21 @@ function dmImportFileSelected(event) {
   reader.onload = () => {
     let parsed;
     try { parsed = JSON.parse(reader.result); } catch (e) {
-      document.getElementById('dmStatus').textContent = 'ファイルの読み込みに失敗しました（JSON形式ではありません）。';
+      document.getElementById('dmStatus').textContent = t('backupImportFileReadError');
       return;
     }
     const data = parsed && parsed.data && typeof parsed.data === 'object' ? parsed.data : null;
     if (!data) {
-      document.getElementById('dmStatus').textContent = 'このツールで書き出したファイルではないようです。';
+      document.getElementById('dmStatus').textContent = t('backupImportFileInvalid');
       return;
     }
     dmPendingImport = data;
     const count = Object.keys(data).length;
     document.getElementById('dmImportConfirmArea').innerHTML = `
       <div class="pf-row" style="flex-wrap: wrap;">
-        <span class="pf-row-confirm-text">${count}件のキーをインポートします。現在保存されているデータは上書きされます（インポートするファイルに無いキーはそのまま残ります）。よろしいですか？</span>
-        <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="dmConfirmImport()">インポート実行</button>
-        <button type="button" class="pf-icon-btn" onclick="dmCancelImport()">取消</button>
+        <span class="pf-row-confirm-text">${t('backupImportConfirmTemplate', { n: count })}</span>
+        <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="dmConfirmImport()">${t('backupImportExecuteBtn')}</button>
+        <button type="button" class="pf-icon-btn" onclick="dmCancelImport()">${t('pfCancelBtn')}</button>
       </div>`;
   };
   reader.readAsText(file);
@@ -1835,7 +2500,7 @@ function dmConfirmImport() {
   });
   dmPendingImport = null;
   document.getElementById('dmImportConfirmArea').innerHTML = '';
-  document.getElementById('dmStatus').textContent = 'インポートしました。ページを再読み込みします…';
+  document.getElementById('dmStatus').textContent = t('backupImportSuccess');
   setTimeout(() => location.reload(), 800);
 }
 
@@ -1843,21 +2508,21 @@ let dmWipeConfirming = false;
 function dmRenderWipeArea() {
   const area = document.getElementById('dmWipeArea');
   if (!dmWipeConfirming) {
-    area.innerHTML = `<button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()">🗑️ 全データを削除</button>`;
+    area.innerHTML = `<button type="button" class="pf-icon-btn pf-row-btn-danger" style="width:100%; padding:8px;" onclick="dmStartWipe()">${t('backupWipeBtn')}</button>`;
     return;
   }
   area.innerHTML = `
     <div class="pf-row" style="flex-wrap: wrap;">
-      <span class="pf-row-confirm-text">すべてのプロフィール・所持アイテム・お気に入り・精霊ツリーの進捗など、このブラウザに保存されている全データを削除します。この操作は取り消せません。先にエクスポートしておくことをおすすめします。本当に削除しますか？</span>
-      <button type="button" class="pf-icon-btn pf-row-btn-danger" onclick="dmConfirmWipe()">完全に削除する</button>
-      <button type="button" class="pf-icon-btn" onclick="dmCancelWipe()">取消</button>
+      <span class="pf-row-confirm-text">${t('backupWipeConfirmText')}</span>
+      <button type="button" class="pf-icon-btn pf-row-btn-danger" onclick="dmConfirmWipe()">${t('backupWipeExecuteBtn')}</button>
+      <button type="button" class="pf-icon-btn" onclick="dmCancelWipe()">${t('pfCancelBtn')}</button>
     </div>`;
 }
 function dmStartWipe() { dmWipeConfirming = true; dmRenderWipeArea(); }
 function dmCancelWipe() { dmWipeConfirming = false; dmRenderWipeArea(); }
 function dmConfirmWipe() {
   localStorage.clear();
-  document.getElementById('dmStatus').textContent = '削除しました。ページを再読み込みします…';
+  document.getElementById('dmStatus').textContent = t('backupWipeSuccess');
   setTimeout(() => location.reload(), 800);
 }
 
@@ -1964,7 +2629,7 @@ async function pfIconApply(dataUrl) {
 
 function pfIconSave() {
   if (pfIconMode === 'image' && !pfIconUploadedImg) {
-    document.getElementById('iconSaveStatus').textContent = '画像を選択してください';
+    document.getElementById('iconSaveStatus').textContent = t('iconSaveStatusSelectImage');
     return;
   }
   const dataUrl = pfIconGenerateDataUrl(512);
@@ -1976,11 +2641,11 @@ function pfIconSave() {
   try {
     localStorage.setItem(PF_ICON_STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    document.getElementById('iconSaveStatus').textContent = '保存に失敗しました(容量オーバーの可能性があります)';
+    document.getElementById('iconSaveStatus').textContent = t('iconSaveStatusFailed');
     return;
   }
   pfIconApply(dataUrl);
-  document.getElementById('iconSaveStatus').textContent = '✅ 保存しました。これでホーム画面に追加すると反映されます';
+  document.getElementById('iconSaveStatus').textContent = t('iconSaveStatusSuccess');
 }
 
 function pfIconReset() {
@@ -1993,7 +2658,7 @@ function pfIconReset() {
   document.getElementById('iconEmojiInput').value = '🪽';
   document.getElementById('iconBgColorInput').value = '#007AFF';
   pfIconSetMode('emoji');
-  document.getElementById('iconSaveStatus').textContent = 'デフォルトのアイコンに戻しました';
+  document.getElementById('iconSaveStatus').textContent = t('iconSaveStatusReset');
 }
 
 function pfIconApplyFromStorage() {
@@ -2030,12 +2695,12 @@ const SITE_URL = 'https://taipak5000.github.io/wings/';
 const SHARE_HASHTAG = '#Sky羽トラッカー';
 
 const SHARE_THEMES = {
-  blue:   { label: 'ブルー',   grad: 'linear-gradient(135deg, #0051A8 0%, #007AFF 55%, #5AC8FA 100%)' },
-  orange: { label: 'オレンジ', grad: 'linear-gradient(135deg, #C56E06 0%, #FF9500 55%, #FFBB00 100%)' },
-  green:  { label: 'グリーン', grad: 'linear-gradient(135deg, #1F7A3D 0%, #34C759 55%, #8BE28B 100%)' },
-  purple: { label: 'パープル', grad: 'linear-gradient(135deg, #4B2E83 0%, #7B4FCB 55%, #B98CFF 100%)' },
-  pink:   { label: 'ピンク',   grad: 'linear-gradient(135deg, #B0184D 0%, #FF2D78 55%, #FF8FB3 100%)' },
-  dark:   { label: 'ダーク',   grad: 'linear-gradient(135deg, #05070d 0%, #1b2333 100%)' },
+  blue:   { labelKey: 'themeNameBlue',   grad: 'linear-gradient(135deg, #0051A8 0%, #007AFF 55%, #5AC8FA 100%)' },
+  orange: { labelKey: 'themeNameOrange', grad: 'linear-gradient(135deg, #C56E06 0%, #FF9500 55%, #FFBB00 100%)' },
+  green:  { labelKey: 'themeNameGreen',  grad: 'linear-gradient(135deg, #1F7A3D 0%, #34C759 55%, #8BE28B 100%)' },
+  purple: { labelKey: 'themeNamePurple', grad: 'linear-gradient(135deg, #4B2E83 0%, #7B4FCB 55%, #B98CFF 100%)' },
+  pink:   { labelKey: 'themeNamePink',   grad: 'linear-gradient(135deg, #B0184D 0%, #FF2D78 55%, #FF8FB3 100%)' },
+  dark:   { labelKey: 'themeNameDark',   grad: 'linear-gradient(135deg, #05070d 0%, #1b2333 100%)' },
 };
 const SHARE_CUSTOMIZE_KEY = 'wingsShareCustomize_v1';
 
@@ -2055,7 +2720,7 @@ function openCustomizeModal() {
   const saved = loadShareCustomize();
   document.getElementById('themeSwatchRow').innerHTML = Object.keys(SHARE_THEMES).map(key => `
     <div class="theme-swatch ${key === saved.theme ? 'selected' : ''}" data-theme="${key}"
-      style="background:${SHARE_THEMES[key].grad};" title="${SHARE_THEMES[key].label}"
+      style="background:${SHARE_THEMES[key].grad};" title="${escapeAttr(t(SHARE_THEMES[key].labelKey))}"
       onclick="selectShareTheme('${key}')"></div>`).join('');
   document.getElementById('customizeComment').value = '';
   document.getElementById('customizeModal').classList.add('show');
@@ -2096,8 +2761,8 @@ function getWingStats() {
 
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
   SEASON_SPIRITS.forEach(({ season, spirits }) => {
-    const checked = tracker[season] || {};
-    seasonFeathers += spirits.filter(sp => checked[sp]).length;
+    const checked = tracker[season.ja] || {};
+    seasonFeathers += spirits.filter(sp => checked[sp.ja]).length;
     seasonSpiritsTotal += spirits.length;
   });
 
@@ -2105,7 +2770,7 @@ function getWingStats() {
   const permTotal = REALM_SPIRITS.reduce((sum, r) => sum + r.spirits.reduce((s2, sp) => s2 + (sp.t2 ? 2 : 1), 0), 0);
   REALM_SPIRITS.forEach(({ spirits }) => {
     spirits.forEach(sp => {
-      const state = permTracker[sp.name] || {};
+      const state = permTracker[sp.name.ja] || {};
       if (state.tier1) permFeathers++;
       if (sp.t2 && state.tier2) permFeathers++;
     });
@@ -2126,18 +2791,18 @@ function buildOverallExportCardEl(opts = {}) {
   const comment = opts.comment || '';
 
   const today = new Date();
-  const dateTxt = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日作成`;
+  const dateTxt = t('exportCardDateTemplate', { y: today.getFullYear(), m: today.getMonth() + 1, d: today.getDate() });
 
   const card = document.createElement('div');
   card.className = 'export-card';
   card.style.background = SHARE_THEMES[theme].grad;
   card.innerHTML = `
-    <div class="exp-brand">🪽 羽トラッカー</div>
+    <div class="exp-brand">${t('exportCardBrand')}</div>
     <div class="exp-hero">
-      <div class="exp-hero-pct">${totalAll.toLocaleString()}枚</div>
-      <div class="exp-hero-label">光の翼 合計</div>
-      <div class="exp-hero-nums">季節精霊 ${seasonFeathers}/${seasonSpiritsTotal} ・ 恒常精霊 ${permFeathers}/${permTotal}</div>
-      <div class="exp-hero-sub">ケープレベル ${capeLevel}</div>
+      <div class="exp-hero-pct">${t('exportCardHeroValueTemplate', { n: totalAll.toLocaleString() })}</div>
+      <div class="exp-hero-label">${t('exportCardHeroLabel')}</div>
+      <div class="exp-hero-nums">${t('exportCardNumsTemplate', { season: `${seasonFeathers}/${seasonSpiritsTotal}`, perm: `${permFeathers}/${permTotal}` })}</div>
+      <div class="exp-hero-sub">${t('exportCardSubTemplate', { level: capeLevel })}</div>
     </div>
     ${comment ? `<div class="exp-comment">${escapeHtml(comment)}</div>` : ''}
     <div class="exp-date">${dateTxt}</div>
@@ -2165,8 +2830,8 @@ function sanitizeFilename(str) {
 }
 
 async function exportElementAsImage(buildCardFn, filenameBase, opts = {}) {
-  const { shareText, successToast = '画像を保存しました！' } = opts;
-  showToast('画像を生成中…');
+  const { shareText, successToast = t('imageSavedToast') } = opts;
+  showToast(t('imageGenerating'));
   let card = null;
   try {
     await ensureHtml2Canvas();
@@ -2184,7 +2849,7 @@ async function exportElementAsImage(buildCardFn, filenameBase, opts = {}) {
     openImagePreview(canvas.toDataURL('image/png'), filename, shareText);
   } catch (err) {
     console.error(err);
-    showToast('画像の保存に失敗しました');
+    showToast(t('imageSaveFailed'));
   } finally {
     if (card) card.remove();
   }
@@ -2228,13 +2893,13 @@ function openImagePreview(dataUrl, filename, shareText) {
   const title = document.getElementById('previewModalTitle');
 
   if (shareText) {
-    title.textContent = '🖼️ 画像を保存してXへ投稿';
-    hint.textContent = '① 下の「ダウンロード」で画像を保存 → ② 「Xの投稿画面を開く」を押して、保存した画像を添付して投稿してください';
+    title.textContent = t('previewModalTitleSaveShare');
+    hint.textContent = t('previewHintSaveShare');
     document.getElementById('previewTwitterLink').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
     twRow.style.display = '';
   } else {
-    title.textContent = '🖼️ 画像を保存';
-    hint.textContent = '画像を長押し（PCの場合は右クリック）して「画像を保存」を選んでください';
+    title.textContent = t('previewModalTitleSave');
+    hint.textContent = t('previewHintSave');
     twRow.style.display = 'none';
   }
 
@@ -2247,15 +2912,15 @@ function closeImagePreviewModal() {
 function buildOverallTweetText(comment) {
   if (comment) return `${comment}\n\n${SITE_URL}\n${SHARE_HASHTAG}`;
   const { totalAll, capeLevel } = getWingStats();
-  return `光の翼を${totalAll.toLocaleString()}枚集めました！（ケープレベル${capeLevel}）\nあなたは何枚集めてる？✨\n\n${SITE_URL}\n${SHARE_HASHTAG}`;
+  return t('tweetTextTemplate', { n: totalAll.toLocaleString(), level: capeLevel, url: SITE_URL, hashtag: SHARE_HASHTAG });
 }
 
 function shareOverallOnTwitter(fromCustomize) {
   const opts = fromCustomize ? readShareCustomizeFromModal() : {};
   if (fromCustomize) closeCustomizeModal();
-  return exportElementAsImage(() => buildOverallExportCardEl(opts), '光の翼コレクション', {
+  return exportElementAsImage(() => buildOverallExportCardEl(opts), t('exportCardHeroLabel'), {
     shareText: buildOverallTweetText(opts.comment),
-    successToast: '共有しました！'
+    successToast: t('imageSharedToast')
   });
 }
 
@@ -2271,29 +2936,29 @@ function pfRenderModal() {
         <div class="pf-row" style="flex-wrap: wrap;">
           <input type="text" class="pf-row-input" id="pfEditInput" value="${nameEsc}" maxlength="30"
             onkeydown="if(event.key==='Enter') pfConfirmRenameInline('${p.id}'); if(event.key==='Escape') pfCancelRowState();">
-          <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="pfConfirmRenameInline('${p.id}')">保存</button>
-          <button type="button" class="pf-icon-btn" onclick="pfCancelRowState()">取消</button>
+          <button type="button" class="pf-icon-btn pf-row-btn-ok" onclick="pfConfirmRenameInline('${p.id}')">${t('pfRenameSaveBtn')}</button>
+          <button type="button" class="pf-icon-btn" onclick="pfCancelRowState()">${t('pfCancelBtn')}</button>
         </div>`;
     }
 
     if (pfDeletingId === p.id) {
       return `
         <div class="pf-row" style="flex-wrap: wrap;">
-          <span class="pf-row-confirm-text">「${escapeHtml(p.name)}」を削除しますか？（一覧からの削除のみで、保存済みデータはブラウザ内に残ります）</span>
-          <button type="button" class="pf-icon-btn pf-row-btn-danger" onclick="pfConfirmDeleteInline('${p.id}')">削除</button>
-          <button type="button" class="pf-icon-btn" onclick="pfCancelRowState()">取消</button>
+          <span class="pf-row-confirm-text">${t('pfDeleteConfirmTemplate', { name: escapeHtml(pfDisplayName(p)) })}</span>
+          <button type="button" class="pf-icon-btn pf-row-btn-danger" onclick="pfConfirmDeleteInline('${p.id}')">${t('pfDeleteBtn')}</button>
+          <button type="button" class="pf-icon-btn" onclick="pfCancelRowState()">${t('pfCancelBtn')}</button>
         </div>`;
     }
 
     const colorVal = pfIsSafeColor(p.color) ? p.color : '#007AFF';
     return `
       <div class="pf-row ${isActive ? 'active' : ''}">
-        <input type="color" class="pf-color-input" value="${colorVal}" title="アカウントカラー"
+        <input type="color" class="pf-color-input" value="${colorVal}" title="${escapeAttr(t('pfAccountColorTitle'))}"
           onchange="pfSetProfileColor('${p.id}', this.value)">
-        <span class="pf-row-name" onclick="switchProfile('${p.id}')">${isActive ? '✅ ' : ''}${escapeHtml(p.name)}</span>
-        ${p.color ? `<button type="button" class="pf-icon-btn pf-color-clear-btn" title="カラーを初期値に戻す" onclick="pfClearProfileColor('${p.id}')">↺</button>` : ''}
-        <button type="button" class="pf-icon-btn" title="名前を変更" onclick="pfStartRename('${p.id}')">✏️</button>
-        ${list.length > 1 ? `<button type="button" class="pf-icon-btn" title="削除" onclick="pfStartDelete('${p.id}')">🗑️</button>` : ''}
+        <span class="pf-row-name" onclick="switchProfile('${p.id}')">${isActive ? '✅ ' : ''}${escapeHtml(pfDisplayName(p))}</span>
+        ${p.color ? `<button type="button" class="pf-icon-btn pf-color-clear-btn" title="${escapeAttr(t('pfResetColorTitle'))}" onclick="pfClearProfileColor('${p.id}')">↺</button>` : ''}
+        <button type="button" class="pf-icon-btn" title="${escapeAttr(t('pfRenameTitle'))}" onclick="pfStartRename('${p.id}')">✏️</button>
+        ${list.length > 1 ? `<button type="button" class="pf-icon-btn" title="${escapeAttr(t('pfDeleteBtn'))}" onclick="pfStartDelete('${p.id}')">🗑️</button>` : ''}
       </div>`;
   }).join('');
 
@@ -2407,27 +3072,27 @@ function render() {
   // ── 季節精霊・再訪 ──
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
   const seasonHtml = SEASON_SPIRITS.map(({ season, spirits }) => {
-    const checked = tracker[season] || {};
-    const gotCount = spirits.filter(sp => checked[sp]).length;
+    const checked = tracker[season.ja] || {};
+    const gotCount = spirits.filter(sp => checked[sp.ja]).length;
     seasonFeathers += gotCount;
     seasonSpiritsTotal += spirits.length;
     const complete = gotCount === spirits.length;
 
     if (seasonFilterUnowned && complete) return '';
 
-    const visibleSpirits = seasonFilterUnowned ? spirits.filter(sp => !checked[sp]) : spirits;
+    const visibleSpirits = seasonFilterUnowned ? spirits.filter(sp => !checked[sp.ja]) : spirits;
     const spiritsHtml = visibleSpirits.map(sp => `
       <label class="spirit-opt">
-        <input type="checkbox" ${checked[sp] ? 'checked' : ''}
-          onchange="onSpiritToggle('${escapeAttr(season)}', '${escapeAttr(sp)}', this.checked)">
-        ${escapeHtml(sp)}
+        <input type="checkbox" ${checked[sp.ja] ? 'checked' : ''}
+          onchange="onSpiritToggle('${escapeAttr(season.ja)}', '${escapeAttr(sp.ja)}', this.checked)">
+        ${escapeHtml(L(sp))}
       </label>`).join('');
 
     return `
       <div class="season-card">
         <div class="season-head">
-          <div class="season-name">${escapeHtml(season)}</div>
-          <span class="season-sub-badge ${complete ? 'complete' : ''}">${gotCount} / ${spirits.length} 体</span>
+          <div class="season-name">${escapeHtml(L(season))}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('seasonBadgeTemplate', { got: gotCount, total: spirits.length })}</span>
         </div>
         <div class="spirit-list">${spiritsHtml}</div>
       </div>`;
@@ -2442,7 +3107,7 @@ function render() {
     const realmMax = spirits.reduce((s, sp) => s + (sp.t2 ? 2 : 1), 0);
 
     const spiritsHtml = spirits.map(sp => {
-      const state = permTracker[sp.name] || {};
+      const state = permTracker[sp.name.ja] || {};
       const t1Owned = !!state.tier1;
       const t2Owned = sp.t2 ? !!state.tier2 : false;
       if (t1Owned) { realmGot++; permCandles += sp.t1; }
@@ -2451,14 +3116,14 @@ function render() {
       const tier1Opt = (!permFilterUnowned || !t1Owned) ? `
       <label class="spirit-opt">
         <input type="checkbox" ${t1Owned ? 'checked' : ''}
-          onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier1', this.checked)">
-        ${escapeHtml(sp.name)}（Tier1・星のキャンドル${sp.t1}本）
+          onchange="onPermToggle('${escapeAttr(sp.name.ja)}', 'tier1', this.checked)">
+        ${escapeHtml(L(sp.name))}${t('tier1Template', { n: sp.t1, unit: sp.t1 === 1 ? '' : 's' })}
       </label>` : '';
       const tier2Opt = (sp.t2 && (!permFilterUnowned || !t2Owned)) ? `
       <label class="spirit-opt">
         <input type="checkbox" ${t2Owned ? 'checked' : ''}
-          onchange="onPermToggle('${escapeAttr(sp.name)}', 'tier2', this.checked)">
-        ${escapeHtml(sp.name)}（Tier2・星のキャンドル${sp.t2}本）
+          onchange="onPermToggle('${escapeAttr(sp.name.ja)}', 'tier2', this.checked)">
+        ${escapeHtml(L(sp.name))}${t('tier2Template', { n: sp.t2, unit: sp.t2 === 1 ? '' : 's' })}
       </label>` : '';
       return tier1Opt + tier2Opt;
     }).join('');
@@ -2471,8 +3136,8 @@ function render() {
     return `
       <div class="season-card">
         <div class="season-head">
-          <div class="season-name">${escapeHtml(realm)}</div>
-          <span class="season-sub-badge ${complete ? 'complete' : ''}">${realmGot} / ${realmMax} 枚</span>
+          <div class="season-name">${escapeHtml(L(realm))}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('permBadgeTemplate', { got: realmGot, total: realmMax })}</span>
         </div>
         <div class="spirit-list">${spiritsHtml}</div>
       </div>`;
@@ -2485,9 +3150,9 @@ function render() {
   // ── 集計表示 ──
   const REBIRTH_BONUS = 1; // 原罪での転生ボーナス（精霊への配布とは別に+1）
   const totalAll = seasonFeathers + permFeathers + lightChildrenGot + REBIRTH_BONUS;
-  document.getElementById('sumFeathersAll').textContent = `${totalAll.toLocaleString()}枚`;
-  document.getElementById('sumFeathersAllSub').textContent = `季節精霊 ${seasonFeathers} + 恒常精霊 ${permFeathers} + 光の子 ${lightChildrenGot} + 転生 ${REBIRTH_BONUS}`;
-  document.getElementById('sumCandles').textContent = `${((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString()}本`;
+  document.getElementById('sumFeathersAll').textContent = t('sheetCountTemplate', { n: totalAll.toLocaleString() });
+  document.getElementById('sumFeathersAllSub').textContent = t('summaryGotSubTemplate', { season: seasonFeathers, perm: permFeathers, light: lightChildrenGot, rebirth: REBIRTH_BONUS });
+  document.getElementById('sumCandles').textContent = t('candleCountTemplate', { n: ((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString() });
   document.getElementById('sumFeathersSeason').textContent = `${seasonFeathers} / ${seasonSpiritsTotal}`;
   document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
   document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
@@ -2503,7 +3168,7 @@ function renderLightChildren() {
 
   if (!LIGHT_CHILDREN.length) {
     document.getElementById('lightChildrenList').innerHTML =
-      `<div class="notice-card">データを準備中です。しばらくお待ちください。</div>`;
+      `<div class="notice-card">${t('lightChildrenPreparing')}</div>`;
     return { got: 0, total: 0 };
   }
 
@@ -2515,8 +3180,9 @@ function renderLightChildren() {
         const checked = !!tracker[child.id];
         if (checked) realmGot++;
         if (lightChildrenFilterUnowned && checked) return '';
+        const label = lcChildLabel(child, realm);
         const thumb = child.img
-          ? `<img src="${escapeAttr(child.img)}" alt="${escapeHtml(child.label)}" loading="lazy" onerror="this.parentElement.classList.add('img-fallback')">`
+          ? `<img src="${escapeAttr(child.img)}" alt="${escapeHtml(label)}" loading="lazy" onerror="this.parentElement.classList.add('img-fallback')">`
           : '';
         return `
           <label class="light-child-opt ${checked ? 'checked' : ''}">
@@ -2527,17 +3193,17 @@ function renderLightChildren() {
             </div>
             <input type="checkbox" style="display:none;" ${checked ? 'checked' : ''}
               onchange="onLightChildToggle('${escapeAttr(child.id)}', this.checked)">
-            <span class="light-child-label">${escapeHtml(child.label)}</span>
+            <span class="light-child-label">${escapeHtml(label)}</span>
           </label>`;
       }).join('');
       if (!optsHtml.trim()) return '';
       const idsCsv = children.map(c => c.id).join(',');
       return `
         <div class="area-name">
-          <span class="area-name-label">${escapeHtml(area)}</span>
+          <span class="area-name-label">${escapeHtml(L(area))}</span>
           <span class="area-actions">
-            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', true)">全選択</button>
-            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', false)">リセット</button>
+            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', true)">${t('areaSelectAllBtn')}</button>
+            <button type="button" class="area-btn" onclick="setAreaChildren('${idsCsv}', false)">${t('areaResetBtn')}</button>
           </span>
         </div>
         <div class="light-child-grid">${optsHtml}</div>`;
@@ -2552,15 +3218,25 @@ function renderLightChildren() {
     return `
       <div class="realm-block">
         <div class="season-head">
-          <div class="season-name">${escapeHtml(realm)}</div>
-          <span class="season-sub-badge ${complete ? 'complete' : ''}">${realmGot} / ${realmTotal} 体</span>
+          <div class="season-name">${escapeHtml(L(realm))}</div>
+          <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('lightChildrenBadgeTemplate', { got: realmGot, total: realmTotal })}</span>
         </div>
         ${areasHtml}
       </div>`;
   }).join('');
 
-  document.getElementById('lightChildrenList').innerHTML = html || `<div class="notice-card">条件に一致する光の子がいません。</div>`;
+  document.getElementById('lightChildrenList').innerHTML = html || `<div class="notice-card">${t('lightChildrenNoMatch')}</div>`;
   return { got, total };
+}
+
+// 光の子1体の表示ラベルを組み立てる。JAは元のlabel文字列をそのまま使い、ENはlabel末尾の
+// 通し番号を抜き出してrealmのEN名と組み合わせて生成する（124体分のラベルを個別に
+// {ja,en}化する代わりに、realm名の翻訳だけで済むようにするため）。
+function lcChildLabel(child, realmObj) {
+  if (LANG !== 'en') return child.label;
+  const m = /(\d+)\s*$/.exec(child.label);
+  const num = m ? m[1] : '';
+  return `${realmObj.en} Child of Light ${num}`.trim();
 }
 
 function onLightChildToggle(id, isChecked) {
@@ -2569,7 +3245,7 @@ function onLightChildToggle(id, isChecked) {
   else delete tracker[id];
   saveLightChildrenTracker(tracker);
   render();
-  showToast('保存しました');
+  showToast(t('toastSaved'));
 }
 
 function setAreaChildren(idsCsv, checked) {
@@ -2581,19 +3257,19 @@ function setAreaChildren(idsCsv, checked) {
   });
   saveLightChildrenTracker(tracker);
   render();
-  showToast(checked ? 'エリアをまとめて選択しました' : 'エリアをリセットしました');
+  showToast(checked ? t('toastAreaSelected') : t('toastAreaReset'));
 }
 
 function resetAllLightChildren() {
-  showConfirmModal('光の子のチェックをすべてリセットします。よろしいですか？', () => {
+  showConfirmModal(t('confirmResetAllLightChildren'), () => {
     saveLightChildrenTracker({});
     render();
-    showToast('光の子をすべてリセットしました');
+    showToast(t('toastResetAllLightChildren'));
   });
 }
 
 function markAllLightChildren() {
-  showConfirmModal('光の子を全エリア一気に取得済みにします。よろしいですか？', () => {
+  showConfirmModal(t('confirmMarkAllLightChildren'), () => {
     const tracker = loadLightChildrenTracker();
     LIGHT_CHILDREN.forEach(({ areas }) => {
       areas.forEach(({ children }) => {
@@ -2602,7 +3278,7 @@ function markAllLightChildren() {
     });
     saveLightChildrenTracker(tracker);
     render();
-    showToast('光の子を全エリア取得済みにしました');
+    showToast(t('toastMarkAllLightChildren'));
   });
 }
 
@@ -2627,8 +3303,8 @@ function renderCapeLevels(total) {
   const nextNeed = CAPE_LEVELS[reachedLevel];
 
   const summary = reachedLevel >= CAPE_LEVELS.length
-    ? `現在 光の翼 ${total}枚 — 最大ケープレベル ${CAPE_LEVELS.length} に到達済み！`
-    : `現在 光の翼 ${total}枚（レベル${reachedLevel + 1}まであと ${nextNeed - total}枚）`;
+    ? t('capeSummaryMaxTemplate', { total, max: CAPE_LEVELS.length })
+    : t('capeSummaryTemplate', { total, next: reachedLevel + 1, remain: nextNeed - total });
   document.getElementById('capeSummary').textContent = summary;
 
   document.getElementById('capeLevelLabel').textContent = `Lv${reachedLevel}`;
@@ -2671,7 +3347,7 @@ function onSpiritToggle(season, spirit, isChecked) {
   else delete tracker[season][spirit];
   saveTracker(tracker);
   render();
-  showToast('保存しました');
+  showToast(t('toastSaved'));
 }
 
 function onPermToggle(spirit, tier, isChecked) {
@@ -2681,7 +3357,7 @@ function onPermToggle(spirit, tier, isChecked) {
   else delete tracker[spirit][tier];
   savePermTracker(tracker);
   render();
-  showToast('保存しました');
+  showToast(t('toastSaved'));
 }
 
 let toastTimer = null;
@@ -2702,6 +3378,7 @@ function closeSidebarMobile() {
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
+document.addEventListener('DOMContentLoaded', applyI18n);
 document.addEventListener('DOMContentLoaded', pfRenderBar);
 document.addEventListener('DOMContentLoaded', render);
 </script>
