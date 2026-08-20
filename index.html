@@ -2442,8 +2442,8 @@ function pfDashBuildHtml(data) {
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
     const revisitLabel = rv.active
-      ? `${t('dashRevisitSpirit')} 「<b>${escapeHtml(data.revisit.name)}</b>」${t('dashRevisitHereNow')}`
-      : `${t('dashRevisitSpirit')} 「<b>${escapeHtml(data.revisit.name)}</b>」${t('dashRevisitReturnsIn')}`;
+      ? `${t('dashRevisitSpirit')}${t('dashRevisitHereNow')}`
+      : `${t('dashRevisitSpirit')}${t('dashRevisitReturnsIn')}`;
     todayRows.push(pfDashRow('🕊️', `${revisitLabel}<span class="dash-countdown">${pfDashCountdown(rv.target)}</span>`));
   }
   const todayHtml = todayRows.length ? todayRows.join('') : `<div class="dash-empty">${t('dashNoCurrentSeasonEvent')}</div>`;
