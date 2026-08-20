@@ -69,7 +69,8 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-      background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding-bottom: calc(76px + env(safe-area-inset-bottom)); /* 下部クイックアクセスドック分の余白 */
     }
 
     nav {
@@ -220,12 +221,33 @@
     .cape-spark.r { right: -7px; top: 50%; margin-top: -1.5px; }
 
     .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
       background: rgba(28,28,30,0.92); color: #fff; padding: 10px 18px; border-radius: 999px;
       font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 100;
       pointer-events: none;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* 🧭 画面下部クイックアクセスドック（プロフィール／カスタマイズ／他のツール／表示設定）
+       既存のグローバル nav { position:sticky; top:0; border-bottom:… } や
+       [data-theme="dark"] nav { background:… } の詳細度がクラスセレクタより高く付与されて
+       しまうため、要素は <nav> ではなく role="navigation" 付きの <div> を使う。 */
+    .site-dock {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+      padding: 6px 10px calc(8px + env(safe-area-inset-bottom));
+      background: var(--card);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-top: 0.5px solid var(--sep);
+      justify-content: space-around; align-items: stretch; gap: 4px;
+    }
+    .site-dock button {
+      flex: 1 1 0; max-width: 110px; border: 0; background: none; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 6px 0; min-height: 52px; border-radius: 12px; font-family: inherit;
+    }
+    .site-dock button:active { background: var(--sep); }
+    .site-dock .site-dock-icon { font-size: 20px; line-height: 1; }
+    .site-dock .site-dock-label { font-size: 10px; font-weight: 700; color: var(--text-2); }
 
     .confirm-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600;
@@ -591,6 +613,27 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- 🧭 画面下部クイックアクセスドック（既存のハンバーガーサイドバーと併存。サイドバーの
+     リンク一覧は複製せず、既存の openSidebarMobile() を呼ぶだけ） -->
+<div class="site-dock" role="navigation" aria-label="クイックメニュー">
+  <button type="button" onclick="pfOpenModal()">
+    <span class="site-dock-icon">🗂️</span>
+    <span class="site-dock-label" data-i18n="dockProfile">プロフィール</span>
+  </button>
+  <button type="button" onclick="pfIconOpenModal()">
+    <span class="site-dock-icon">🎨</span>
+    <span class="site-dock-label" data-i18n="dockCustomize">カスタマイズ</span>
+  </button>
+  <button type="button" onclick="openSidebarMobile()">
+    <span class="site-dock-icon">☰</span>
+    <span class="site-dock-label" data-i18n="dockOtherTools">他のツール</span>
+  </button>
+  <button type="button" onclick="settingsOpenModal()">
+    <span class="site-dock-icon">⚙️</span>
+    <span class="site-dock-label" data-i18n="dockSettings">表示設定</span>
+  </button>
+</div>
+
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this) closeConfirmModal()">
   <div class="confirm-box">
     <div class="confirm-message" id="confirmMessage"></div>
@@ -806,6 +849,10 @@ const I18N = {
     sidebarHomeIcon: '📱 ホーム画面アイコン',
     sidebarCustomizeIcon: '🎨 アイコンを<br>カスタマイズ',
     langToggleBtn: 'EN',
+    dockProfile: 'プロフィール',
+    dockCustomize: 'カスタマイズ',
+    dockOtherTools: '他のツール',
+    dockSettings: '表示設定',
 
     pageTitle: '羽トラッカー - Sky所持率管理',
 
@@ -1027,6 +1074,10 @@ const I18N = {
     sidebarHomeIcon: '📱 Home Screen Icon',
     sidebarCustomizeIcon: '🎨 Customize Icon',
     langToggleBtn: '日本語',
+    dockProfile: 'Profile',
+    dockCustomize: 'Customize',
+    dockOtherTools: 'Other Tools',
+    dockSettings: 'Display',
 
     pageTitle: 'Wing Tracker - Sky Collection Tracker',
 
