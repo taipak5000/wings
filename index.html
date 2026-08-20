@@ -620,9 +620,9 @@
     <span class="site-dock-icon">🗂️</span>
     <span class="site-dock-label" data-i18n="dockProfile">プロフィール</span>
   </button>
-  <button type="button" onclick="pfIconOpenModal()">
-    <span class="site-dock-icon">🎨</span>
-    <span class="site-dock-label" data-i18n="dockCustomize">カスタマイズ</span>
+  <button type="button" onclick="pfDashOpen()">
+    <span class="site-dock-icon">🗓️</span>
+    <span class="site-dock-label" data-i18n="dockDashboard">ダッシュボード</span>
   </button>
   <button type="button" onclick="openSidebarMobile()">
     <span class="site-dock-icon">☰</span>
@@ -792,6 +792,15 @@
     </div>
 
     <div class="dash-section">
+      <p class="dash-section-label" data-i18n="settingsCustomizeLabel">🎨 表示のカスタマイズ</p>
+      <div class="dash-row" style="align-items:center;">
+        <span class="dash-row-icon">🎨</span>
+        <span class="dash-row-text" data-i18n="settingsCustomizeBtnText">アイコンをカスタマイズ</span>
+        <button type="button" class="theme-toggle-btn" onclick="settingsCloseModal(); pfIconOpenModal();" data-i18n="settingsCustomizeBtn">開く</button>
+      </div>
+    </div>
+
+    <div class="dash-section">
       <p class="dash-section-label" data-i18n="settingsShortcutsLabel">⌨️ キーボードショートカット</p>
       <div class="dash-row" style="align-items:center;">
         <span class="dash-row-icon">⌨️</span>
@@ -850,7 +859,7 @@ const I18N = {
     sidebarCustomizeIcon: '🎨 アイコンを<br>カスタマイズ',
     langToggleBtn: 'EN',
     dockProfile: 'プロフィール',
-    dockCustomize: 'カスタマイズ',
+    dockDashboard: 'ダッシュボード',
     dockOtherTools: '他のツール',
     dockSettings: '表示設定',
 
@@ -897,6 +906,9 @@ const I18N = {
     settingsModalTitle: '⚙️ 表示設定',
     settingsDisplayLabel: '🌙 表示',
     settingsDarkModeLabel: 'ダークモード',
+    settingsCustomizeLabel: '🎨 表示のカスタマイズ',
+    settingsCustomizeBtnText: 'アイコンをカスタマイズ',
+    settingsCustomizeBtn: '開く',
     themeToggleDark: '🌙 ダーク',
     themeToggleLight: '☀️ ライト',
     settingsShortcutsLabel: '⌨️ キーボードショートカット',
@@ -1075,7 +1087,7 @@ const I18N = {
     sidebarCustomizeIcon: '🎨 Customize Icon',
     langToggleBtn: '日本語',
     dockProfile: 'Profile',
-    dockCustomize: 'Customize',
+    dockDashboard: 'Dashboard',
     dockOtherTools: 'Other Tools',
     dockSettings: 'Display',
 
@@ -1122,6 +1134,9 @@ const I18N = {
     settingsModalTitle: '⚙️ Display Settings',
     settingsDisplayLabel: '🌙 Display',
     settingsDarkModeLabel: 'Dark Mode',
+    settingsCustomizeLabel: '🎨 Display Customization',
+    settingsCustomizeBtnText: 'Customize Icon',
+    settingsCustomizeBtn: 'Open',
     themeToggleDark: '🌙 Dark',
     themeToggleLight: '☀️ Light',
     settingsShortcutsLabel: '⌨️ Keyboard Shortcuts',
