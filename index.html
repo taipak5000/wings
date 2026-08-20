@@ -911,6 +911,7 @@ const I18N = {
     pfSwitchHint: 'プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。',
     pfBackupOpenBtn: '💾 データのバックアップ・復元・削除',
     pfBarActiveSuffix: 'に切替中（タップで切替）',
+    pfSyncedElsewhereToast: '別のタブでプロフィールが「{name}」に切り替わったため、この画面も切り替えました',
     pfDashBtnTitle: '今日・今週・今月ダッシュボード',
     settingsBtnTitle: '表示設定',
     settingsModalTitle: '⚙️ 表示設定',
@@ -1140,6 +1141,7 @@ const I18N = {
     pfSwitchHint: 'Switching profiles swaps your Spirit Wings and Children of Light records to the selected profile\'s data (everything is stored locally in this browser).',
     pfBackupOpenBtn: 'Backup / restore / erase data',
     pfBarActiveSuffix: 'active (tap to switch)',
+    pfSyncedElsewhereToast: 'Profile switched to "{name}" in another tab, so this page switched too',
     pfDashBtnTitle: 'Today / this week / this month',
     settingsBtnTitle: 'Display Settings',
     settingsModalTitle: '⚙️ Display Settings',
@@ -2117,7 +2119,32 @@ function pfApplyThemeColor(hex) {
 }
 window.addEventListener('storage', (e) => {
   if (e.key === PROFILES_KEY) pfApplyThemeColor(getActiveProfile().color);
+  // 🔁 別タブでプロフィールが切り替えられた場合、このタブの表示・保存先を自動で追従させる。
+  // （storageイベントは変更を行った当のタブでは発火せず、"他の"タブ・ウィンドウでのみ発火する
+  //  ため、ここに来る時点で「切り替えたのは自分ではない」ことが保証されている）
+  if (e.key === ACTIVE_PROFILE_KEY) pfHandleActiveProfileChangedElsewhere();
 });
+
+// 他タブでの切替に追従し、この画面が古いプロフィールへ書き込み続けてしまう
+// （サイレントな誤保存）のを防ぐ。精霊の羽・光の子の記録は常に nsKey() を都度呼んで
+// 保存先を解決しているため、値を読み直して再描画するだけで正しいプロフィールの
+// データに揃う。プロフィールモーダルを開いたまま名前変更・通貨入力を編集中の場合は、
+// その未確定の入力を上書きしてしまわないよう再描画を見送る。
+function pfHandleActiveProfileChangedElsewhere() {
+  const profile = getActiveProfile();
+  pfApplyThemeColor(profile.color);
+  pfRenderBar();
+  render();
+
+  if (document.getElementById('pfModalOverlay').classList.contains('show')) {
+    if (pfEditingId === null) pfRenderModal();
+    const active = document.activeElement;
+    const editingCurrency = active && active.closest && active.closest('#pfCurrencyBody');
+    if (!editingCurrency) pfRenderCurrency();
+  }
+
+  showToast(t('pfSyncedElsewhereToast', { name: pfDisplayName(profile) }));
+}
 function pfSetProfileColor(id, color) {
   if (!pfIsSafeColor(color)) return;
   const list = ensureProfilesInit();
@@ -3200,27 +3227,31 @@ function pfConfirmDeleteInline(id) {
 }
 
 const CANDLES_PER_FEATHER = 2;
-const TRACKER_KEY = nsKey('wingTracker_v1'); // { [季節名]: { [精霊名]: true } }
-const PERM_TRACKER_KEY = nsKey('permWingTracker_v1'); // { [精霊名]: { tier1: true, tier2: true } }
-const LIGHT_CHILDREN_TRACKER_KEY = nsKey('lightChildrenTracker_v1'); // { [id]: true }
+// ⚠️ nsKey()の結果はここでconst化して使い回さない。起動時に一度だけ解決してしまうと、
+// 別タブでプロフィールが切り替わった後もこのタブは古いプロフィールのキーへ保存し続けて
+// しまう（サイレントな誤保存）。都度呼び出して常に「現在アクティブなプロフィール」の
+// キーを解決する（pfCompanionDataKey()と同じ考え方）。
+function trackerKey() { return nsKey('wingTracker_v1'); } // { [季節名]: { [精霊名]: true } }
+function permTrackerKey() { return nsKey('permWingTracker_v1'); } // { [精霊名]: { tier1: true, tier2: true } }
+function lightChildrenTrackerKey() { return nsKey('lightChildrenTracker_v1'); } // { [id]: true }
 
 function loadTracker() {
-  try { return JSON.parse(localStorage.getItem(TRACKER_KEY)) || {}; }
+  try { return JSON.parse(localStorage.getItem(trackerKey())) || {}; }
   catch (_) { return {}; }
 }
-function saveTracker(t) { localStorage.setItem(TRACKER_KEY, JSON.stringify(t)); }
+function saveTracker(t) { localStorage.setItem(trackerKey(), JSON.stringify(t)); }
 
 function loadPermTracker() {
-  try { return JSON.parse(localStorage.getItem(PERM_TRACKER_KEY)) || {}; }
+  try { return JSON.parse(localStorage.getItem(permTrackerKey())) || {}; }
   catch (_) { return {}; }
 }
-function savePermTracker(t) { localStorage.setItem(PERM_TRACKER_KEY, JSON.stringify(t)); }
+function savePermTracker(t) { localStorage.setItem(permTrackerKey(), JSON.stringify(t)); }
 
 function loadLightChildrenTracker() {
-  try { return JSON.parse(localStorage.getItem(LIGHT_CHILDREN_TRACKER_KEY)) || {}; }
+  try { return JSON.parse(localStorage.getItem(lightChildrenTrackerKey())) || {}; }
   catch (_) { return {}; }
 }
-function saveLightChildrenTracker(t) { localStorage.setItem(LIGHT_CHILDREN_TRACKER_KEY, JSON.stringify(t)); }
+function saveLightChildrenTracker(t) { localStorage.setItem(lightChildrenTrackerKey(), JSON.stringify(t)); }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
