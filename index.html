@@ -247,7 +247,8 @@
     }
     .site-dock button:active { background: var(--sep); }
     .site-dock .site-dock-icon { font-size: 20px; line-height: 1; }
-    .site-dock .site-dock-label { font-size: 10px; font-weight: 700; color: var(--text-2); }
+    .site-dock .site-dock-label { font-size: 10px; font-weight: 700; color: var(--text-2);
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .confirm-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600;
@@ -305,6 +306,7 @@
     .pf-icon-btn { background: var(--bg); border: 1px solid var(--sep); color: var(--text-2);
       border-radius: 6px; padding: 5px 9px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
     .pf-icon-btn:hover { background: var(--sep); }
+    .pf-icon-btn.active { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); font-weight: 700; }
     .pf-add-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .pf-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
       padding: 8px 10px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; }
@@ -618,7 +620,7 @@
 <div class="site-dock" role="navigation" aria-label="クイックメニュー">
   <button type="button" onclick="pfOpenModal()">
     <span class="site-dock-icon">🗂️</span>
-    <span class="site-dock-label" data-i18n="dockProfile">プロフィール</span>
+    <span class="site-dock-label" id="siteDockProfileLabel" data-i18n="dockProfile">プロフィール</span>
   </button>
   <button type="button" onclick="pfDashOpen()">
     <span class="site-dock-icon">🗓️</span>
@@ -821,6 +823,14 @@
       </div>
     </div>
 
+    <div class="dash-section">
+      <p class="dash-section-label" data-i18n="settingsLangLabel">🌐 言語 / Language</p>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="pf-icon-btn" id="settingsLangJaBtn" onclick="setLang('ja')">日本語</button>
+        <button type="button" class="pf-icon-btn" id="settingsLangEnBtn" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+
     <button type="button" class="pf-close-btn" onclick="settingsCloseModal()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
@@ -916,6 +926,7 @@ const I18N = {
     settingsShortcutOpen: 'この設定を開く',
     settingsShortcutTheme: 'ダークモード切替',
     settingsShortcutEscape: '開いているウィンドウを閉じる',
+    settingsLangLabel: '🌐 言語 / Language',
     pfAccountColorTitle: 'アカウントカラー',
     pfResetColorTitle: 'カラーを初期値に戻す',
     pfRenameTitle: '名前を変更',
@@ -1144,6 +1155,7 @@ const I18N = {
     settingsShortcutOpen: 'Open this settings panel',
     settingsShortcutTheme: 'Toggle dark mode',
     settingsShortcutEscape: 'Close the open window',
+    settingsLangLabel: '🌐 Language',
     pfAccountColorTitle: 'Account color',
     pfResetColorTitle: 'Reset color to default',
     pfRenameTitle: 'Rename',
@@ -1321,8 +1333,11 @@ function applyI18n() {
   if (langBtn) langBtn.textContent = t('langToggleBtn');
 }
 
-function toggleLang() {
-  LANG = LANG === 'ja' ? 'en' : 'ja';
+// setLang(lang): 指定した言語に直接切り替える（既に切替先の言語ならno-op）。
+// toggleLang()（既存のヘッダーのEN/JA切替ボタン用）はこれを呼ぶだけの薄いラッパーにした。
+function setLang(lang) {
+  if (LANG === lang) return;
+  LANG = lang;
   localStorage.setItem(LANG_KEY, LANG);
   applyI18n();
   pfRenderBar();
@@ -1332,6 +1347,10 @@ function toggleLang() {
     document.getElementById('dashBody').innerHTML = pfDashBuildHtml(pfDashCache);
   }
   if (document.getElementById('settingsModalOverlay').classList.contains('show')) { syncSettingsModalUI(); }
+}
+
+function toggleLang() {
+  setLang(LANG === 'ja' ? 'en' : 'ja');
 }
 
 /* ================================================================
@@ -2171,6 +2190,8 @@ function pfRenderBar() {
   const bar = document.getElementById('pfBar');
   const profile = getActiveProfile();
   pfApplyThemeColor(profile.color);
+  const dockLabel = document.getElementById('siteDockProfileLabel');
+  if (dockLabel) dockLabel.textContent = pfDisplayName(profile);
   if (!bar) return;
   bar.innerHTML = `
     <span class="pf-bar-text" onclick="pfOpenModal()">🗂️ <b>${escapeHtml(pfDisplayName(profile))}</b> ${t('pfBarActiveSuffix')}</span>
@@ -3589,6 +3610,12 @@ function syncSettingsModalUI() {
   if (themeBtn) themeBtn.textContent = isDarkMode() ? t('themeToggleDark') : t('themeToggleLight');
   const checkbox = document.getElementById('settingsShortcutsCheckbox');
   if (checkbox) checkbox.checked = skyShortcutsEnabled();
+  const langJaBtn = document.getElementById('settingsLangJaBtn');
+  const langEnBtn = document.getElementById('settingsLangEnBtn');
+  if (langJaBtn && langEnBtn) {
+    langJaBtn.classList.toggle('active', LANG === 'ja');
+    langEnBtn.classList.toggle('active', LANG === 'en');
+  }
 }
 
 function settingsOpenModal() {
