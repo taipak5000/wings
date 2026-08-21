@@ -2749,7 +2749,17 @@ function dmConfirmWipe() {
    ユーザーが選んだ絵文字＋背景色、またはアップロード画像に差し替える。
    プロフィール（保存枠）に関わらずこの端末・ブラウザ共通の設定のため、nsKeyは使わない。
    ================================================================ */
-const PF_ICON_STORAGE_KEY = 'pfCustomHomeIcon_v1';
+// 🔑 保存キーをサイトごとに名前空間化する（プロフィール単位のnsKey()とは別軸）。
+// taipak5000.github.io系サイトは全サイトが同一オリジンでlocalStorageを共有するため、
+// 固定文字列のままだと、あるサイトで設定したホーム画面アイコンが他サイトの設定まで
+// 上書きしてしまう（実際にtai-infoと衝突することを確認済み）。location.pathnameの
+// 先頭セグメント（例: '/wings/' → 'wings'）は各サイトの実際の公開URLパスと一致し、
+// リポジトリ名の変更にも自動追従するため、これをサイト識別子として使う。
+function pfSiteId() {
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  return seg || 'root';
+}
+const PF_ICON_STORAGE_KEY = 'pfCustomHomeIcon_v1__site_' + pfSiteId();
 const PF_ICON_ORIGINAL_APPLE_HREF = document.querySelector('link[rel="apple-touch-icon"]')?.href || 'icons/app-icon-192.png';
 const PF_ICON_ORIGINAL_MANIFEST_HREF = document.querySelector('link[rel="manifest"]')?.href || 'manifest.json';
 let pfIconMode = 'emoji';
