@@ -310,6 +310,7 @@
     .pf-add-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .pf-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
       padding: 8px 10px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; }
+    .pf-input:focus { border-color: var(--blue); }
     .pf-add-btn { background: var(--blue); color: #fff; border: none; border-radius: 6px; padding: 8px 14px;
       font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
     .pf-hint { font-size: 11.5px; color: var(--text-2); line-height: 1.5; margin: 12px 0 0; }
@@ -2928,7 +2929,20 @@ function pfIconReset() {
 
 function pfIconApplyFromStorage() {
   let raw;
-  try { raw = localStorage.getItem(PF_ICON_STORAGE_KEY); } catch (e) { return; }
+  try {
+    raw = localStorage.getItem(PF_ICON_STORAGE_KEY);
+    if (!raw) {
+      // 🔀 名前空間化前（サイト別キーに分かれる前）の旧フラットキーからの一度きりの移行。
+      // 移行前にカスタマイズ済みだった端末では、新キーにはまだ何も無いが旧キーには
+      // 値が残っているため、ここで読み出して新キーへコピーする（旧キーは他サイトの
+      // 移行元にもなり得るため削除しない）。
+      const legacy = localStorage.getItem('pfCustomHomeIcon_v1');
+      if (legacy) {
+        try { localStorage.setItem(PF_ICON_STORAGE_KEY, legacy); } catch (e) {}
+        raw = legacy;
+      }
+    }
+  } catch (e) { return; }
   if (!raw) return;
   try {
     const state = JSON.parse(raw);
@@ -3638,7 +3652,18 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
 }
 
+// 🖥️ .sidebar は850px以上の幅では常時インライン表示される（CSSの
+// `@media (min-width:850px) { .sidebar { display:block } }`、ハンバーガー用の
+// .sidebar-toggle-btn もこの幅ではvisibility:hiddenで隠れる）。sidebar-open は
+// それより狭い幅でのみ意味を持つフルスクリーンドロワー用の状態なので、デスクトップ
+// 幅で開いても常時表示のサイドバーの上に重複したオーバーレイを開くだけになってしまう
+// （🧭ドックの「他のツール」ボタンはこの幅ガードが無いボタンからも呼ばれるため発生）。
+function isMobileSidebarLayout() {
+  return window.matchMedia('(max-width: 849.98px)').matches;
+}
+
 function openSidebarMobile() {
+  if (!isMobileSidebarLayout()) return;
   document.getElementById('sidebar').classList.add('sidebar-open');
   document.getElementById('sidebarOverlay').classList.add('show');
 }
