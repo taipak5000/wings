@@ -2118,12 +2118,33 @@ function pfApplyThemeColor(hex) {
   root.setProperty(PF_TINT_VAR, `rgba(${c.r}, ${c.g}, ${c.b}, 0.07)`);
 }
 window.addEventListener('storage', (e) => {
-  if (e.key === PROFILES_KEY) pfApplyThemeColor(getActiveProfile().color);
+  // 🔁 別タブでプロフィール一覧（名前・アカウントカラー）がリネーム/編集された場合、
+  // アクティブなプロフィールID自体は変わっていなくても、このタブのプロフィールバー・
+  // ドックのプロフィール名表示が古い名前のまま残ってしまう。表示を追従させる。
+  if (e.key === PROFILES_KEY) pfHandleProfilesChangedElsewhere();
   // 🔁 別タブでプロフィールが切り替えられた場合、このタブの表示・保存先を自動で追従させる。
   // （storageイベントは変更を行った当のタブでは発火せず、"他の"タブ・ウィンドウでのみ発火する
   //  ため、ここに来る時点で「切り替えたのは自分ではない」ことが保証されている）
   if (e.key === ACTIVE_PROFILE_KEY) pfHandleActiveProfileChangedElsewhere();
 });
+
+// 他タブでのプロフィールのリネーム・アカウントカラー編集に追従し、このタブの
+// プロフィールバー・ドックのプロフィール名表示（＋開いていればプロフィールモーダルの
+// 一覧）が古い名前・色のまま残ってしまうのを防ぐ。アクティブプロフィールのID自体は
+// 変わらないため、切替時のようなnsKey()の付け替え（render()の再実行やタブのリロード）は
+// 不要で、表示の再描画だけでよい。プロフィールモーダルを開いたまま名前変更を編集中
+// （pfEditingId !== null）の場合は、その未確定の入力を上書きしてしまわないよう
+// 一覧の再描画を見送る（バー・ドックのラベルは編集中の入力欄そのものではないため、
+// 常に更新してよい）。
+function pfHandleProfilesChangedElsewhere() {
+  const profile = getActiveProfile();
+  pfApplyThemeColor(profile.color);
+  pfRenderBar();
+
+  if (document.getElementById('pfModalOverlay').classList.contains('show') && pfEditingId === null) {
+    pfRenderModal();
+  }
+}
 
 // 他タブでの切替に追従し、この画面が古いプロフィールへ書き込み続けてしまう
 // （サイレントな誤保存）のを防ぐ。精霊の羽・光の子の記録は常に nsKey() を都度呼んで
@@ -2384,6 +2405,22 @@ function pfDashCountdown(target) {
   return days > 0 ? `${days}${t('dashDayUnit')} ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
 }
 
+// 🌐 ダッシュボード（今日・今月）用の季節名・期間限定イベント名の英訳。
+// item側のCURRENT_SEASON/EVENT_SCHEDULEは日本語表記のみのため、wings側でこの表を持ち、
+// 日本語の完全一致で引く（item本体は対象外のため二重管理は避けられないが、件数は少ない。
+// companion/star-candleと同じ考え方）。未収録（未追加の新シーズン・新イベント）の場合は
+// 日本語のまま表示してフォールバックする。
+const DASH_EVENT_NAME_EN = {
+  '親愛なるファン・ゴッホへ': 'Dear Van Gogh',
+  '陽光の日々': 'Days of Sunlight',
+  '光に染まるイベント': 'Event of Radiant Light',
+  '来訪する精霊団': 'Traveling Spirit Troupe',
+  '夏のキャンプ': 'Summer Camp',
+};
+function dashEventName(name) {
+  return LANG === 'en' ? (DASH_EVENT_NAME_EN[name] || name) : name;
+}
+
 // 複数の未来時刻候補から一番近いものを選ぶ（全て過去なら null）
 function pfDashSoonestFuture(dates) {
   const now = new Date();
@@ -2458,13 +2495,14 @@ function pfDashBuildHtml(data) {
   const dailyHtml = dailyRows.join('');
 
   // 注: data.season.name / ev.name / data.revisit.name は item(tai-item)側のindex.htmlから
-  // fetchして取得した日本語のみのデータで、このリポジトリの範囲外のため翻訳していない。
+  // fetchして取得した日本語のみのデータ。季節名・期間限定イベント名は上のDASH_EVENT_NAME_EN
+  // 経由で英訳して表示する（未収録分は日本語のままフォールバック）。
   const todayRows = [];
   if (data.season && data.season.name && data.season.endDate && new Date() < new Date(data.season.endDate)) {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(data.season.name)}</b>${t('dashCurrentlyActive')}`));
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(dashEventName(data.season.name))}</b>${t('dashCurrentlyActive')}`));
   }
   pfDashActiveScheduledEvents(data.eventSchedule).forEach(ev => {
-    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(ev.name)}</b>${t('dashCurrentlyActive')}<span class="dash-countdown">${t('dashEndsIn')} ${pfDashCountdown(new Date(ev.end))}</span>`));
+    todayRows.push(pfDashRow('🌟', `<b>${escapeHtml(dashEventName(ev.name))}</b>${t('dashCurrentlyActive')}<span class="dash-countdown">${t('dashEndsIn')} ${pfDashCountdown(new Date(ev.end))}</span>`));
   });
   const rv = pfDashRevisitStatus(data.revisit);
   if (rv && data.revisit) {
@@ -2486,7 +2524,7 @@ function pfDashBuildHtml(data) {
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
-    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(data.season.name)}</b>」${t('dashSeasonEndsInSuffix')}<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
+    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(dashEventName(data.season.name))}</b>」${t('dashSeasonEndsInSuffix')}<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
   } else {
     monthHtml = `<div class="dash-empty">${t('dashSeasonLoadFailed')}</div>`;
   }
