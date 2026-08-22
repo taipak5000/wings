@@ -556,6 +556,12 @@
       <button type="button" class="pf-icon-btn" id="spiritSearchClearBtn" style="display:none;"
         onclick="clearSpiritSearch()" title="検索をクリア" data-i18n-title="spiritSearchClearTitle">✕</button>
     </div>
+    <!-- 🧹 検索語＋各セクションの「未取得のみ表示」トグルをまとめてリセット。フィルターが
+         何か1つでも有効なときだけ表示し、通常時は場所を取らないようにする -->
+    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+      <button type="button" class="filter-toggle-btn" id="clearAllFiltersBtn" style="display:none;"
+        onclick="clearAllFilters()" data-i18n="clearAllFiltersBtn">✕ フィルターを全てクリア</button>
+    </div>
 
     <div id="wingsMode">
 
@@ -946,6 +952,7 @@ const I18N = {
     spiritSearchPlaceholder: '🔍 精霊の名前で検索...',
     spiritSearchClearTitle: '検索をクリア',
     spiritSearchNoMatch: '検索条件に一致する精霊が見つかりません。',
+    clearAllFiltersBtn: '✕ フィルターを全てクリア',
     wingObtainedTitleTemplate: '{date}に獲得',
 
     genericCancel: 'キャンセル',
@@ -1191,6 +1198,7 @@ const I18N = {
     spiritSearchPlaceholder: '🔍 Search by spirit name...',
     spiritSearchClearTitle: 'Clear search',
     spiritSearchNoMatch: 'No spirits match your search.',
+    clearAllFiltersBtn: '✕ Clear all filters',
     wingObtainedTitleTemplate: 'Obtained on {date}',
 
     genericCancel: 'Cancel',
@@ -3544,6 +3552,19 @@ function toggleLightChildrenFilter() {
   render();
 }
 
+// 🧹 名前検索＋3つの「未取得のみ表示」トグルをまとめて初期状態に戻す
+function clearAllFilters() {
+  spiritSearchQuery = '';
+  const input = document.getElementById('spiritSearchInput');
+  if (input) input.value = '';
+  const searchClearBtn = document.getElementById('spiritSearchClearBtn');
+  if (searchClearBtn) searchClearBtn.style.display = 'none';
+  seasonFilterUnowned = false;
+  permFilterUnowned = false;
+  lightChildrenFilterUnowned = false;
+  render();
+}
+
 function switchMode(mode) {
   document.getElementById('wingsMode').style.display = mode === 'wings' ? 'block' : 'none';
   document.getElementById('lightChildrenMode').style.display = mode === 'lightChildren' ? 'block' : 'none';
@@ -3558,6 +3579,11 @@ function render() {
   document.getElementById('seasonFilterBtn').classList.toggle('active', seasonFilterUnowned);
   document.getElementById('permFilterBtn').classList.toggle('active', permFilterUnowned);
   document.getElementById('lightChildrenFilterBtn').classList.toggle('active', lightChildrenFilterUnowned);
+  const clearAllBtn = document.getElementById('clearAllFiltersBtn');
+  if (clearAllBtn) {
+    const anyFilterActive = !!spiritSearchQuery || seasonFilterUnowned || permFilterUnowned || lightChildrenFilterUnowned;
+    clearAllBtn.style.display = anyFilterActive ? '' : 'none';
+  }
 
   // ── 季節精霊・再訪 ──
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
