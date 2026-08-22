@@ -178,6 +178,22 @@
     }
     .spirit-opt:hover { background: var(--bg); }
     .spirit-opt input { accent-color: var(--blue); width: 16px; height: 16px; flex-shrink: 0; }
+    .spirit-opt-label { flex: 1; min-width: 0; }
+    .spirit-opt-date { flex-shrink: 0; font-size: 10.5px; color: var(--text-2); white-space: nowrap; }
+
+    /* ── 精霊名検索 ───────────────────── */
+    .spirit-search-row { display: flex; gap: 8px; margin-top: 16px; }
+
+    /* ── プロフィール比較 ───────────────────── */
+    .pf-compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+    .pf-compare-table th, .pf-compare-table td {
+      padding: 8px 6px; text-align: center; border-bottom: 0.5px solid var(--sep);
+    }
+    .pf-compare-table th { color: var(--text-2); font-weight: 700; font-size: 11.5px; }
+    .pf-compare-table th:first-child, .pf-compare-table td:first-child {
+      text-align: left; color: var(--text); font-weight: 600;
+    }
+    .pf-compare-table td.pf-compare-lead { color: var(--green); font-weight: 800; }
 
     .cape-card {
       background: linear-gradient(160deg, #1b2333 0%, #05070d 100%);
@@ -325,6 +341,7 @@
       background: var(--card); border: 1px solid var(--sep); border-radius: 5px; padding: 2px 6px; color: var(--text); }
     .pf-row-input { flex: 1; background: var(--bg); border: 1px solid var(--blue); border-radius: 6px;
       padding: 6px 8px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; min-width: 0; }
+    .pf-row-input:focus { border-color: var(--blue); }
     .pf-row-confirm-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; }
     .pf-row-btn-ok { background: var(--blue); color: #fff; border: none; }
     .pf-row-btn-danger { background: #ff3b30; color: #fff; border: none; }
@@ -532,6 +549,14 @@
       <button class="mode-tab" id="tabLightChildren" onclick="switchMode('lightChildren')" data-i18n="tabLightChildren">👶 光の子</button>
     </div>
 
+    <!-- 🔍 季節精霊・恒常精霊・光の子の全リストに共通で効く名前検索（タブ切替に関係なく常時表示） -->
+    <div class="spirit-search-row">
+      <input type="text" class="pf-input" id="spiritSearchInput" data-i18n-placeholder="spiritSearchPlaceholder"
+        placeholder="🔍 精霊の名前で検索..." oninput="onSpiritSearchInput(this.value)">
+      <button type="button" class="pf-icon-btn" id="spiritSearchClearBtn" style="display:none;"
+        onclick="clearSpiritSearch()" title="検索をクリア" data-i18n-title="spiritSearchClearTitle">✕</button>
+    </div>
+
     <div id="wingsMode">
 
       <p class="sec-label" data-i18n="seasonSectionLabel">季節ごとの精霊一覧</p>
@@ -652,7 +677,8 @@
     <h3 data-i18n="pfModalTitle">🗂️ プロフィール（保存枠）</h3>
     <div id="pfModalBody"></div>
     <div class="pf-add-row">
-      <input type="text" class="pf-input" id="pfNewName" placeholder="例: サブ垢1" maxlength="30" data-i18n-placeholder="pfNewNamePlaceholder">
+      <input type="text" class="pf-input" id="pfNewName" placeholder="例: サブ垢1" maxlength="30" data-i18n-placeholder="pfNewNamePlaceholder"
+        onkeydown="if(event.key==='Enter') pfAddProfile();">
       <button type="button" class="pf-add-btn" onclick="pfAddProfile()" data-i18n="pfAddBtn">追加</button>
     </div>
     <div class="pf-hint" data-i18n="pfSwitchHint">プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。</div>
@@ -663,8 +689,21 @@
       </div>
       <div id="pfCurrencyBody"></div>
     </div>
+    <button type="button" class="pf-icon-btn" style="width:100%; margin-top:10px; padding:8px;" onclick="pfCompareOpen()" data-i18n="pfCompareOpenBtn">📊 プロフィールを比較</button>
     <button type="button" class="pf-icon-btn" style="width:100%; margin-top:10px; padding:8px;" onclick="dmOpenModal()" data-i18n="pfBackupOpenBtn">💾 データのバックアップ・復元・削除</button>
     <button type="button" class="pf-close-btn" onclick="pfCloseModal()" data-i18n="pfCloseBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="pf-modal-overlay" id="pfCompareModalOverlay" onclick="if(event.target===this) pfCompareClose()">
+  <div class="pf-modal-card">
+    <h3 data-i18n="pfCompareTitle">📊 プロフィールを比較</h3>
+    <div class="pf-add-row" style="margin-top:0;">
+      <select class="pf-input" id="pfCompareSelectA" onchange="pfCompareRender()"></select>
+      <select class="pf-input" id="pfCompareSelectB" onchange="pfCompareRender()"></select>
+    </div>
+    <div id="pfCompareBody"></div>
+    <button type="button" class="pf-close-btn" onclick="pfCompareClose()" data-i18n="pfCloseBtn">閉じる</button>
   </div>
 </div>
 
@@ -904,6 +943,11 @@ const I18N = {
     lightChildrenPreparing: 'データを準備中です。しばらくお待ちください。',
     lightChildrenNoMatch: '条件に一致する光の子がいません。',
 
+    spiritSearchPlaceholder: '🔍 精霊の名前で検索...',
+    spiritSearchClearTitle: '検索をクリア',
+    spiritSearchNoMatch: '検索条件に一致する精霊が見つかりません。',
+    wingObtainedTitleTemplate: '{date}に獲得',
+
     genericCancel: 'キャンセル',
     pfCloseBtn: '閉じる',
     pfModalTitle: '🗂️ プロフィール（保存枠）',
@@ -911,6 +955,14 @@ const I18N = {
     pfAddBtn: '追加',
     pfSwitchHint: 'プロフィールを切り替えると、精霊の羽・光の子の記録が切り替え先のプロフィールのものに入れ替わります（このブラウザ内にすべて保存されます）。',
     pfBackupOpenBtn: '💾 データのバックアップ・復元・削除',
+    pfCompareOpenBtn: '📊 プロフィールを比較',
+    pfCompareTitle: '📊 プロフィールを比較',
+    pfCompareRowSeason: '季節精霊',
+    pfCompareRowRealm: '恒常精霊',
+    pfCompareRowLightChildren: '光の子',
+    pfCompareRowTotal: '光の翼 合計',
+    pfCompareRowCape: 'ケープレベル',
+    pfCompareNeedMoreProfiles: 'プロフィールが1つしかないため比較できません。まず「追加」でもう1つ作成してください。',
     pfBarActiveSuffix: 'に切替中（タップで切替）',
     pfSyncedElsewhereToast: '別のタブでプロフィールが「{name}」に切り替わったため、この画面も切り替えました',
     pfDashBtnTitle: '今日・今週・今月ダッシュボード',
@@ -970,6 +1022,8 @@ const I18N = {
     dashCurrentlyActive: 'が開催中',
     dashEndsIn: '終了まで',
     dashSeasonEndsInSuffix: '終了まで',
+    dashQuoteOpen: '「',
+    dashQuoteClose: '」',
     dashRevisitSpirit: '再訪精霊',
     dashRevisitHereNow: 'が来訪中',
     dashRevisitReturnsIn: 'の次回来訪まで',
@@ -1134,6 +1188,11 @@ const I18N = {
     lightChildrenPreparing: 'Data is being prepared. Please check back soon.',
     lightChildrenNoMatch: 'No Children of Light match the current filter.',
 
+    spiritSearchPlaceholder: '🔍 Search by spirit name...',
+    spiritSearchClearTitle: 'Clear search',
+    spiritSearchNoMatch: 'No spirits match your search.',
+    wingObtainedTitleTemplate: 'Obtained on {date}',
+
     genericCancel: 'Cancel',
     pfCloseBtn: 'Close',
     pfModalTitle: '🗂️ Profiles',
@@ -1141,6 +1200,14 @@ const I18N = {
     pfAddBtn: 'Add',
     pfSwitchHint: 'Switching profiles swaps your Spirit Wings and Children of Light records to the selected profile\'s data (everything is stored locally in this browser).',
     pfBackupOpenBtn: 'Backup / restore / erase data',
+    pfCompareOpenBtn: '📊 Compare Profiles',
+    pfCompareTitle: '📊 Compare Profiles',
+    pfCompareRowSeason: 'Season Spirits',
+    pfCompareRowRealm: 'Realm Spirits',
+    pfCompareRowLightChildren: 'Children of Light',
+    pfCompareRowTotal: 'Total Wings',
+    pfCompareRowCape: 'Cape Level',
+    pfCompareNeedMoreProfiles: 'You need at least two profiles to compare. Create another one first with "Add".',
     pfBarActiveSuffix: 'active (tap to switch)',
     pfSyncedElsewhereToast: 'Profile switched to "{name}" in another tab, so this page switched too',
     pfDashBtnTitle: 'Today / this week / this month',
@@ -1200,6 +1267,8 @@ const I18N = {
     dashCurrentlyActive: ' is currently active',
     dashEndsIn: 'Ends in',
     dashSeasonEndsInSuffix: ' ends in',
+    dashQuoteOpen: '',
+    dashQuoteClose: '',
     dashRevisitSpirit: 'Revisit Spirit',
     dashRevisitHereNow: ' is here now',
     dashRevisitReturnsIn: ' returns in',
@@ -2194,6 +2263,13 @@ function nsKey(rawKey) {
   return id === DEFAULT_PROFILE_ID ? rawKey : `${rawKey}__p_${id}`;
 }
 
+// nsKey()と同じ名前空間化ルールを、"現在アクティブな"プロフィールに限らず任意の
+// プロフィールIDに対して適用する版。プロフィール比較（pfCompareRender）のように、
+// アクティブプロフィールを切り替えずに他プロフィールの保存データだけを読みたい場合に使う。
+function nsKeyFor(rawKey, profileId) {
+  return profileId === DEFAULT_PROFILE_ID ? rawKey : `${rawKey}__p_${profileId}`;
+}
+
 function switchProfile(id) {
   if (id === getActiveProfileId()) return;
   localStorage.setItem(ACTIVE_PROFILE_KEY, id);
@@ -2525,7 +2601,7 @@ function pfDashBuildHtml(data) {
   let monthHtml;
   if (data.season && data.season.endDate) {
     const end = new Date(data.season.endDate);
-    monthHtml = pfDashRow('🎨', `「<b>${escapeHtml(dashEventName(data.season.name))}</b>」${t('dashSeasonEndsInSuffix')}<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
+    monthHtml = pfDashRow('🎨', `${t('dashQuoteOpen')}<b>${escapeHtml(dashEventName(data.season.name))}</b>${t('dashQuoteClose')}${t('dashSeasonEndsInSuffix')}<span class="dash-countdown">${pfDashCountdown(end)}</span>`);
   } else {
     monthHtml = `<div class="dash-empty">${t('dashSeasonLoadFailed')}</div>`;
   }
@@ -2674,6 +2750,82 @@ function pfCloseModal() {
   pfEditingId = null;
   pfDeletingId = null;
   document.getElementById('pfModalOverlay').classList.remove('show');
+}
+
+/* ================================================================
+   📊 プロフィール比較
+   2つのプロフィールの進捗を、切り替え（=reload）せずに並べて見比べる。
+   getWingStats(profileId)にプロフィールIDを渡すことで、アクティブプロフィールを
+   変更せずに任意のプロフィールの保存データだけを読み取って集計する。
+   ================================================================ */
+function pfCompareOpen() {
+  const list = ensureProfilesInit();
+  if (list.length < 2) {
+    showToast(t('pfCompareNeedMoreProfiles'));
+    return;
+  }
+  const active = getActiveProfileId();
+  const optsHtml = list.map(p => `<option value="${escapeAttr(p.id)}">${escapeHtml(pfDisplayName(p))}</option>`).join('');
+  const selA = document.getElementById('pfCompareSelectA');
+  const selB = document.getElementById('pfCompareSelectB');
+  selA.innerHTML = optsHtml;
+  selB.innerHTML = optsHtml;
+  selA.value = active;
+  const other = list.find(p => p.id !== active);
+  selB.value = other ? other.id : active;
+  pfCompareRender();
+  document.getElementById('pfCompareModalOverlay').classList.add('show');
+}
+function pfCompareClose() {
+  document.getElementById('pfCompareModalOverlay').classList.remove('show');
+}
+// 進捗が「n / total」形式の行。値が大きい方のセルを緑字で強調する。
+function pfCompareRow(labelKey, gotA, totalA, gotB, totalB) {
+  const aLead = gotA > gotB, bLead = gotB > gotA;
+  return `
+    <tr>
+      <td>${t(labelKey)}</td>
+      <td class="${aLead ? 'pf-compare-lead' : ''}">${gotA} / ${totalA}</td>
+      <td class="${bLead ? 'pf-compare-lead' : ''}">${gotB} / ${totalB}</td>
+    </tr>`;
+}
+// 単一の数値（合計光の翼・ケープレベルなど）を比較する行。
+function pfCompareRowSimple(labelKey, valA, valB) {
+  const aLead = valA > valB, bLead = valB > valA;
+  return `
+    <tr>
+      <td>${t(labelKey)}</td>
+      <td class="${aLead ? 'pf-compare-lead' : ''}">${valA}</td>
+      <td class="${bLead ? 'pf-compare-lead' : ''}">${valB}</td>
+    </tr>`;
+}
+function pfCompareRender() {
+  const selA = document.getElementById('pfCompareSelectA');
+  const selB = document.getElementById('pfCompareSelectB');
+  if (!selA || !selB || !selA.value || !selB.value) return;
+  const list = ensureProfilesInit();
+  const pA = list.find(p => p.id === selA.value);
+  const pB = list.find(p => p.id === selB.value);
+  const statsA = getWingStats(selA.value);
+  const statsB = getWingStats(selB.value);
+  const rowsHtml = [
+    pfCompareRow('pfCompareRowSeason', statsA.seasonFeathers, statsA.seasonSpiritsTotal, statsB.seasonFeathers, statsB.seasonSpiritsTotal),
+    pfCompareRow('pfCompareRowRealm', statsA.permFeathers, statsA.permTotal, statsB.permFeathers, statsB.permTotal),
+    pfCompareRow('pfCompareRowLightChildren', statsA.lightChildrenGot, statsA.lightChildrenTotal, statsB.lightChildrenGot, statsB.lightChildrenTotal),
+    pfCompareRowSimple('pfCompareRowTotal', statsA.totalAll, statsB.totalAll),
+    pfCompareRowSimple('pfCompareRowCape', statsA.capeLevel, statsB.capeLevel),
+  ].join('');
+  document.getElementById('pfCompareBody').innerHTML = `
+    <table class="pf-compare-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>${escapeHtml(pA ? pfDisplayName(pA) : '')}</th>
+          <th>${escapeHtml(pB ? pfDisplayName(pB) : '')}</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
 }
 
 /* ================================================================
@@ -2916,6 +3068,11 @@ function pfIconSave() {
 
 function pfIconReset() {
   localStorage.removeItem(PF_ICON_STORAGE_KEY);
+  // 🔑 旧フラットキーも一緒に消す。残したままだと次回読み込み時に
+  // pfIconApplyFromStorage()の移行処理が旧キーから値を拾い直してリセットを
+  // 打ち消してしまい、さらに旧キーは全サイト共通のため他サイトが書き込んだ
+  // 無関係なアイコンを誤って引き継ぐ恐れもある。
+  try { localStorage.removeItem('pfCustomHomeIcon_v1'); } catch (e) {}
   const appleLink = document.querySelector('link[rel="apple-touch-icon"]');
   if (appleLink) appleLink.href = PF_ICON_ORIGINAL_APPLE_HREF;
   const manifestLink = document.querySelector('link[rel="manifest"]');
@@ -3021,8 +3178,10 @@ function readShareCustomizeFromModal() {
 }
 
 // 光の子の所持数だけを集計する（renderLightChildren()と違い、DOMは書き換えない）
-function countLightChildren() {
-  const tracker = loadLightChildrenTracker();
+// profileIdを渡すと、アクティブプロフィールを切り替えずにそのプロフィールのデータを集計する
+// （プロフィール比較モーダル用。省略時は従来どおりアクティブプロフィールを対象にする）。
+function countLightChildren(profileId) {
+  const tracker = profileId ? loadLightChildrenTrackerFor(profileId) : loadLightChildrenTracker();
   let got = 0, total = 0;
   LIGHT_CHILDREN.forEach(({ areas }) => {
     areas.forEach(({ children }) => {
@@ -3034,9 +3193,11 @@ function countLightChildren() {
 }
 
 // 光の翼の所持状況を集計する（render()と同じ考え方で、共有カード用に再計算）
-function getWingStats() {
-  const tracker = loadTracker();
-  const permTracker = loadPermTracker();
+// profileIdを渡すと、アクティブプロフィールを切り替えずにそのプロフィールのデータを集計する
+// （プロフィール比較モーダル用。省略時は従来どおりアクティブプロフィールを対象にする）。
+function getWingStats(profileId) {
+  const tracker = profileId ? loadTrackerFor(profileId) : loadTracker();
+  const permTracker = profileId ? loadPermTrackerFor(profileId) : loadPermTracker();
 
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
   SEASON_SPIRITS.forEach(({ season, spirits }) => {
@@ -3055,7 +3216,7 @@ function getWingStats() {
     });
   });
 
-  const { got: lightChildrenGot, total: lightChildrenTotal } = countLightChildren();
+  const { got: lightChildrenGot, total: lightChildrenTotal } = countLightChildren(profileId);
 
   const REBIRTH_BONUS = 1;
   const totalAll = seasonFeathers + permFeathers + lightChildrenGot + REBIRTH_BONUS;
@@ -3293,27 +3454,51 @@ const CANDLES_PER_FEATHER = 2;
 // 別タブでプロフィールが切り替わった後もこのタブは古いプロフィールのキーへ保存し続けて
 // しまう（サイレントな誤保存）。都度呼び出して常に「現在アクティブなプロフィール」の
 // キーを解決する（pfCompanionDataKey()と同じ考え方）。
-function trackerKey() { return nsKey('wingTracker_v1'); } // { [季節名]: { [精霊名]: true } }
-function permTrackerKey() { return nsKey('permWingTracker_v1'); } // { [精霊名]: { tier1: true, tier2: true } }
+// 値は { at: ISO8601文字列 }（チェックした日時のログ）。名前空間化・複数プロフィール対応
+// 以前からの既存データは値が真偽値 true のままなので、読み出し側は wingObtainedAt() 等で
+// 「truthyだが obj.at が無い＝日時不明の旧データ」も引き続き所持済みとして扱う。
+function trackerKey() { return nsKey('wingTracker_v1'); } // { [季節名]: { [精霊名]: {at} | true } }
+function permTrackerKey() { return nsKey('permWingTracker_v1'); } // { [精霊名]: { tier1: {at}|true, tier2: {at}|true } }
 function lightChildrenTrackerKey() { return nsKey('lightChildrenTracker_v1'); } // { [id]: true }
 
-function loadTracker() {
-  try { return JSON.parse(localStorage.getItem(trackerKey())) || {}; }
-  catch (_) { return {}; }
-}
+function loadTracker() { return loadTrackerFor(getActiveProfileId()); }
 function saveTracker(t) { localStorage.setItem(trackerKey(), JSON.stringify(t)); }
 
-function loadPermTracker() {
-  try { return JSON.parse(localStorage.getItem(permTrackerKey())) || {}; }
-  catch (_) { return {}; }
-}
+function loadPermTracker() { return loadPermTrackerFor(getActiveProfileId()); }
 function savePermTracker(t) { localStorage.setItem(permTrackerKey(), JSON.stringify(t)); }
 
-function loadLightChildrenTracker() {
-  try { return JSON.parse(localStorage.getItem(lightChildrenTrackerKey())) || {}; }
+function loadLightChildrenTracker() { return loadLightChildrenTrackerFor(getActiveProfileId()); }
+function saveLightChildrenTracker(t) { localStorage.setItem(lightChildrenTrackerKey(), JSON.stringify(t)); }
+
+// loadTracker()等の"任意プロフィール版"。アクティブプロフィールを切り替えずに他プロフィールの
+// データを読みたい場合（プロフィール比較モーダル）に使う。保存(save)は常にアクティブプロフィール
+// 宛てのみのため、こちらは読み取り専用でよい。
+function loadTrackerFor(profileId) {
+  try { return JSON.parse(localStorage.getItem(nsKeyFor('wingTracker_v1', profileId))) || {}; }
   catch (_) { return {}; }
 }
-function saveLightChildrenTracker(t) { localStorage.setItem(lightChildrenTrackerKey(), JSON.stringify(t)); }
+function loadPermTrackerFor(profileId) {
+  try { return JSON.parse(localStorage.getItem(nsKeyFor('permWingTracker_v1', profileId))) || {}; }
+  catch (_) { return {}; }
+}
+function loadLightChildrenTrackerFor(profileId) {
+  try { return JSON.parse(localStorage.getItem(nsKeyFor('lightChildrenTracker_v1', profileId))) || {}; }
+  catch (_) { return {}; }
+}
+
+// トグルON時に保存する値から獲得日時（ISO8601）を取り出す。
+// 旧データ（値が真偽値 true）の場合はnullを返す（＝日時不明。所持自体は真偽値のtruthyで判定できる）。
+function wingObtainedAt(val) {
+  return (val && typeof val === 'object') ? (val.at || null) : null;
+}
+// wingObtainedAt()で取り出したISO8601文字列を、現在の表示言語に応じた短い日付表記にする。
+function formatObtainedDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+  return LANG === 'en' ? `${m}/${day}/${y}` : `${y}/${m}/${day}`;
+}
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -3323,6 +3508,28 @@ function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
 let seasonFilterUnowned = false;
 let permFilterUnowned = false;
 let lightChildrenFilterUnowned = false;
+
+// 🔍 精霊名でのその場検索（季節精霊・恒常精霊・光の子の全リストに共通で効く）。
+// 小文字化済みの検索語をrender()の各セクションで使い回す。
+let spiritSearchQuery = '';
+function onSpiritSearchInput(value) {
+  spiritSearchQuery = (value || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('spiritSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = spiritSearchQuery ? '' : 'none';
+  render();
+}
+function clearSpiritSearch() {
+  spiritSearchQuery = '';
+  const input = document.getElementById('spiritSearchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('spiritSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  render();
+}
+// 表示中のラベル文字列（L()適用後）が現在の検索語を含むかどうか
+function spiritMatchesSearch(label) {
+  return !spiritSearchQuery || String(label).toLowerCase().includes(spiritSearchQuery);
+}
 
 function toggleSeasonFilter() {
   seasonFilterUnowned = !seasonFilterUnowned;
@@ -3363,13 +3570,21 @@ function render() {
 
     if (seasonFilterUnowned && complete) return '';
 
-    const visibleSpirits = seasonFilterUnowned ? spirits.filter(sp => !checked[sp.ja]) : spirits;
-    const spiritsHtml = visibleSpirits.map(sp => `
+    let visibleSpirits = seasonFilterUnowned ? spirits.filter(sp => !checked[sp.ja]) : spirits;
+    if (spiritSearchQuery) visibleSpirits = visibleSpirits.filter(sp => spiritMatchesSearch(L(sp)));
+    if (spiritSearchQuery && !visibleSpirits.length) return '';
+
+    const spiritsHtml = visibleSpirits.map(sp => {
+      const val = checked[sp.ja];
+      const dateStr = formatObtainedDate(wingObtainedAt(val));
+      return `
       <label class="spirit-opt">
-        <input type="checkbox" ${checked[sp.ja] ? 'checked' : ''}
+        <input type="checkbox" ${val ? 'checked' : ''}
           onchange="onSpiritToggle('${escapeAttr(season.ja)}', '${escapeAttr(sp.ja)}', this.checked)">
-        ${escapeHtml(L(sp))}
-      </label>`).join('');
+        <span class="spirit-opt-label">${escapeHtml(L(sp))}</span>
+        ${dateStr ? `<span class="spirit-opt-date" title="${escapeAttr(t('wingObtainedTitleTemplate', { date: dateStr }))}">📅 ${escapeHtml(dateStr)}</span>` : ''}
+      </label>`;
+    }).join('');
 
     return `
       <div class="season-card">
@@ -3377,10 +3592,14 @@ function render() {
           <div class="season-name">${escapeHtml(L(season))}</div>
           <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('seasonBadgeTemplate', { got: gotCount, total: spirits.length })}</span>
         </div>
+        <div class="area-actions" style="margin: 8px 0 0;">
+          <button type="button" class="area-btn" onclick="setSeasonSpirits('${escapeAttr(season.ja)}', true)">${t('areaSelectAllBtn')}</button>
+          <button type="button" class="area-btn" onclick="setSeasonSpirits('${escapeAttr(season.ja)}', false)">${t('areaResetBtn')}</button>
+        </div>
         <div class="spirit-list">${spiritsHtml}</div>
       </div>`;
   }).join('');
-  document.getElementById('seasonList').innerHTML = seasonHtml;
+  document.getElementById('seasonList').innerHTML = seasonHtml || (spiritSearchQuery ? `<div class="notice-card">${t('spiritSearchNoMatch')}</div>` : '');
 
   // ── 恒常精霊 ──
   let permFeathers = 0, permCandles = 0;
@@ -3396,17 +3615,25 @@ function render() {
       if (t1Owned) { realmGot++; permCandles += sp.t1; }
       if (sp.t2 && t2Owned) { realmGot++; permCandles += sp.t2; }
 
+      // 🔍 検索語に一致しない精霊は非表示（カウントは上ですでに済ませているため、ここで
+      // returnしても集計には影響しない＝未取得のみ表示フィルターと同じ考え方）。
+      if (spiritSearchQuery && !spiritMatchesSearch(L(sp.name))) return '';
+
+      const t1Date = formatObtainedDate(wingObtainedAt(state.tier1));
+      const t2Date = formatObtainedDate(wingObtainedAt(state.tier2));
       const tier1Opt = (!permFilterUnowned || !t1Owned) ? `
       <label class="spirit-opt">
         <input type="checkbox" ${t1Owned ? 'checked' : ''}
           onchange="onPermToggle('${escapeAttr(sp.name.ja)}', 'tier1', this.checked)">
-        ${escapeHtml(L(sp.name))}${t('tier1Template', { n: sp.t1, unit: sp.t1 === 1 ? '' : 's' })}
+        <span class="spirit-opt-label">${escapeHtml(L(sp.name))}${t('tier1Template', { n: sp.t1, unit: sp.t1 === 1 ? '' : 's' })}</span>
+        ${t1Date ? `<span class="spirit-opt-date" title="${escapeAttr(t('wingObtainedTitleTemplate', { date: t1Date }))}">📅 ${escapeHtml(t1Date)}</span>` : ''}
       </label>` : '';
       const tier2Opt = (sp.t2 && (!permFilterUnowned || !t2Owned)) ? `
       <label class="spirit-opt">
         <input type="checkbox" ${t2Owned ? 'checked' : ''}
           onchange="onPermToggle('${escapeAttr(sp.name.ja)}', 'tier2', this.checked)">
-        ${escapeHtml(L(sp.name))}${t('tier2Template', { n: sp.t2, unit: sp.t2 === 1 ? '' : 's' })}
+        <span class="spirit-opt-label">${escapeHtml(L(sp.name))}${t('tier2Template', { n: sp.t2, unit: sp.t2 === 1 ? '' : 's' })}</span>
+        ${t2Date ? `<span class="spirit-opt-date" title="${escapeAttr(t('wingObtainedTitleTemplate', { date: t2Date }))}">📅 ${escapeHtml(t2Date)}</span>` : ''}
       </label>` : '';
       return tier1Opt + tier2Opt;
     }).join('');
@@ -3415,6 +3642,7 @@ function render() {
     const complete = realmGot === realmMax;
 
     if (permFilterUnowned && complete) return '';
+    if (spiritSearchQuery && !spiritsHtml.trim()) return '';
 
     return `
       <div class="season-card">
@@ -3422,10 +3650,14 @@ function render() {
           <div class="season-name">${escapeHtml(L(realm))}</div>
           <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('permBadgeTemplate', { got: realmGot, total: realmMax })}</span>
         </div>
+        <div class="area-actions" style="margin: 8px 0 0;">
+          <button type="button" class="area-btn" onclick="setRealmSpirits('${escapeAttr(realm.ja)}', true)">${t('areaSelectAllBtn')}</button>
+          <button type="button" class="area-btn" onclick="setRealmSpirits('${escapeAttr(realm.ja)}', false)">${t('areaResetBtn')}</button>
+        </div>
         <div class="spirit-list">${spiritsHtml}</div>
       </div>`;
   }).join('');
-  document.getElementById('realmList').innerHTML = realmHtml;
+  document.getElementById('realmList').innerHTML = realmHtml || (spiritSearchQuery ? `<div class="notice-card">${t('spiritSearchNoMatch')}</div>` : '');
 
   // ── 光の子 ──
   const { got: lightChildrenGot, total: lightChildrenTotal } = renderLightChildren();
@@ -3464,6 +3696,7 @@ function renderLightChildren() {
         if (checked) realmGot++;
         if (lightChildrenFilterUnowned && checked) return '';
         const label = lcChildLabel(child, realm);
+        if (spiritSearchQuery && !spiritMatchesSearch(label)) return '';
         const thumb = child.img
           ? `<img src="${escapeAttr(child.img)}" alt="${escapeHtml(label)}" loading="lazy" onerror="this.parentElement.classList.add('img-fallback')">`
           : '';
@@ -3497,6 +3730,7 @@ function renderLightChildren() {
     const complete = realmGot === realmTotal;
 
     if (lightChildrenFilterUnowned && complete) return '';
+    if (spiritSearchQuery && !areasHtml.trim()) return '';
 
     return `
       <div class="realm-block">
@@ -3626,21 +3860,58 @@ function renderCapeLevels(total) {
 function onSpiritToggle(season, spirit, isChecked) {
   const tracker = loadTracker();
   if (!tracker[season]) tracker[season] = {};
-  if (isChecked) tracker[season][spirit] = true;
+  if (isChecked) tracker[season][spirit] = { at: new Date().toISOString() };
   else delete tracker[season][spirit];
   saveTracker(tracker);
   render();
   showToast(t('toastSaved'));
 }
 
+// 季節1つ分の精霊をまとめてチェック/リセットする（光の子タブの「全選択/リセット」と同じ考え方）。
+function setSeasonSpirits(seasonJa, checked) {
+  const found = SEASON_SPIRITS.find(s => s.season.ja === seasonJa);
+  if (!found) return;
+  const tracker = loadTracker();
+  if (!tracker[seasonJa]) tracker[seasonJa] = {};
+  const at = new Date().toISOString();
+  found.spirits.forEach(sp => {
+    if (checked) tracker[seasonJa][sp.ja] = { at };
+    else delete tracker[seasonJa][sp.ja];
+  });
+  saveTracker(tracker);
+  render();
+  showToast(checked ? t('toastAreaSelected') : t('toastAreaReset'));
+}
+
 function onPermToggle(spirit, tier, isChecked) {
   const tracker = loadPermTracker();
   if (!tracker[spirit]) tracker[spirit] = {};
-  if (isChecked) tracker[spirit][tier] = true;
+  if (isChecked) tracker[spirit][tier] = { at: new Date().toISOString() };
   else delete tracker[spirit][tier];
   savePermTracker(tracker);
   render();
   showToast(t('toastSaved'));
+}
+
+// 地方1つ分の恒常精霊をまとめてチェック/リセットする（Tier2があるものは両方まとめて対象）。
+function setRealmSpirits(realmJa, checked) {
+  const found = REALM_SPIRITS.find(r => r.realm.ja === realmJa);
+  if (!found) return;
+  const tracker = loadPermTracker();
+  const at = new Date().toISOString();
+  found.spirits.forEach(sp => {
+    if (!tracker[sp.name.ja]) tracker[sp.name.ja] = {};
+    if (checked) {
+      tracker[sp.name.ja].tier1 = { at };
+      if (sp.t2) tracker[sp.name.ja].tier2 = { at };
+    } else {
+      delete tracker[sp.name.ja].tier1;
+      delete tracker[sp.name.ja].tier2;
+    }
+  });
+  savePermTracker(tracker);
+  render();
+  showToast(checked ? t('toastAreaSelected') : t('toastAreaReset'));
 }
 
 let toastTimer = null;
@@ -3740,6 +4011,7 @@ function closeTopmostOpenModal() {
   if (isShown('imagePreviewModal')) { closeImagePreviewModal(); return; }
   if (isShown('customizeModal')) { closeCustomizeModal(); return; }
   if (isShown('iconCustomModal')) { pfIconCloseModal(); return; }
+  if (isShown('pfCompareModalOverlay')) { pfCompareClose(); return; }
   if (isShown('dmModalOverlay')) { dmCloseModal(); return; }
   if (isShown('dashModalOverlay')) { pfDashClose(); return; }
   if (isShown('pfModalOverlay')) {
