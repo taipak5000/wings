@@ -15,10 +15,16 @@
     // 🌓 描画前にテーマを確定させ、ダークモード時に一瞬でも明るい背景が表示される「ちらつき」を防止する
     // （'sky_app_theme' は taipak5000.github.io 系ツール共通のキー。sky_app_langと同様、
     //   プロフィールに依存しない端末単位の設定のため nsKey() は使わない）
+    // sky_app_theme は 'light' / 'dark' / 'system'（キー未設定時も'system'として扱う）の
+    // いずれかを保持する。ここでの解決ロジックは本体スクリプト側の resolveEffectiveTheme()と
+    // 内容を揃えてある（このスクリプトは他のスクリプトより先に単独で動く必要があるため、
+    // そのまま複製している。変更する際は両方を同期させること）。
     (function () {
       try {
         var saved = localStorage.getItem('sky_app_theme');
-        var isDark = saved ? (saved === 'dark') : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = (saved === 'light' || saved === 'dark')
+          ? (saved === 'dark')
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'light');
@@ -976,16 +982,18 @@ const I18N = {
     settingsBtnTitle: '表示設定',
     settingsModalTitle: '⚙️ 表示設定',
     settingsDisplayLabel: '🌙 表示',
-    settingsDarkModeLabel: 'ダークモード',
+    settingsDarkModeLabel: 'テーマ',
     settingsCustomizeLabel: '🎨 表示のカスタマイズ',
     settingsCustomizeBtnText: 'アイコンをカスタマイズ',
     settingsCustomizeBtn: '開く',
     themeToggleDark: '🌙 ダーク',
     themeToggleLight: '☀️ ライト',
+    themeToggleSystem: '🖥️ システム',
+    themeToggleAriaLabel: '現在のテーマ: {current}（タップで{next}に切り替え）',
     settingsShortcutsLabel: '⌨️ キーボードショートカット',
     settingsShortcutsEnableLabel: 'ショートカットを有効にする',
     settingsShortcutOpen: 'この設定を開く',
-    settingsShortcutTheme: 'ダークモード切替',
+    settingsShortcutTheme: 'テーマ切替（ライト→ダーク→システム）',
     settingsShortcutEscape: '開いているウィンドウを閉じる',
     settingsLangLabel: '🌐 言語 / Language',
     pfAccountColorTitle: 'アカウントカラー',
@@ -1222,16 +1230,18 @@ const I18N = {
     settingsBtnTitle: 'Display Settings',
     settingsModalTitle: '⚙️ Display Settings',
     settingsDisplayLabel: '🌙 Display',
-    settingsDarkModeLabel: 'Dark Mode',
+    settingsDarkModeLabel: 'Theme',
     settingsCustomizeLabel: '🎨 Display Customization',
     settingsCustomizeBtnText: 'Customize Icon',
     settingsCustomizeBtn: 'Open',
     themeToggleDark: '🌙 Dark',
     themeToggleLight: '☀️ Light',
+    themeToggleSystem: '🖥️ System',
+    themeToggleAriaLabel: 'Current theme: {current} (tap to switch to {next})',
     settingsShortcutsLabel: '⌨️ Keyboard Shortcuts',
     settingsShortcutsEnableLabel: 'Enable keyboard shortcuts',
     settingsShortcutOpen: 'Open this settings panel',
-    settingsShortcutTheme: 'Toggle dark mode',
+    settingsShortcutTheme: 'Cycle theme (Light → Dark → System)',
     settingsShortcutEscape: 'Close the open window',
     settingsLangLabel: '🌐 Language',
     pfAccountColorTitle: 'Account color',
@@ -2204,6 +2214,10 @@ window.addEventListener('storage', (e) => {
   // （storageイベントは変更を行った当のタブでは発火せず、"他の"タブ・ウィンドウでのみ発火する
   //  ため、ここに来る時点で「切り替えたのは自分ではない」ことが保証されている）
   if (e.key === ACTIVE_PROFILE_KEY) pfHandleActiveProfileChangedElsewhere();
+  // 🔁 別タブ・別サイト（taipak5000.github.io系ツール共通のsky_app_themeキー）でテーマ設定が
+  // 変更された場合、このタブの見た目・表示設定モーダルの表示も即座に追従させる
+  // （'light'/'dark'/'system'いずれの値でもgetStoredThemeMode()側で正しく解決される）
+  if (e.key === THEME_KEY) { applyStoredThemeToDOM(); syncSettingsModalUI(); }
 });
 
 // 他タブでのプロフィールのリネーム・アカウントカラー編集に追従し、このタブの
@@ -3978,18 +3992,49 @@ function closeSidebarMobile() {
 const THEME_KEY = 'sky_app_theme';
 const SHORTCUTS_KEY = 'sky_shortcuts_enabled';
 
+// 🌓 sky_app_theme は 'light' / 'dark' / 'system' の3値を取り得る（キー未設定＝初回訪問時も
+// 'system'として扱う）。「今どちらの見た目にすべきか」を決める箇所（<head>内の先読みスクリプト・
+// トグル・他タブからのstorageイベント・OSテーマ変更のライブ追従）は、すべてこの2つのヘルパーに
+// 集約する（<head>内の先読みスクリプトのみ、他スクリプトより先に単独で動く必要があるため
+// 同じロジックをそのまま複製している。変更する際は両方を同期させること）。
+function getStoredThemeMode() {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    return (v === 'light' || v === 'dark' || v === 'system') ? v : 'system';
+  } catch (e) { return 'system'; }
+}
+function resolveEffectiveTheme(mode) {
+  if (mode === 'light' || mode === 'dark') return mode;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 function isDarkMode() {
   return document.documentElement.getAttribute('data-theme') === 'dark';
 }
 function applyThemeToDOM(isDark) {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
+// 現在保存されているモード（'light'/'dark'/'system'）から実際の明暗を解決してDOMへ反映する
+function applyStoredThemeToDOM() {
+  applyThemeToDOM(resolveEffectiveTheme(getStoredThemeMode()) === 'dark');
+}
+// ⚙️ 表示設定モーダルのボタン・'d'キーから呼ばれる。ライト→ダーク→システム追従→ライト…の
+// 順で3状態を巡回し、選んだモードをそのまま保存する（実際の明暗はresolveEffectiveTheme()で解決）。
 function toggleTheme() {
-  const next = !isDarkMode();
-  applyThemeToDOM(next);
-  try { localStorage.setItem(THEME_KEY, next ? 'dark' : 'light'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
+  const order = ['light', 'dark', 'system'];
+  const next = order[(order.indexOf(getStoredThemeMode()) + 1) % order.length];
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
+  applyThemeToDOM(resolveEffectiveTheme(next) === 'dark');
   syncSettingsModalUI();
 }
+
+// 🖥️ OS側のダーク/ライト設定がタブを開いたまま切り替わった場合（サンセット等での自動切替）、
+// 保存モードが'system'（未設定含む）のときだけこのタブの見た目もライブに追従させる
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (getStoredThemeMode() === 'system') {
+    applyStoredThemeToDOM();
+    syncSettingsModalUI();
+  }
+});
 
 // ⌨️ '?'・'d'・Esc ショートカットが有効かどうかを、その都度localStorageから直接判定する
 // （他タブ・他サイトでの変更もすぐ反映されるようキャッシュしない）。未設定（null）の場合は有効扱い。
@@ -4004,11 +4049,24 @@ function settingsSaveShortcutsPref() {
   try { localStorage.setItem(SHORTCUTS_KEY, (checkbox && checkbox.checked) ? '1' : '0'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
 }
 
-// 表示設定モーダル内の表示（ダークモード切替ボタンの文言・ショートカット有効チェックボックス）を
+function themeModeLabel(mode) {
+  if (mode === 'dark') return t('themeToggleDark');
+  if (mode === 'light') return t('themeToggleLight');
+  return t('themeToggleSystem');
+}
+// 表示設定モーダル内の表示（テーマ切替ボタンの文言・ショートカット有効チェックボックス）を
 // 現在の状態に同期する
 function syncSettingsModalUI() {
   const themeBtn = document.getElementById('settingsThemeToggleBtn');
-  if (themeBtn) themeBtn.textContent = isDarkMode() ? t('themeToggleDark') : t('themeToggleLight');
+  if (themeBtn) {
+    const order = ['light', 'dark', 'system'];
+    const mode = getStoredThemeMode();
+    const nextMode = order[(order.indexOf(mode) + 1) % order.length];
+    themeBtn.textContent = themeModeLabel(mode);
+    // aria-pressedは二値専用のため、3状態を巡回するこのボタンには使わない。代わりに
+    // 「今どのモードで、押すと次にどれへ切り替わるか」をaria-labelでそのまま説明する。
+    themeBtn.setAttribute('aria-label', t('themeToggleAriaLabel', { current: themeModeLabel(mode), next: themeModeLabel(nextMode) }));
+  }
   const checkbox = document.getElementById('settingsShortcutsCheckbox');
   if (checkbox) checkbox.checked = skyShortcutsEnabled();
   const langJaBtn = document.getElementById('settingsLangJaBtn');
@@ -4027,7 +4085,7 @@ function settingsCloseModal() {
   document.getElementById('settingsModalOverlay').classList.remove('show');
 }
 
-// ⌨️ 全ツール共通のキーボードショートカット（?＝表示設定を開く／d,D＝ダークモード切替／
+// ⌨️ 全ツール共通のキーボードショートカット（?＝表示設定を開く／d,D＝テーマ切替（ライト→ダーク→システム）／
 // Esc＝開いているモーダルを閉じる）。Escはテキスト入力中でも常に有効（ダイアログを閉じるのは
 // ユーザーの期待に沿うため）かつショートカット無効設定の影響を受けない。?とdは、テキスト入力中は
 // 通常の文字入力として使えるようガードし、ショートカットが無効化されていれば発火しない。
