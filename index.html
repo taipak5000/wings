@@ -247,13 +247,17 @@
       background: var(--card); border-radius: var(--r); padding: 16px; margin-top: 16px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
-    .titles-card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .titles-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .titles-card-title { font-size: 14px; font-weight: 700; }
+    .titles-count { font-size: 12px; font-weight: 700; color: var(--text-2); }
     .titles-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .title-chip {
       display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700;
       padding: 6px 12px; border-radius: 999px; background: var(--orange-bg); color: var(--orange-d);
       white-space: nowrap; cursor: default;
     }
+    /* 未獲得：獲得済みのオレンジに対し、他所の無効状態と同じ淡色トークンで「まだ手が届いていない」を表す */
+    .title-chip.locked { background: var(--bg); color: var(--text-3); font-weight: 600; }
 
     .toast {
       position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
@@ -558,8 +562,11 @@
       </div>
     </div>
 
-    <div class="titles-card" id="titlesPanel" style="display:none;">
-      <div class="titles-card-title" data-i18n="titlesPanelTitle">🏆 称号</div>
+    <div class="titles-card" id="titlesPanel">
+      <div class="titles-card-head">
+        <div class="titles-card-title" data-i18n="titlesPanelTitle">🏆 称号</div>
+        <span class="titles-count" id="titlesCount">0 / 0</span>
+      </div>
       <div class="titles-chips" id="titlesChips"></div>
     </div>
 
@@ -953,6 +960,8 @@ const I18N = {
     summaryCandlesSub: '光の翼1枚 = 星のキャンドル2本（季節精霊の場合）',
     capeCardTitle: '✦ ケープレベル',
     titlesPanelTitle: '🏆 称号',
+    titlesCountTemplate: '{earned} / {total} 個解除',
+    titleLockedTooltip: '称号は条件を満たすと明らかになります',
     shareTwitterBtn: '📤🖼️ Xで画像を共有',
     shareCustomizeBtn: '🎨 カスタマイズして共有',
     tabWings: '🪽 精霊の羽',
@@ -1203,6 +1212,8 @@ const I18N = {
     summaryCandlesSub: '1 Winged Light = 2 Star Candles (for Seasonal Spirits)',
     capeCardTitle: '✦ Cape Level',
     titlesPanelTitle: '🏆 Titles',
+    titlesCountTemplate: '{earned} / {total} unlocked',
+    titleLockedTooltip: 'Unlocks when you meet its condition',
     shareTwitterBtn: '📤🖼️ Share image on X',
     shareCustomizeBtn: '🎨 Customize & share',
     tabWings: '🪽 Spirit Wings',
@@ -3325,12 +3336,16 @@ function checkAndUnlockTitles() {
 
 function renderTitles(owned) {
   owned = owned || loadTitles();
-  const panel = document.getElementById('titlesPanel');
-  const earned = TITLES.filter(ti => owned[ti.id]);
-  panel.style.display = earned.length ? '' : 'none';
-  document.getElementById('titlesChips').innerHTML = earned.map(ti => `
-    <span class="title-chip" title="${escapeAttr(L(ti.desc))}">${ti.icon} ${escapeHtml(L(ti.name))}</span>
-  `).join('');
+  const earnedCount = TITLES.filter(ti => owned[ti.id]).length;
+  document.getElementById('titlesCount').textContent = t('titlesCountTemplate', { earned: earnedCount, total: TITLES.length });
+  // 未獲得も含め全件を常に描画する。未獲得は名前・条件文を「？？？」で隠し、汎用の
+  // ツールチップのみ表示（実際の名称・解除条件をhoverで先読みできないようにするため）。
+  document.getElementById('titlesChips').innerHTML = TITLES.map(ti => {
+    if (owned[ti.id]) {
+      return `<span class="title-chip" title="${escapeAttr(L(ti.desc))}">${ti.icon} ${escapeHtml(L(ti.name))}</span>`;
+    }
+    return `<span class="title-chip locked" title="${escapeAttr(t('titleLockedTooltip'))}">${ti.icon} ？？？</span>`;
+  }).join('');
 }
 
 function buildOverallExportCardEl(opts = {}) {
