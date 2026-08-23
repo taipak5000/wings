@@ -3432,7 +3432,7 @@ const PF_TITLE_CATALOG = {
       lc_half: { icon: '🔦', name: '光を辿る探検家', desc: { ja: '光の子を62体（半数）発見', en: 'Found 62 Children of Light (half)' } },
       lc_all: { icon: '🌟', name: '光の子コンプリート', desc: { ja: '光の子124体すべてを発見', en: 'Found all 124 Children of Light' } },
     } },
-  spirit: { storageKey: 'spiritCatalogTitles_v1', namespaced: true, source: '精霊ツリー管理',
+  spirit: { storageKey: 'spiritCatalogTitles_v1', namespaced: true, source: { ja: '姉妹サイト', en: 'Sibling Site' },
     extract: d => Object.keys(d || {}),
     titles: {
       pct1: { icon: '🌱', name: '芽吹きの精霊使い', desc: { ja: '精霊ツリーのノードを1%以上解放した', en: 'Unlocked 1%+ of all spirit tree nodes' } },
@@ -3441,7 +3441,7 @@ const PF_TITLE_CATALOG = {
       pct50: { icon: '🌳', name: '満開の森の守り人', desc: { ja: '精霊ツリーのノードを50%以上解放した', en: 'Unlocked 50%+ of all spirit tree nodes' } },
       pct100: { icon: '👑', name: '精霊の森の賢者', desc: { ja: '精霊ツリーの全ノードをコンプリートした', en: 'Unlocked 100% of all spirit tree nodes' } },
     } },
-  score: { storageKey: 'taiScoreTitles_v1', namespaced: false, source: '楽譜作成ツール',
+  score: { storageKey: 'taiScoreTitles_v1', namespaced: false, source: { ja: '姉妹サイト', en: 'Sibling Site' },
     extract: d => ((d && d.earned) || []).map(e => e.id),
     titles: {
       firstSong: { icon: '🎼', name: 'はじめの一歩', desc: { ja: 'はじめての1曲をライブラリに加えた', en: 'Added your first song to the library' } },
@@ -3513,7 +3513,7 @@ function pfBuildTitlesSectionHtml(p) {
   const bodyId = 'pfTitlesBody_' + p.id;
   const bodyHtml = groups.length
     ? groups.map(g => `
-        <div class="pf-titles-group-label">${escapeHtml(g.source)}</div>
+        <div class="pf-titles-group-label">${escapeHtml(typeof g.source === 'object' ? L(g.source) : g.source)}</div>
         ${g.titles.map(ti => `
           <div class="pf-titles-line"><span>${ti.icon}</span><span class="pf-titles-name">${escapeHtml(ti.name)}</span><span class="pf-titles-desc">— ${escapeHtml(ti.desc)}</span></div>`).join('')}`).join('')
     : `<div class="pf-titles-empty">${t('pfTitlesEmptyState')}</div>`;
