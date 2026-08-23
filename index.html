@@ -242,6 +242,19 @@
     .cape-spark.l { left: -7px; top: 50%; margin-top: -1.5px; }
     .cape-spark.r { right: -7px; top: 50%; margin-top: -1.5px; }
 
+    /* ── 🏆 称号パネル（season-card等の既存カード言語を踏襲しつつ、達成感を出すためオレンジ基調に） ── */
+    .titles-card {
+      background: var(--card); border-radius: var(--r); padding: 16px; margin-top: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .titles-card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .titles-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .title-chip {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700;
+      padding: 6px 12px; border-radius: 999px; background: var(--orange-bg); color: var(--orange-d);
+      white-space: nowrap; cursor: default;
+    }
+
     .toast {
       position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
       background: rgba(28,28,30,0.92); color: #fff; padding: 10px 18px; border-radius: 999px;
@@ -543,6 +556,11 @@
       <div class="cape-pips" id="capePips">
         <!-- JSで動的に生成 -->
       </div>
+    </div>
+
+    <div class="titles-card" id="titlesPanel" style="display:none;">
+      <div class="titles-card-title" data-i18n="titlesPanelTitle">🏆 称号</div>
+      <div class="titles-chips" id="titlesChips"></div>
     </div>
 
     <div class="share-btn-row">
@@ -934,6 +952,7 @@ const I18N = {
     summaryCandlesLabel: '翼に使った星のキャンドル',
     summaryCandlesSub: '光の翼1枚 = 星のキャンドル2本（季節精霊の場合）',
     capeCardTitle: '✦ ケープレベル',
+    titlesPanelTitle: '🏆 称号',
     shareTwitterBtn: '📤🖼️ Xで画像を共有',
     shareCustomizeBtn: '🎨 カスタマイズして共有',
     tabWings: '🪽 精霊の羽',
@@ -1115,6 +1134,7 @@ const I18N = {
     previewImgAlt: '保存用の画像',
 
     toastSaved: '保存しました',
+    titleUnlockedToastTemplate: '🏆 称号「{icon} {name}」を獲得しました！',
     toastAreaSelected: 'エリアをまとめて選択しました',
     toastAreaReset: 'エリアをリセットしました',
     toastResetAllLightChildren: '光の子をすべてリセットしました',
@@ -1182,6 +1202,7 @@ const I18N = {
     summaryCandlesLabel: 'Star Candles spent on wings',
     summaryCandlesSub: '1 Winged Light = 2 Star Candles (for Seasonal Spirits)',
     capeCardTitle: '✦ Cape Level',
+    titlesPanelTitle: '🏆 Titles',
     shareTwitterBtn: '📤🖼️ Share image on X',
     shareCustomizeBtn: '🎨 Customize & share',
     tabWings: '🪽 Spirit Wings',
@@ -1363,6 +1384,7 @@ const I18N = {
     previewImgAlt: 'Image to save',
 
     toastSaved: 'Saved',
+    titleUnlockedToastTemplate: '🏆 Title unlocked: {icon} {name}!',
     toastAreaSelected: 'Selected all in this area',
     toastAreaReset: 'Reset this area',
     toastResetAllLightChildren: 'Reset all Children of Light',
@@ -3247,6 +3269,70 @@ function getWingStats(profileId) {
   return { totalAll, seasonFeathers, seasonSpiritsTotal, permFeathers, permTotal, lightChildrenGot, lightChildrenTotal, capeLevel };
 }
 
+/* ================================================================
+   🏆 称号（実績）
+   condition は getWingStats() の値（=今の生きた値）を見て判定するが、一度でも条件を
+   満たして獲得記録（wingsTitles_v1）に書き込んだ称号は、その後チェックを外す等で
+   数値が下がっても再評価しない（=そもそも既に獲得済みならconditionを呼ばない）。
+   これにより「後から取り消されない」を、判定側に別途ハイウォーターマークを持たずに
+   保存キー自体で保証している。
+   ================================================================ */
+const TITLES = [
+  { id: 'cape_lv5', icon: '🪶', name: { ja: '羽ばたきの証', en: 'Budding Wings' },
+    desc: { ja: 'ケープレベル5に到達（光の翼20枚）', en: 'Reached Cape Level 5 (20 Wings of Light)' },
+    condition: stats => stats.capeLevel >= 5 },
+  { id: 'cape_lv10', icon: '🧥', name: { ja: '旅するケープ使い', en: 'Traveling Cloak-Bearer' },
+    desc: { ja: 'ケープレベル10に到達（光の翼120枚）', en: 'Reached Cape Level 10 (120 Wings of Light)' },
+    condition: stats => stats.capeLevel >= 10 },
+  { id: 'cape_lv13', icon: '👑', name: { ja: '光の翼、極めし者', en: 'Master of the Winged Light' },
+    desc: { ja: 'ケープレベル最大の13に到達（光の翼250枚）', en: 'Reached the max Cape Level 13 (250 Wings of Light)' },
+    condition: stats => stats.capeLevel >= 13 },
+  { id: 'lc_half', icon: '🔦', name: { ja: '光を辿る探検家', en: 'Light-Tracing Explorer' },
+    desc: { ja: '光の子を62体（半数）発見', en: 'Found 62 Children of Light (half)' },
+    condition: stats => stats.lightChildrenGot >= 62 },
+  { id: 'lc_all', icon: '🌟', name: { ja: '光の子コンプリート', en: 'Children of Light Completionist' },
+    desc: { ja: '光の子124体すべてを発見', en: 'Found all 124 Children of Light' },
+    condition: stats => stats.lightChildrenGot >= stats.lightChildrenTotal },
+];
+
+// wingTracker_v1等と同じくプロフィール単位のデータ（プロフィールごとに進捗が別なので称号も別）。
+// ⚠️ こちらもtrackerKey()等と同様、都度呼び出して常に現在アクティブなプロフィールのキーを解決する。
+function titlesKey() { return nsKey('wingsTitles_v1'); } // { [titleId]: { earnedAt: ISO8601文字列 } }
+function loadTitles() {
+  try { return JSON.parse(localStorage.getItem(titlesKey())) || {}; }
+  catch (e) { return {}; }
+}
+function saveTitles(obj) { localStorage.setItem(titlesKey(), JSON.stringify(obj)); }
+
+// render()の末尾から呼ぶ。新規に条件を満たした称号があれば保存してトースト表示する。
+function checkAndUnlockTitles() {
+  const stats = getWingStats();
+  const owned = loadTitles();
+  const newlyEarned = [];
+  TITLES.forEach(title => {
+    if (owned[title.id]) return; // 既に獲得済みなら再評価しない（＝取り消しは起きない）
+    if (title.condition(stats)) {
+      owned[title.id] = { earnedAt: new Date().toISOString() };
+      newlyEarned.push(title);
+    }
+  });
+  if (newlyEarned.length) saveTitles(owned);
+  renderTitles(owned);
+  newlyEarned.forEach(title => {
+    showToast(t('titleUnlockedToastTemplate', { icon: title.icon, name: L(title.name) }));
+  });
+}
+
+function renderTitles(owned) {
+  owned = owned || loadTitles();
+  const panel = document.getElementById('titlesPanel');
+  const earned = TITLES.filter(ti => owned[ti.id]);
+  panel.style.display = earned.length ? '' : 'none';
+  document.getElementById('titlesChips').innerHTML = earned.map(ti => `
+    <span class="title-chip" title="${escapeAttr(L(ti.desc))}">${ti.icon} ${escapeHtml(L(ti.name))}</span>
+  `).join('');
+}
+
 function buildOverallExportCardEl(opts = {}) {
   const { totalAll, seasonFeathers, seasonSpiritsTotal, permFeathers, permTotal, capeLevel } = getWingStats();
   const theme = SHARE_THEMES[opts.theme] ? opts.theme : 'blue';
@@ -3714,6 +3800,7 @@ function render() {
   document.getElementById('sumLightChildren').textContent = `${lightChildrenGot} / ${lightChildrenTotal}`;
 
   renderCapeLevels(totalAll);
+  checkAndUnlockTitles();
 }
 
 // 光の子チェックリストを描画し、{ got, total } を返す
