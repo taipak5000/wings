@@ -782,7 +782,7 @@
 <div class="pf-modal-overlay" id="dmModalOverlay" onclick="if(event.target===this) dmCloseModal()">
   <div class="pf-modal-card">
     <h3 data-i18n="backupModalTitle">💾 データのバックアップ・復元・削除</h3>
-    <div class="pf-hint" style="margin:0 0 14px;" data-i18n="backupHint">このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。</div>
+    <div class="pf-hint" style="margin:0 0 14px;" data-i18n="backupHint">このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。</div>
     <button type="button" class="pf-add-btn" style="width:100%; margin-bottom:8px;" onclick="dmExport()" data-i18n="backupExportBtn">⬇️ データをエクスポート（ファイルに保存）</button>
     <input type="file" id="dmImportFile" accept="application/json" style="display:none" onchange="dmImportFileSelected(event)">
     <button type="button" class="pf-icon-btn" style="width:100%; margin-bottom:8px; padding:8px;" onclick="document.getElementById('dmImportFile').click()" data-i18n="backupImportBtn">⬆️ ファイルからインポート</button>
@@ -1114,7 +1114,7 @@ const I18N = {
     realmVault: '書庫',
 
     backupModalTitle: '💾 データのバックアップ・復元・削除',
-    backupHint: 'このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion・spirit-catalog 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。',
+    backupHint: 'このブラウザに保存されている taipak5000.github.io 系ツール（item・wings・companion 等）のデータをまとめて書き出し・読み込み・削除できます。全プロフィール分がまとめて対象になります。',
     backupExportBtn: '⬇️ データをエクスポート（ファイルに保存）',
     backupImportBtn: '⬆️ ファイルからインポート',
     backupWipeBtn: '🗑️ 全データを削除',
@@ -1368,7 +1368,7 @@ const I18N = {
     realmVault: 'Vault',
 
     backupModalTitle: '💾 Backup / Restore / Erase Data',
-    backupHint: 'Back up, restore, or erase all locally-stored data for the taipak5000.github.io tool suite (item, wings, companion, spirit-catalog, etc.) at once. This covers all profiles together.',
+    backupHint: 'Back up, restore, or erase all locally-stored data for the taipak5000.github.io tool suite (item, wings, companion, etc.) at once. This covers all profiles together.',
     backupExportBtn: '⬇️ Export data (save to file)',
     backupImportBtn: '⬆️ Import from file',
     backupWipeBtn: '🗑️ Erase all data',
