@@ -702,8 +702,6 @@
   </span>
 </footer>
 
-<div class="toast" id="toast"></div>
-
 <!-- 🧭 画面下部クイックアクセスドック（既存のハンバーガーサイドバーと併存。サイドバーの
      リンク一覧は複製せず、既存の openSidebarMobile() を呼ぶだけ） -->
 <div class="site-dock" role="navigation" aria-label="クイックメニュー">
@@ -4244,13 +4242,18 @@ function setRealmSpirits(realmJa, checked) {
   showToast(checked ? t('toastAreaSelected') : t('toastAreaReset'));
 }
 
-let toastTimer = null;
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t = document.createElement('div');
+  t.className = 'toast';
   t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+  // 称号解禁通知＋通常の操作通知など、同じtick内で2つ以上showToast()が呼ばれると
+  // 単一の共有トースト要素では後から追加した方だけが見え前の通知が完全に上書きされて
+  // しまう。既に表示中のトースト数だけ上に積み上げて両方見えるようにする
+  const stackIndex = document.querySelectorAll('.toast').length;
+  if (stackIndex > 0) t.style.bottom = `calc(84px + env(safe-area-inset-bottom) + ${stackIndex * 44}px)`;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 1600);
 }
 
 // 🖥️ .sidebar は850px以上の幅では常時インライン表示される（CSSの
