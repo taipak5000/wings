@@ -43,6 +43,8 @@
       --blue-bg:   rgba(0,122,255,0.08);
       --green:     #34C759;
       --green-bg:  rgba(52,199,89,0.10);
+      --red:       #FF3B30;
+      --red-bg:    rgba(255,59,48,0.10);
       --text:      #1C1C1E;
       --text-2:    #8E8E93;
       --text-3:    #C7C7CC;
@@ -62,6 +64,8 @@
       --blue-bg:   rgba(10,132,255,0.16);
       --green:     #30D158;
       --green-bg:  rgba(48,209,88,0.16);
+      --red:       #FF453A;
+      --red-bg:    rgba(255,69,58,0.16);
       --text:      #F2F2F7;
       --text-2:    #98989D;
       --text-3:    #636366;
@@ -168,6 +172,9 @@
       background: var(--card); border-radius: var(--r); padding: 16px; margin-bottom: 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
+    /* ⏰ 季節終了間近（かつ未取得の光の翼が残っている）シーズンのカードを、
+       スクロール中でも一目で気づけるよう赤いリングで強調する（レイアウトは変えない） */
+    .season-card.ending-soon { box-shadow: 0 0 0 1.5px var(--red), 0 1px 4px rgba(0,0,0,0.07); }
     .season-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .season-name { font-size: 15px; font-weight: 700; }
     .season-sub-badge {
@@ -175,6 +182,7 @@
       background: var(--blue-bg); color: var(--blue); white-space: nowrap;
     }
     .season-sub-badge.complete { background: var(--green-bg); color: var(--green); }
+    .season-sub-badge.warn { background: var(--red-bg); color: var(--red); }
     .spirit-list {
       display: flex; flex-direction: column; gap: 2px; margin-top: 12px; padding-top: 12px;
       border-top: 0.5px solid var(--sep);
@@ -186,6 +194,9 @@
     .spirit-opt input { accent-color: var(--blue); width: 16px; height: 16px; flex-shrink: 0; }
     .spirit-opt-label { flex: 1; min-width: 0; }
     .spirit-opt-date { flex-shrink: 0; font-size: 10.5px; color: var(--text-2); white-space: nowrap; }
+    /* ⏰ 季節終了間近シーズン内の「まだ未取得」の行だけ赤みを付けて目立たせる */
+    .spirit-opt.warn { background: var(--red-bg); }
+    .spirit-opt.warn .spirit-opt-label { color: var(--red); font-weight: 600; }
 
     /* ── 精霊名検索 ───────────────────── */
     .spirit-search-row { display: flex; gap: 8px; margin-top: 16px; }
@@ -1183,6 +1194,8 @@ const I18N = {
     imageSaveFailed: '画像の保存に失敗しました',
 
     seasonBadgeTemplate: '{got} / {total} 体',
+    seasonEndingSoonBadgeTemplate: '⚠️ 終了まであと{days}日',
+    seasonEndingSoonTitle: 'この季節はまもなく終了します。再訪でしか手に入らない光の翼を見逃さないようご注意ください。',
     permBadgeTemplate: '{got} / {total} 枚',
     lightChildrenBadgeTemplate: '{got} / {total} 体',
     sheetCountTemplate: '{n}枚',
@@ -1437,6 +1450,8 @@ const I18N = {
     imageSaveFailed: 'Failed to save the image',
 
     seasonBadgeTemplate: '{got} / {total}',
+    seasonEndingSoonBadgeTemplate: '⚠️ Ends in {days}d',
+    seasonEndingSoonTitle: 'This season is ending soon. Do not miss out on Winged Light only available through Revisit before it closes for good.',
     permBadgeTemplate: '{got} / {total}',
     lightChildrenBadgeTemplate: '{got} / {total}',
     sheetCountTemplate: '{n}',
@@ -2709,15 +2724,22 @@ function pfDashStartTimer() {
 function pfDashStopTimer() {
   if (pfDashTimer) { clearInterval(pfDashTimer); pfDashTimer = null; }
 }
+// 🔄 ダッシュボードの取得データ（tai-item側のCURRENT_SEASON/REVISIT_SPIRIT_SCHEDULE等を
+// fetchしたもの）を一度だけ読み込み、pfDashCacheに載せて返す。ダッシュボードモーダルを
+// 開いたときだけでなく、季節精霊チェックリスト側の「季節終了間近」警告（pfGetEndingSoonSeasonInfo）
+// でも同じキャッシュ・同じfetchを共有する（二重fetchや情報の食い違いを避けるため）。
+function pfDashEnsureData() {
+  if (pfDashCache) return Promise.resolve(pfDashCache);
+  if (!pfDashLoading) pfDashLoading = pfDashLoadData();
+  return pfDashLoading.then(data => { pfDashCache = data; return data; });
+}
 async function pfDashOpen() {
   document.getElementById('dashModalOverlay').classList.add('show');
   const body = document.getElementById('dashBody');
   if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); return; }
   body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
   try {
-    if (!pfDashLoading) pfDashLoading = pfDashLoadData();
-    const data = await pfDashLoading;
-    pfDashCache = data;
+    const data = await pfDashEnsureData();
     body.innerHTML = pfDashBuildHtml(data);
     pfDashStartTimer();
   } catch (e) {
@@ -2728,6 +2750,32 @@ async function pfDashOpen() {
 function pfDashClose() {
   document.getElementById('dashModalOverlay').classList.remove('show');
   pfDashStopTimer();
+}
+
+// ⏰ 季節精霊チェックリスト × ダッシュボードの季節終了カウントダウン連携
+// ────────────────────────────────────────────────────────────
+// ダッシュボードが把握している「現在のシーズン終了日時」(pfDashCache.season)と、
+// このチェックリストが持つ季節精霊リスト(SEASON_SPIRITS)を突き合わせ、
+// 「まもなく終了するシーズンの、まだ集めていない光の翼」を検出する。
+// 注意: tai-item側のCURRENT_SEASON.nameは正式イベント名（日本語のみ）だが、
+// SEASON_SPIRITSのseason.jaは本トラッカー独自の短縮表記（例:「ゴッホの季節」）で、
+// 表記が一致しないことがある。そのため日本語同士の完全一致ではなく、
+// 既存のDASH_EVENT_NAME_EN（ダッシュボード用の英訳表）を経由してEN表記で突き合わせる
+// （SEASON_SPIRITSは各シーズンにseason.enを既に持っているため二重管理は増えない）。
+// pfDashCacheが無い（未読み込み・fetch失敗）場合は何も警告しない＝安全側に倒す。
+const SEASON_ENDING_SOON_DAYS = 7;
+function pfGetEndingSoonSeasonInfo() {
+  const season = pfDashCache && pfDashCache.season;
+  if (!season || !season.name || !season.endDate) return null;
+  const end = new Date(season.endDate);
+  const now = new Date();
+  if (!(now < end)) return null;
+  const daysLeft = Math.ceil((end - now) / 86400000);
+  if (daysLeft > SEASON_ENDING_SOON_DAYS) return null;
+  const enName = DASH_EVENT_NAME_EN[season.name] || season.name;
+  const match = SEASON_SPIRITS.find(s => s.season.en === enName);
+  if (!match) return null;
+  return { seasonJa: match.season.ja, daysLeft };
 }
 
 // 名前変更中・削除確認中のプロフィールID（ポップアップブロックの影響を受ける
@@ -3888,6 +3936,10 @@ function render() {
   }
 
   // ── 季節精霊・再訪 ──
+  // ⏰ ダッシュボードの現在シーズン終了日と突き合わせ、「もうすぐ終了するシーズンの、
+  // まだ集めていない光の翼」があれば警告表示する（pfDashEnsureData()が読み込み済みの場合のみ。
+  // 未読み込み・fetch失敗時はnullが返り、警告は出ない＝安全側に倒す）
+  const endingSoonSeason = pfGetEndingSoonSeasonInfo();
   let seasonFeathers = 0, seasonSpiritsTotal = 0;
   const seasonHtml = SEASON_SPIRITS.map(({ season, spirits }) => {
     const checked = tracker[season.ja] || {};
@@ -3902,11 +3954,15 @@ function render() {
     if (spiritSearchQuery) visibleSpirits = visibleSpirits.filter(sp => spiritMatchesSearch(L(sp)));
     if (spiritSearchQuery && !visibleSpirits.length) return '';
 
+    // このカードが「もうすぐ終了するシーズン」かつ「未取得の光の翼が残っている」場合のみ警告
+    const endingSoon = (!complete && endingSoonSeason && endingSoonSeason.seasonJa === season.ja) ? endingSoonSeason : null;
+
     const spiritsHtml = visibleSpirits.map(sp => {
       const val = checked[sp.ja];
       const dateStr = formatObtainedDate(wingObtainedAt(val));
+      const warnThis = endingSoon && !val;
       return `
-      <label class="spirit-opt">
+      <label class="spirit-opt${warnThis ? ' warn' : ''}">
         <input type="checkbox" ${val ? 'checked' : ''}
           onchange="onSpiritToggle('${escapeAttr(season.ja)}', '${escapeAttr(sp.ja)}', this.checked)">
         <span class="spirit-opt-label">${escapeHtml(L(sp))}</span>
@@ -3915,10 +3971,11 @@ function render() {
     }).join('');
 
     return `
-      <div class="season-card">
+      <div class="season-card${endingSoon ? ' ending-soon' : ''}">
         <div class="season-head">
           <div class="season-name">${escapeHtml(L(season))}</div>
           <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('seasonBadgeTemplate', { got: gotCount, total: spirits.length })}</span>
+          ${endingSoon ? `<span class="season-sub-badge warn" title="${escapeAttr(t('seasonEndingSoonTitle'))}">${t('seasonEndingSoonBadgeTemplate', { days: endingSoon.daysLeft })}</span>` : ''}
         </div>
         <div class="area-actions" style="margin: 8px 0 0;">
           <button type="button" class="area-btn" onclick="setSeasonSpirits('${escapeAttr(season.ja)}', true)">${t('areaSelectAllBtn')}</button>
@@ -4423,6 +4480,14 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('DOMContentLoaded', applyI18n);
 document.addEventListener('DOMContentLoaded', pfRenderBar);
 document.addEventListener('DOMContentLoaded', render);
+
+// 🗓️ 季節精霊チェックリストの「季節終了間近」警告(pfGetEndingSoonSeasonInfo)のために、
+// ダッシュボードのシーズン情報をページ読み込み時にバックグラウンドで先読みしておく
+// （ダッシュボードモーダルを開かなくても警告が出るようにするため）。
+// fetch失敗時（オフライン等）は静かに諦め、他の機能には一切影響しない。
+document.addEventListener('DOMContentLoaded', () => {
+  pfDashEnsureData().then(render).catch(() => {});
+});
 </script>
 
 </body>
