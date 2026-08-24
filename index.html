@@ -3393,90 +3393,91 @@ function renderTitles(owned) {
    このファイルの書式（TITLES同様、条件文は{ja, en}でL()に通す）に合わせて複製した
    もの。ランタイムを共有しているわけではないため、あちら側の定義が増える／変わった場合は
    ここも手動で追従させる必要がある。
-   称号名・ツール名（source）は上流でも英訳が用意されていない固有名詞のため、
-   条件文（desc）のみ言語切替に追従させ、名前・ツール名はja表記のまま両言語で共通表示する。
+   称号名（name）も条件文（desc）と同じく{ja, en}形式で持ち、L()で言語切替に追従させる。
+   各称号の英語名は上流（各ツール自身のTITLES定義）に実在する正式な英訳を転記したもの。
+   ツール名（source）のみ、上流でも英訳が用意されていない固有名詞のためja表記で統一する。
    ================================================================ */
 const PF_TITLE_CATALOG = {
   item: { storageKey: 'itemTitles_v1', namespaced: true, source: 'アイテム所持管理',
     extract: d => Object.keys((d && d.earned) || {}),
     titles: {
-      rate25: { icon: '🕯️', name: '灯火の旅人', desc: { ja: '全アイテムの所持率が25%に到達', en: 'Reached 25% overall ownership' } },
-      rate50: { icon: '🌙', name: '星屑の収集家', desc: { ja: '全アイテムの所持率が50%に到達', en: 'Reached 50% overall ownership' } },
-      rate75: { icon: '✨', name: '煌めきの探究者', desc: { ja: '全アイテムの所持率が75%に到達', en: 'Reached 75% overall ownership' } },
-      rate100: { icon: '👑', name: '光の守護者', desc: { ja: '登録した全アイテムを100%所持', en: 'Reached 100% overall ownership' } },
-      catmaster1: { icon: '🏅', name: 'コレクションの第一歩', desc: { ja: 'いずれか1カテゴリを100%達成', en: 'Completed at least 1 category' } },
-      catmaster6: { icon: '🏆', name: '熟練コレクター', desc: { ja: '6カテゴリ以上を100%達成', en: 'Completed 6 or more categories' } },
-      spend1k: { icon: '💴', name: '灯火の支援者', desc: { ja: '実額の合計が¥1,000に到達', en: 'Real-money total reached ¥1,000' } },
-      spend5k: { icon: '🎁', name: '季節の後援者', desc: { ja: '実額の合計が¥5,000に到達', en: 'Real-money total reached ¥5,000' } },
-      spend15k: { icon: '💎', name: '彩りの後援者', desc: { ja: '実額の合計が¥15,000に到達', en: 'Real-money total reached ¥15,000' } },
-      spend30k: { icon: '🌌', name: '星空の大後援者', desc: { ja: '実額の合計が¥30,000に到達', en: 'Real-money total reached ¥30,000' } },
-      spend50k: { icon: '🌟', name: '光の大後援者', desc: { ja: '実額の合計が¥50,000に到達', en: 'Real-money total reached ¥50,000' } },
+      rate25: { icon: '🕯️', name: { ja: '灯火の旅人', en: 'Traveler of the Flame' }, desc: { ja: '全アイテムの所持率が25%に到達', en: 'Reached 25% overall ownership' } },
+      rate50: { icon: '🌙', name: { ja: '星屑の収集家', en: 'Stardust Collector' }, desc: { ja: '全アイテムの所持率が50%に到達', en: 'Reached 50% overall ownership' } },
+      rate75: { icon: '✨', name: { ja: '煌めきの探究者', en: 'Seeker of Radiance' }, desc: { ja: '全アイテムの所持率が75%に到達', en: 'Reached 75% overall ownership' } },
+      rate100: { icon: '👑', name: { ja: '光の守護者', en: 'Guardian of the Light' }, desc: { ja: '登録した全アイテムを100%所持', en: 'Reached 100% overall ownership' } },
+      catmaster1: { icon: '🏅', name: { ja: 'コレクションの第一歩', en: 'First Steps of a Collection' }, desc: { ja: 'いずれか1カテゴリを100%達成', en: 'Completed at least 1 category' } },
+      catmaster6: { icon: '🏆', name: { ja: '熟練コレクター', en: 'Master Collector' }, desc: { ja: '6カテゴリ以上を100%達成', en: 'Completed 6 or more categories' } },
+      spend1k: { icon: '💴', name: { ja: '灯火の支援者', en: 'Supporter of the Flame' }, desc: { ja: '実額の合計が¥1,000に到達', en: 'Real-money total reached ¥1,000' } },
+      spend5k: { icon: '🎁', name: { ja: '季節の後援者', en: 'Patron of the Season' }, desc: { ja: '実額の合計が¥5,000に到達', en: 'Real-money total reached ¥5,000' } },
+      spend15k: { icon: '💎', name: { ja: '彩りの後援者', en: 'Patron of Colors' }, desc: { ja: '実額の合計が¥15,000に到達', en: 'Real-money total reached ¥15,000' } },
+      spend30k: { icon: '🌌', name: { ja: '星空の大後援者', en: 'Grand Patron of the Stars' }, desc: { ja: '実額の合計が¥30,000に到達', en: 'Real-money total reached ¥30,000' } },
+      spend50k: { icon: '🌟', name: { ja: '光の大後援者', en: 'Grand Patron of Light' }, desc: { ja: '実額の合計が¥50,000に到達', en: 'Real-money total reached ¥50,000' } },
     } },
   emote: { storageKey: 'emoteTitles_v1', namespaced: true, source: 'エモート所持率管理',
     extract: d => Object.keys(d || {}),
     titles: {
-      apprentice: { icon: '🔰', name: '一芸見習い', desc: { ja: '所持レベル数が全体の10%に到達', en: 'Owned levels reached 10% of the total' } },
-      performer: { icon: '🎭', name: '芸達者', desc: { ja: '所持レベル数が全体の50%に到達', en: 'Owned levels reached 50% of the total' } },
-      grandmaster: { icon: '👑', name: 'エモート完全制覇', desc: { ja: '全エモートの全レベルを所持', en: 'Owns every level of every emote' } },
-      completionist: { icon: '🗺️', name: '全種踏破', desc: { ja: '全エモートを最低1レベルずつ所持', en: 'Owns at least one level of every emote' } },
-      guideFan: { icon: '🧭', name: '案内人めぐり', desc: { ja: '「案内人」エモートを全種最低1レベルずつ所持', en: 'Owns at least one level of every Guide emote' } },
+      apprentice: { icon: '🔰', name: { ja: '一芸見習い', en: 'Emote Apprentice' }, desc: { ja: '所持レベル数が全体の10%に到達', en: 'Owned levels reached 10% of the total' } },
+      performer: { icon: '🎭', name: { ja: '芸達者', en: 'Skilled Performer' }, desc: { ja: '所持レベル数が全体の50%に到達', en: 'Owned levels reached 50% of the total' } },
+      grandmaster: { icon: '👑', name: { ja: 'エモート完全制覇', en: 'Emote Grandmaster' }, desc: { ja: '全エモートの全レベルを所持', en: 'Owns every level of every emote' } },
+      completionist: { icon: '🗺️', name: { ja: '全種踏破', en: 'Full Collection' }, desc: { ja: '全エモートを最低1レベルずつ所持', en: 'Owns at least one level of every emote' } },
+      guideFan: { icon: '🧭', name: { ja: '案内人めぐり', en: 'Guide’s Companion' }, desc: { ja: '「案内人」エモートを全種最低1レベルずつ所持', en: 'Owns at least one level of every Guide emote' } },
     } },
   wings: { storageKey: 'wingsTitles_v1', namespaced: true, source: '羽トラッカー',
     extract: d => Object.keys(d || {}),
     titles: {
-      cape_lv5: { icon: '🪶', name: '羽ばたきの証', desc: { ja: 'ケープレベル5に到達（光の翼20枚）', en: 'Reached Cape Level 5 (20 Wings of Light)' } },
-      cape_lv10: { icon: '🧥', name: '旅するケープ使い', desc: { ja: 'ケープレベル10に到達（光の翼120枚）', en: 'Reached Cape Level 10 (120 Wings of Light)' } },
-      cape_lv13: { icon: '👑', name: '光の翼、極めし者', desc: { ja: 'ケープレベル最大の13に到達（光の翼250枚）', en: 'Reached the max Cape Level 13 (250 Wings of Light)' } },
-      lc_half: { icon: '🔦', name: '光を辿る探検家', desc: { ja: '光の子を62体（半数）発見', en: 'Found 62 Children of Light (half)' } },
-      lc_all: { icon: '🌟', name: '光の子コンプリート', desc: { ja: '光の子124体すべてを発見', en: 'Found all 124 Children of Light' } },
+      cape_lv5: { icon: '🪶', name: { ja: '羽ばたきの証', en: 'Budding Wings' }, desc: { ja: 'ケープレベル5に到達（光の翼20枚）', en: 'Reached Cape Level 5 (20 Wings of Light)' } },
+      cape_lv10: { icon: '🧥', name: { ja: '旅するケープ使い', en: 'Traveling Cloak-Bearer' }, desc: { ja: 'ケープレベル10に到達（光の翼120枚）', en: 'Reached Cape Level 10 (120 Wings of Light)' } },
+      cape_lv13: { icon: '👑', name: { ja: '光の翼、極めし者', en: 'Master of the Winged Light' }, desc: { ja: 'ケープレベル最大の13に到達（光の翼250枚）', en: 'Reached the max Cape Level 13 (250 Wings of Light)' } },
+      lc_half: { icon: '🔦', name: { ja: '光を辿る探検家', en: 'Light-Tracing Explorer' }, desc: { ja: '光の子を62体（半数）発見', en: 'Found 62 Children of Light (half)' } },
+      lc_all: { icon: '🌟', name: { ja: '光の子コンプリート', en: 'Children of Light Completionist' }, desc: { ja: '光の子124体すべてを発見', en: 'Found all 124 Children of Light' } },
     } },
   spirit: { storageKey: 'spiritCatalogTitles_v1', namespaced: true, source: { ja: '姉妹サイト', en: 'Sibling Site' },
     extract: d => Object.keys(d || {}),
     titles: {
-      pct1: { icon: '🌱', name: '芽吹きの精霊使い', desc: { ja: '精霊ツリーのノードを1%以上解放した', en: 'Unlocked 1%+ of all spirit tree nodes' } },
-      pct10: { icon: '🕯️', name: '灯火の道しるべ', desc: { ja: '精霊ツリーのノードを10%以上解放した', en: 'Unlocked 10%+ of all spirit tree nodes' } },
-      pct25: { icon: '🌿', name: '深緑の探求者', desc: { ja: '精霊ツリーのノードを25%以上解放した', en: 'Unlocked 25%+ of all spirit tree nodes' } },
-      pct50: { icon: '🌳', name: '満開の森の守り人', desc: { ja: '精霊ツリーのノードを50%以上解放した', en: 'Unlocked 50%+ of all spirit tree nodes' } },
-      pct100: { icon: '👑', name: '精霊の森の賢者', desc: { ja: '精霊ツリーの全ノードをコンプリートした', en: 'Unlocked 100% of all spirit tree nodes' } },
+      pct1: { icon: '🌱', name: { ja: '芽吹きの精霊使い', en: 'Budding Spirit Keeper' }, desc: { ja: '精霊ツリーのノードを1%以上解放した', en: 'Unlocked 1%+ of all spirit tree nodes' } },
+      pct10: { icon: '🕯️', name: { ja: '灯火の道しるべ', en: 'Candlelit Trailblazer' }, desc: { ja: '精霊ツリーのノードを10%以上解放した', en: 'Unlocked 10%+ of all spirit tree nodes' } },
+      pct25: { icon: '🌿', name: { ja: '深緑の探求者', en: 'Verdant Explorer' }, desc: { ja: '精霊ツリーのノードを25%以上解放した', en: 'Unlocked 25%+ of all spirit tree nodes' } },
+      pct50: { icon: '🌳', name: { ja: '満開の森の守り人', en: 'Guardian of the Blooming Grove' }, desc: { ja: '精霊ツリーのノードを50%以上解放した', en: 'Unlocked 50%+ of all spirit tree nodes' } },
+      pct100: { icon: '👑', name: { ja: '精霊の森の賢者', en: 'Sage of the Spirit Forest' }, desc: { ja: '精霊ツリーの全ノードをコンプリートした', en: 'Unlocked 100% of all spirit tree nodes' } },
     } },
   score: { storageKey: 'taiScoreTitles_v1', namespaced: false, source: { ja: '姉妹サイト', en: 'Sibling Site' },
     extract: d => ((d && d.earned) || []).map(e => e.id),
     titles: {
-      firstSong: { icon: '🎼', name: 'はじめの一歩', desc: { ja: 'はじめての1曲をライブラリに加えた', en: 'Added your first song to the library' } },
-      apprentice: { icon: '🎶', name: '作曲家見習い', desc: { ja: '曲を5曲、ライブラリに加えた', en: 'Added 5 songs to the library' } },
-      craftsman: { icon: '🎹', name: '楽譜職人', desc: { ja: '曲を20曲、ライブラリに加えた', en: 'Added 20 songs to the library' } },
-      legend: { icon: '🏅', name: '伝説の作曲家', desc: { ja: '曲を50曲、ライブラリに加えた', en: 'Added 50 songs to the library' } },
-      passionate: { icon: '🔥', name: '情熱の演奏者', desc: { ja: '1曲に100音を超える演奏を詰め込んだ', en: 'Packed over 100 notes into a single song' } },
-      virtuoso: { icon: '⚡', name: '超絶技巧', desc: { ja: '1曲に300音を超える演奏を詰め込んだ', en: 'Packed over 300 notes into a single song' } },
+      firstSong: { icon: '🎼', name: { ja: 'はじめの一歩', en: 'First Step' }, desc: { ja: 'はじめての1曲をライブラリに加えた', en: 'Added your first song to the library' } },
+      apprentice: { icon: '🎶', name: { ja: '作曲家見習い', en: 'Apprentice Composer' }, desc: { ja: '曲を5曲、ライブラリに加えた', en: 'Added 5 songs to the library' } },
+      craftsman: { icon: '🎹', name: { ja: '楽譜職人', en: 'Sheet Music Craftsman' }, desc: { ja: '曲を20曲、ライブラリに加えた', en: 'Added 20 songs to the library' } },
+      legend: { icon: '🏅', name: { ja: '伝説の作曲家', en: 'Legendary Composer' }, desc: { ja: '曲を50曲、ライブラリに加えた', en: 'Added 50 songs to the library' } },
+      passionate: { icon: '🔥', name: { ja: '情熱の演奏者', en: 'Passionate Performer' }, desc: { ja: '1曲に100音を超える演奏を詰め込んだ', en: 'Packed over 100 notes into a single song' } },
+      virtuoso: { icon: '⚡', name: { ja: '超絶技巧', en: 'Virtuoso' }, desc: { ja: '1曲に300音を超える演奏を詰め込んだ', en: 'Packed over 300 notes into a single song' } },
     } },
   share: { storageKey: 'shareTitles_v1', namespaced: true, source: '創作物管理ツール',
     extract: d => ((d && d.earned) || []).map(e => e.id),
     titles: {
-      first: { icon: '🌱', name: 'はじめての一歩', desc: { ja: '創作物をはじめて追加した', en: 'Added your first creation' } },
-      apprentice: { icon: '🔨', name: '見習い設置職人', desc: { ja: '累計5個の創作物を追加した', en: '5 creations added (lifetime)' } },
-      skilled: { icon: '🏗️', name: '熟練の設置職人', desc: { ja: '累計15個の創作物を追加した', en: '15 creations added (lifetime)' } },
-      master: { icon: '🏛️', name: '創作の匠', desc: { ja: '累計30個の創作物を追加した', en: '30 creations added (lifetime)' } },
-      legend: { icon: '👑', name: '伝説の創作者', desc: { ja: '累計50個の創作物を追加した', en: '50 creations added (lifetime)' } },
+      first: { icon: '🌱', name: { ja: 'はじめての一歩', en: 'First Steps' }, desc: { ja: '創作物をはじめて追加した', en: 'Added your first creation' } },
+      apprentice: { icon: '🔨', name: { ja: '見習い設置職人', en: 'Apprentice Placer' }, desc: { ja: '累計5個の創作物を追加した', en: '5 creations added (lifetime)' } },
+      skilled: { icon: '🏗️', name: { ja: '熟練の設置職人', en: 'Skilled Placer' }, desc: { ja: '累計15個の創作物を追加した', en: '15 creations added (lifetime)' } },
+      master: { icon: '🏛️', name: { ja: '創作の匠', en: 'Master Craftsperson' }, desc: { ja: '累計30個の創作物を追加した', en: '30 creations added (lifetime)' } },
+      legend: { icon: '👑', name: { ja: '伝説の創作者', en: 'Legendary Creator' }, desc: { ja: '累計50個の創作物を追加した', en: '50 creations added (lifetime)' } },
     } },
   nomacan: { storageKey: 'skyNomacanTitles_v1', namespaced: true, source: 'ノマキャン計算機',
     extract: d => Object.keys((d && d.earned) || {}),
     titles: {
-      streak3: { icon: '🔥', name: '灯し始め', desc: { ja: '3日連続で記録', en: 'Recorded 3 days in a row' } },
-      streak7: { icon: '🕯️', name: '一週間の灯火', desc: { ja: '7日連続で記録', en: 'Recorded 7 days in a row' } },
-      streak30: { icon: '🌟', name: '絶やさぬ灯', desc: { ja: '30日連続で記録', en: 'Recorded 30 days in a row' } },
-      hold100: { icon: '🕯️', name: '灯の蓄え', desc: { ja: '所持本数が100本に到達', en: 'Reached 100 candles held' } },
-      hold300: { icon: '🏮', name: '光の貯蔵庫', desc: { ja: '所持本数が300本に到達', en: 'Reached 300 candles held' } },
-      hold600: { icon: '👑', name: '灯火の富豪', desc: { ja: '所持本数が600本に到達', en: 'Reached 600 candles held' } },
+      streak3: { icon: '🔥', name: { ja: '灯し始め', en: 'Spark of a Streak' }, desc: { ja: '3日連続で記録', en: 'Recorded 3 days in a row' } },
+      streak7: { icon: '🕯️', name: { ja: '一週間の灯火', en: 'A Week’s Flame' }, desc: { ja: '7日連続で記録', en: 'Recorded 7 days in a row' } },
+      streak30: { icon: '🌟', name: { ja: '絶やさぬ灯', en: 'Unwavering Flame' }, desc: { ja: '30日連続で記録', en: 'Recorded 30 days in a row' } },
+      hold100: { icon: '🕯️', name: { ja: '灯の蓄え', en: 'Candle Stockpile' }, desc: { ja: '所持本数が100本に到達', en: 'Reached 100 candles held' } },
+      hold300: { icon: '🏮', name: { ja: '光の貯蔵庫', en: 'Vault of Light' }, desc: { ja: '所持本数が300本に到達', en: 'Reached 300 candles held' } },
+      hold600: { icon: '👑', name: { ja: '灯火の富豪', en: 'Candle Baron' }, desc: { ja: '所持本数が600本に到達', en: 'Reached 600 candles held' } },
     } },
   starcandle: { storageKey: 'skyStarCandleCalc_titles_v1', namespaced: true, source: '星のキャンドル計算機',
     extract: d => Object.keys(d || {}),
     titles: {
-      streak_3: { icon: '🕯️', name: '灯を絶やさぬ者', desc: { ja: '赤闇を3日連続で取りこぼさず回収', en: 'Collected shard rewards 3 days in a row without missing one' } },
-      streak_7: { icon: '🔥', name: '一週間の灯火番', desc: { ja: '赤闇を7日連続で取りこぼさず回収', en: 'Collected shard rewards 7 days in a row without missing one' } },
-      streak_20: { icon: '🌌', name: '常夜の灯守', desc: { ja: '赤闇を20日連続で取りこぼさず回収', en: 'Collected shard rewards 20 days in a row without missing one' } },
-      candle_30: { icon: '⭐', name: '星屑の蒐集者', desc: { ja: '所持本数が最高30本に到達', en: 'Held 30 candles at once for the first time' } },
-      candle_100: { icon: '🌟', name: '百連の灯', desc: { ja: '所持本数が最高100本に到達', en: 'Held 100 candles at once for the first time' } },
-      candle_300: { icon: '👑', name: '星々の帳を統べる者', desc: { ja: '所持本数が最高300本に到達', en: 'Held 300 candles at once for the first time' } },
+      streak_3: { icon: '🕯️', name: { ja: '灯を絶やさぬ者', en: 'Flame Unwavering' }, desc: { ja: '赤闇を3日連続で取りこぼさず回収', en: 'Collected shard rewards 3 days in a row without missing one' } },
+      streak_7: { icon: '🔥', name: { ja: '一週間の灯火番', en: 'Weeklong Flamekeeper' }, desc: { ja: '赤闇を7日連続で取りこぼさず回収', en: 'Collected shard rewards 7 days in a row without missing one' } },
+      streak_20: { icon: '🌌', name: { ja: '常夜の灯守', en: 'Everlasting Flamekeeper' }, desc: { ja: '赤闇を20日連続で取りこぼさず回収', en: 'Collected shard rewards 20 days in a row without missing one' } },
+      candle_30: { icon: '⭐', name: { ja: '星屑の蒐集者', en: 'Stardust Collector' }, desc: { ja: '所持本数が最高30本に到達', en: 'Held 30 candles at once for the first time' } },
+      candle_100: { icon: '🌟', name: { ja: '百連の灯', en: 'Hundredfold Flame' }, desc: { ja: '所持本数が最高100本に到達', en: 'Held 100 candles at once for the first time' } },
+      candle_300: { icon: '👑', name: { ja: '星々の帳を統べる者', en: 'Sovereign of the Starry Veil' }, desc: { ja: '所持本数が最高300本に到達', en: 'Held 300 candles at once for the first time' } },
     } },
 };
 
@@ -3496,7 +3497,7 @@ function pfCollectEarnedTitles(profileId) {
     const earned = ids
       .map(id => tool.titles[id])
       .filter(Boolean) // 未知の称号ID（先方のバージョン差異等）は無視
-      .map(def => ({ icon: def.icon, name: def.name, desc: L(def.desc) }));
+      .map(def => ({ icon: def.icon, name: L(def.name), desc: L(def.desc) }));
     if (earned.length) groups.push({ source: tool.source, titles: earned });
   });
   return groups;
