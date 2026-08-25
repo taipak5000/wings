@@ -109,15 +109,11 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .app-layout { max-width: 720px; margin: 0 auto; padding: 0 16px; }
-    @media (min-width: 850px) { .app-layout { max-width: 960px; display: flex; gap: 20px; align-items: flex-start; } }
-    .wrap { flex: 1; min-width: 0; }
 
     .sidebar {
-      width: 200px; flex-shrink: 0; position: sticky; top: 58px;
       background: var(--card); border-radius: var(--r); padding: 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none; margin-top: 22px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none;
     }
-    @media (min-width: 850px) { .sidebar { display: block; } }
     .sidebar.sidebar-open {
       display: flex !important; flex-direction: column; position: fixed; top: 0; left: 0;
       height: 100%; width: 240px; z-index: 500; overflow-y: auto; margin-top: 0;
@@ -4326,18 +4322,7 @@ function showToast(msg) {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 1600);
 }
 
-// 🖥️ .sidebar は850px以上の幅では常時インライン表示される（CSSの
-// `@media (min-width:850px) { .sidebar { display:block } }`、ハンバーガー用の
-// .sidebar-toggle-btn もこの幅ではvisibility:hiddenで隠れる）。sidebar-open は
-// それより狭い幅でのみ意味を持つフルスクリーンドロワー用の状態なので、デスクトップ
-// 幅で開いても常時表示のサイドバーの上に重複したオーバーレイを開くだけになってしまう
-// （🧭ドックの「他のツール」ボタンはこの幅ガードが無いボタンからも呼ばれるため発生）。
-function isMobileSidebarLayout() {
-  return window.matchMedia('(max-width: 849.98px)').matches;
-}
-
 function openSidebarMobile() {
-  if (!isMobileSidebarLayout()) return;
   document.getElementById('sidebar').classList.add('sidebar-open');
   document.getElementById('sidebarOverlay').classList.add('show');
 }
