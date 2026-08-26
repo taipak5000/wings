@@ -174,12 +174,19 @@
     .season-card.ending-soon { box-shadow: 0 0 0 1.5px var(--red), 0 1px 4px rgba(0,0,0,0.07); }
     .season-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .season-name { font-size: 15px; font-weight: 700; }
+    .season-head-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .season-sub-badge {
       font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
       background: var(--blue-bg); color: var(--blue); white-space: nowrap;
     }
     .season-sub-badge.complete { background: var(--green-bg); color: var(--green); }
     .season-sub-badge.warn { background: var(--red-bg); color: var(--red); }
+    /* 🔽 「未取得のみ表示」フィルタとは独立して、シーズンごとに詳細の開閉ができる */
+    .season-toggle-btn {
+      background: none; border: none; padding: 4px; margin: -4px 0; cursor: pointer;
+      color: var(--text-2); font-size: 13px; line-height: 1; flex-shrink: 0; font-family: inherit;
+    }
+    .season-toggle-btn:hover { color: var(--orange-d); }
     .spirit-list {
       display: flex; flex-direction: column; gap: 2px; margin-top: 12px; padding-top: 12px;
       border-top: 0.5px solid var(--sep);
@@ -997,6 +1004,8 @@ const I18N = {
     seasonSectionLabel: '季節ごとの精霊一覧',
     seasonSummaryLabel: '季節精霊・再訪の光の翼: <b id="sumFeathersSeason">0 / 0</b>体分',
     filterUnownedOnly: '未取得のみ表示',
+    seasonCollapseTitle: '折りたたむ',
+    seasonExpandTitle: '展開する',
     seasonReturnEntityNote: '砕ケル闇ノ季節・復古の季節・ムーミンの季節・巣づくりの季節は、通常の季節精霊ではなく「季節の存在」（マネキンや展示場など）が再訪の対象です。名前の誤りや抜け漏れがあれば教えてください。',
     permSectionLabel: '恒常精霊のツリー（地方の精霊）',
     permHint: '各地方の恒常精霊37体には友情ツリーの光の翼（Tier1）が1つずつ、うち12体には追加のTier2の光の翼もあります。開放に必要な星のキャンドルの本数は精霊ごとに異なります。',
@@ -1252,6 +1261,8 @@ const I18N = {
     seasonSectionLabel: 'Seasonal Spirits by Season',
     seasonSummaryLabel: 'Seasonal Spirits · Revisit Winged Light: <b id="sumFeathersSeason">0 / 0</b>',
     filterUnownedOnly: 'Show unowned only',
+    seasonCollapseTitle: 'Collapse',
+    seasonExpandTitle: 'Expand',
     seasonReturnEntityNote: 'For the Season of Shattering, Season of Revival, Season of Moomin, and Season of Nesting, the Revisit target is a "seasonal entity" (like a mannequin or display) rather than a normal Seasonal Spirit. Please let us know if any names are wrong or missing.',
     permSectionLabel: 'Regular Spirit Trees (Realm Spirits)',
     permHint: 'Each of the 37 Regular Spirits across the realms has one Winged Light on its friendship tree (Tier 1); 12 of them also have an additional Tier 2 Winged Light. The number of Star Candles needed to unlock each varies by spirit.',
@@ -3884,6 +3895,15 @@ let seasonFilterUnowned = false;
 let permFilterUnowned = false;
 let lightChildrenFilterUnowned = false;
 
+// 🔽 各シーズンブロックの開閉状態（「未取得のみ表示」フィルタとは独立）。
+// pfTitlesExpandedIdsと同様、ページを開き直す（reload）までは維持するだけでよく、
+// localStorageへの永続化は行わない（表示上のUI状態のため）。
+const seasonCollapsedIds = new Set();
+function toggleSeasonCard(seasonJa) {
+  if (seasonCollapsedIds.has(seasonJa)) seasonCollapsedIds.delete(seasonJa); else seasonCollapsedIds.add(seasonJa);
+  render();
+}
+
 // 🔍 精霊名でのその場検索（季節精霊・恒常精霊・光の子の全リストに共通で効く）。
 // 小文字化済みの検索語をrender()の各セクションで使い回す。
 let spiritSearchQuery = '';
@@ -3973,6 +3993,9 @@ function render() {
 
     // このカードが「もうすぐ終了するシーズン」かつ「未取得の光の翼が残っている」場合のみ警告
     const endingSoon = (!complete && endingSoonSeason && endingSoonSeason.seasonJa === season.ja) ? endingSoonSeason : null;
+    // 🔽 「未取得のみ表示」フィルタとは独立した、このシーズンブロック自体の開閉状態。
+    // ただし精霊名検索中は、折りたたんだせいで検索結果が見えなくなる事故を避けるため強制的に展開する。
+    const collapsed = !spiritSearchQuery && seasonCollapsedIds.has(season.ja);
 
     const spiritsHtml = visibleSpirits.map(sp => {
       const val = checked[sp.ja];
@@ -3991,14 +4014,18 @@ function render() {
       <div class="season-card${endingSoon ? ' ending-soon' : ''}">
         <div class="season-head">
           <div class="season-name">${escapeHtml(L(season))}</div>
-          <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('seasonBadgeTemplate', { got: gotCount, total: spirits.length })}</span>
-          ${endingSoon ? `<span class="season-sub-badge warn" title="${escapeAttr(t('seasonEndingSoonTitle'))}">${t('seasonEndingSoonBadgeTemplate', { days: endingSoon.daysLeft })}</span>` : ''}
+          <div class="season-head-actions">
+            <span class="season-sub-badge ${complete ? 'complete' : ''}">${t('seasonBadgeTemplate', { got: gotCount, total: spirits.length })}</span>
+            ${endingSoon ? `<span class="season-sub-badge warn" title="${escapeAttr(t('seasonEndingSoonTitle'))}">${t('seasonEndingSoonBadgeTemplate', { days: endingSoon.daysLeft })}</span>` : ''}
+            <button type="button" class="season-toggle-btn" aria-expanded="${collapsed ? 'false' : 'true'}" onclick="toggleSeasonCard('${escapeAttr(season.ja)}')" title="${escapeAttr(t(collapsed ? 'seasonExpandTitle' : 'seasonCollapseTitle'))}">${collapsed ? '▾' : '▴'}</button>
+          </div>
         </div>
+        ${collapsed ? '' : `
         <div class="area-actions" style="margin: 8px 0 0;">
           <button type="button" class="area-btn" onclick="setSeasonSpirits('${escapeAttr(season.ja)}', true)">${t('areaSelectAllBtn')}</button>
           <button type="button" class="area-btn" onclick="setSeasonSpirits('${escapeAttr(season.ja)}', false)">${t('areaResetBtn')}</button>
         </div>
-        <div class="spirit-list">${spiritsHtml}</div>
+        <div class="spirit-list">${spiritsHtml}</div>`}
       </div>`;
   }).join('');
   document.getElementById('seasonList').innerHTML = seasonHtml || (spiritSearchQuery ? `<div class="notice-card">${t('spiritSearchNoMatch')}</div>` : '');
