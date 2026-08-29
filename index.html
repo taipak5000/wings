@@ -133,6 +133,8 @@
     }
     .sidebar-nav-link:hover { background: var(--bg); }
     .sidebar-nav-link.current-tool { background: var(--orange-bg); color: var(--orange-d); font-weight: 700; }
+    /* 精度に不安がある新機能であることを示す小さな注記（例: 楽譜づくり） */
+    .tool-badge-test { font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.3px; }
     .sidebar nav { display: block; position: static; padding: 0; background: none; border-bottom: none; }
 
     .notice-card {
@@ -563,6 +565,7 @@
       <a href="https://taipak5000.github.io/star-candle/" class="sidebar-nav-link" data-i18n="toolStarCandle">🕯️ 星のキャンドル計算機</a>
       <a href="https://taipak5000.github.io/companion/" class="sidebar-nav-link" data-i18n="toolCompanion">✨ 精霊同行ツール</a>
       <a href="https://taipak5000.github.io/wings/" class="sidebar-nav-link current-tool" data-i18n="toolWings">🪽 羽トラッカー</a>
+      <a href="https://taipak5000.github.io/tai-score/" class="sidebar-nav-link"><span class="tool-badge-test">test</span><span data-i18n="toolScore">🎵 楽譜づくり</span></a>
       <a href="https://taipak5000.github.io/tai-transfer/" class="sidebar-nav-link" data-i18n="toolDataTransfer">🔄 データ引継ぎ</a>
       <a href="https://taipak5000.github.io/tai-info/" class="sidebar-nav-link" data-i18n="toolInfo">⚙️ 設定・更新情報</a>
     </nav>
@@ -977,6 +980,7 @@ const I18N = {
     toolStarCandle: '🕯️ 星のキャンドル計算機',
     toolCompanion: '✨ 精霊同行ツール',
     toolWings: '🪽 羽トラッカー',
+    toolScore: '🎵 楽譜づくり',
     toolDataTransfer: '🔄 データ引継ぎ',
     toolInfo: '⚙️ 設定・更新情報',
     langToggleBtn: 'EN',
@@ -1234,6 +1238,7 @@ const I18N = {
     toolStarCandle: '🕯️ Star Candle Calculator',
     toolCompanion: '✨ Spirit Companion Tool',
     toolWings: '🪽 Wing Tracker',
+    toolScore: '🎵 Sheet Music Maker',
     toolDataTransfer: '🔄 Data Transfer',
     toolInfo: '⚙️ Settings & Updates',
     langToggleBtn: '日本語',
