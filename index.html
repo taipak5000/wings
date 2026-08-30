@@ -477,6 +477,15 @@
     .light-child-thumb-fallback { display: none; font-size: 18px; }
     .light-child-thumb.img-fallback .light-child-thumb-fallback { display: block; }
 
+    /* ⌨️ 矢印キーでのグリッド/リスト移動時に、今どのタイル/行を指しているか示すハイライト
+       （季節精霊・恒常精霊の行は.spirit-opt、光の子のタイルは.light-child-optに付与） */
+    .spirit-opt.kb-nav-selected {
+      outline: 2px solid var(--blue); outline-offset: -2px; background: var(--blue-bg);
+    }
+    .light-child-opt.kb-nav-selected {
+      outline: 2px solid var(--blue); outline-offset: -2px; border-radius: var(--r-sm);
+    }
+
     /* ── 達成率シェア用ボタン ─────────────────── */
     .share-btn-row { display: flex; gap: 8px; margin: 14px 0; }
     .share-btn {
@@ -3983,6 +3992,59 @@ function switchMode(mode) {
   document.getElementById('lightChildrenMode').style.display = mode === 'lightChildren' ? 'block' : 'none';
   document.getElementById('tabWings').classList.toggle('active', mode === 'wings');
   document.getElementById('tabLightChildren').classList.toggle('active', mode === 'lightChildren');
+  kbNavReset(); // タブ切替で見えているタイル集合が変わるので、矢印キーの選択位置は破棄する
+}
+
+/* ================================================================
+   ⌨️ 矢印キーでのタイル/行ナビゲーション（グリッド/リストに視覚的なハイライトを移動するだけで、
+   実際のフォーカスや値の変更は行わない）。
+   ・季節精霊/恒常精霊タブ（#wingsMode）は.spirit-optが縦1列のリストなので↑↓で移動。
+   ・光の子タブ（#lightChildrenMode）は.light-child-optが3列グリッド（.light-child-grid）
+     なので←→で移動する（tai-scoreのフレームストリップ同様、DOM順の1次元シーケンスとして
+     扱う。エリア境界をまたいでも1つずつ進むだけなので見た目の列とズレる心配がない）。
+   ================================================================ */
+let kbNavIndex = -1;
+let kbNavSetName = null; // 直前にどちらの集合を操作していたか（'wings' | 'lightChildren'）
+
+function kbNavReset() {
+  kbNavIndex = -1;
+  kbNavSetName = null;
+}
+
+// 現在表示中のタブに応じて、ナビゲーション対象のタイル配列と移動軸を返す
+function kbNavGetTargets() {
+  const lcMode = document.getElementById('lightChildrenMode');
+  if (lcMode && lcMode.style.display !== 'none') {
+    return { name: 'lightChildren', axis: 'x', els: Array.from(document.querySelectorAll('#lightChildrenList .light-child-opt')) };
+  }
+  return { name: 'wings', axis: 'y', els: Array.from(document.querySelectorAll('#wingsMode .spirit-opt')) };
+}
+
+// 矢印キー1回分の移動を試みる。対象軸に合わないキー（例:縦1列リストでの←→）や
+// タイルが1件もない場合は何もせずfalseを返す（呼び出し側はpreventDefaultしない）
+function kbNavMove(key) {
+  const { name, axis, els } = kbNavGetTargets();
+  if (!els.length) return false;
+
+  let delta = 0;
+  if (axis === 'x') {
+    if (key === 'ArrowLeft') delta = -1; else if (key === 'ArrowRight') delta = 1; else return false;
+  } else {
+    if (key === 'ArrowUp') delta = -1; else if (key === 'ArrowDown') delta = 1; else return false;
+  }
+
+  if (kbNavSetName !== name || kbNavIndex < 0 || kbNavIndex >= els.length) {
+    kbNavIndex = 0; // タブ切替直後や初回操作時は先頭タイルから
+  } else {
+    kbNavIndex = Math.max(0, Math.min(els.length - 1, kbNavIndex + delta));
+  }
+  kbNavSetName = name;
+
+  els.forEach(el => el.classList.remove('kb-nav-selected'));
+  const el = els[kbNavIndex];
+  el.classList.add('kb-nav-selected');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  return true;
 }
 
 function render() {
@@ -4518,6 +4580,13 @@ function closeTopmostOpenModal() {
   if (isShown('confirmOverlay')) { closeConfirmModal(); return; }
 }
 
+// 何らかのモーダル/オーバーレイが開いているか（開いている間は裏のグリッドが見えないため、
+// 矢印キーでのタイル移動は無効にする）。全モーダルは.pf-modal-overlayか.confirm-overlayを
+// 共有しているので、closeTopmostOpenModal()と同じ対象をここでもまとめて判定できる。
+function anyModalOpen() {
+  return !!document.querySelector('.pf-modal-overlay.show, .confirm-overlay.show');
+}
+
 document.addEventListener('keydown', function (e) {
   if (e.repeat) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -4530,6 +4599,15 @@ document.addEventListener('keydown', function (e) {
   }
 
   if (isTyping) return;
+
+  // 🪽 季節精霊/恒常精霊リストや光の子グリッドを矢印キーで移動するハイライト操作
+  // （tai-scoreの←→でのコマ移動と同じ扱い）。?/dのようなON/OFF可能な「ショートカット」
+  // ではなく画面上のタイル移動の補助なので、sky_shortcuts_enabledの影響は受けない。
+  // モーダルが開いている間はグリッドが隠れているため無効にする。
+  if (!anyModalOpen() && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+    if (kbNavMove(e.key)) { e.preventDefault(); return; }
+  }
+
   if (!skyShortcutsEnabled()) return;
 
   if (e.key === '?') { e.preventDefault(); settingsOpenModal(); return; }
