@@ -4398,7 +4398,7 @@ function renderLightChildren() {
           ? `<img src="${escapeAttr(child.img)}" alt="${escapeHtml(label)}" loading="lazy" onerror="this.parentElement.classList.add('img-fallback')">`
           : '';
         return `
-          <label class="light-child-opt ${checked ? 'checked' : ''}">
+          <label class="light-child-opt ${checked ? 'checked' : ''}" tabindex="0" role="checkbox" aria-checked="${checked ? 'true' : 'false'}" onkeydown="lightChildOptKeyDown(event, this)">
             <div class="light-child-thumb ${child.img ? '' : 'img-fallback'}">
               ${thumb}
               <span class="light-child-thumb-fallback">👶</span>
@@ -4460,6 +4460,18 @@ function onLightChildToggle(id, isChecked) {
   saveLightChildrenTracker(tracker);
   render();
   showToast(t('toastSaved'));
+}
+
+// 光の子タイル（<label class="light-child-opt">、内部のcheckboxはdisplay:noneで見た目上は
+// 隠している）にキーボードフォーカスがある状態でEnter/Spaceを押した際、内部のcheckboxを
+// クリックしてトグルする。マウスでのラベルクリックはネイティブなラベル委譲でcheckboxまで
+// 届くが、Tab移動後のEnter/Spaceキー入力はそれだけでは発火しないため、ここで明示的に
+// checkbox側のclick()を呼んでonchange(onLightChildToggle)を経由させる。
+function lightChildOptKeyDown(e, labelEl) {
+  if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+  e.preventDefault();
+  const input = labelEl.querySelector('input[type="checkbox"]');
+  if (input) input.click();
 }
 
 function setAreaChildren(idsCsv, checked) {
