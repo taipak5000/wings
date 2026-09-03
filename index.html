@@ -1191,6 +1191,7 @@ const I18N = {
     backupImportConfirmTemplate: '{n}件のキーをインポートします。現在保存されているデータは上書きされます（インポートするファイルに無いキーはそのまま残ります）。よろしいですか？',
     backupImportExecuteBtn: 'インポート実行',
     backupImportSuccess: 'インポートしました。ページを再読み込みします…',
+    backupImportPartialFailTemplate: '{total}件中{fail}件の復元に失敗しました（保存容量の上限などが原因の可能性があります）。残り{ok}件は復元できました。ページを再読み込みします…',
     backupWipeConfirmText: 'すべてのプロフィール・所持アイテム・お気に入り・精霊ツリーの進捗など、このブラウザに保存されている全データを削除します。この操作は取り消せません。先にエクスポートしておくことをおすすめします。本当に削除しますか？',
     backupWipeExecuteBtn: '完全に削除する',
     backupWipeSuccess: '削除しました。ページを再読み込みします…',
@@ -1454,6 +1455,7 @@ const I18N = {
     backupImportConfirmTemplate: 'Import {n} keys? Currently stored data will be overwritten for matching keys (keys not present in the file are left as-is). Continue?',
     backupImportExecuteBtn: 'Import',
     backupImportSuccess: 'Imported. Reloading…',
+    backupImportPartialFailTemplate: 'Failed to restore {fail} of {total} keys (this may be due to reaching the browser storage limit). The remaining {ok} keys were restored successfully. Reloading…',
     backupWipeConfirmText: 'This will erase ALL locally stored data (profiles, owned items, favorites, spirit tree progress, etc.) across the whole tool suite. This cannot be undone. Exporting a backup first is recommended. Really erase everything?',
     backupWipeExecuteBtn: 'Erase everything',
     backupWipeSuccess: 'Erased. Reloading…',
@@ -3176,13 +3178,23 @@ function dmCancelImport() {
 }
 function dmConfirmImport() {
   if (!dmPendingImport) return;
-  Object.keys(dmPendingImport).forEach(key => {
-    localStorage.setItem(key, dmPendingImport[key]);
+  const keys = Object.keys(dmPendingImport);
+  let okCount = 0;
+  const failedKeys = [];
+  keys.forEach(key => {
+    try {
+      localStorage.setItem(key, dmPendingImport[key]);
+      okCount++;
+    } catch (e) {
+      failedKeys.push(key);
+    }
   });
   dmPendingImport = null;
   document.getElementById('dmImportConfirmArea').innerHTML = '';
-  document.getElementById('dmStatus').textContent = t('backupImportSuccess');
-  setTimeout(() => location.reload(), 800);
+  document.getElementById('dmStatus').textContent = failedKeys.length > 0
+    ? t('backupImportPartialFailTemplate', { total: keys.length, fail: failedKeys.length, ok: okCount })
+    : t('backupImportSuccess');
+  if (okCount > 0) setTimeout(() => location.reload(), 800);
 }
 
 let dmWipeConfirming = false;
