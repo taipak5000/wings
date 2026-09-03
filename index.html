@@ -103,12 +103,6 @@
     }
     .nav-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
 
-    .sidebar-toggle-btn {
-      background: var(--card); border: 1px solid var(--sep); border-radius: var(--r-sm);
-      padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--text);
-      display: flex; align-items: center; gap: 6px; white-space: nowrap;
-    }
-    @media (min-width: 850px) { .sidebar-toggle-btn { visibility: hidden; } }
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .lang-toggle-btn {
       background: var(--card); border: 1px solid var(--sep); border-radius: var(--r-sm);
@@ -1017,7 +1011,6 @@ function L(obj) {
 const I18N = {
   ja: {
     navTitle: '🪽 羽トラッカー',
-    sidebarHamburger: '☰ ツール',
     sidebarRelatedTools: '関連ツール',
     sidebarClose: '×',
     toolItem: 'アイテム所持管理',
@@ -1281,7 +1274,6 @@ const I18N = {
   },
   en: {
     navTitle: '🪽 Wing Tracker',
-    sidebarHamburger: '☰ Tools',
     sidebarRelatedTools: 'Related Tools',
     sidebarClose: '×',
     toolItem: 'Item Collection',
@@ -1691,7 +1683,7 @@ const SEASON_SPIRITS = [
     { ja: '万古の光（海月）', en: 'Ancient Light (Jellyfish)' },
     { ja: '万古の光（マンタ）', en: 'Ancient Light (Manta)' },
     { ja: '万古の闇（暗黒竜）', en: 'Ancient Darkness (Dark Dragon)' },
-    { ja: '万古の闇（蝕む闇）', en: 'Ancient Darkness (Consuming Darkness)' },
+    { ja: '万古の闇（蝕む闇）', en: 'Ancient Darkness (Plants)' },
   ] },
   { season: { ja: 'AURORAの季節', en: 'Season of AURORA' }, spirits: [
     { ja: '駆けゆく旅人', en: 'Running Wayfarer' },
@@ -4681,9 +4673,6 @@ function getStoredThemeMode() {
 function resolveEffectiveTheme(mode) {
   if (mode === 'light' || mode === 'dark') return mode;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-function isDarkMode() {
-  return document.documentElement.getAttribute('data-theme') === 'dark';
 }
 function applyThemeToDOM(isDark) {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
