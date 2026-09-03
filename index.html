@@ -572,7 +572,7 @@
       align-items: flex-end; justify-content: center; padding: 0;
       transition: background-color 0.32s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .pf-modal-overlay.show { animation: none; }
+    .pf-modal-overlay.show { animation: iosFade 0.32s cubic-bezier(0.25, 1, 0.5, 1); }
     .pf-modal-overlay.is-closing { display: flex; pointer-events: none; }
     .pf-modal-card {
       width: 100%; max-width: 100%; max-height: 88vh; max-height: 88dvh;
@@ -583,12 +583,19 @@
       animation: none;
       transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .pf-modal-card.is-dragging, .pf-modal-card.js-anim { transition: none; cursor: grabbing; user-select: none; }
+    .pf-modal-card.is-dragging, .pf-modal-card.js-anim { transition: none; animation: none; cursor: grabbing; user-select: none; }
     .pf-modal-card::before {
       content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
       width: 36px; height: 5px; border-radius: 3px; background: rgba(60, 60, 67, 0.3);
     }
     [data-theme="dark"] .pf-modal-card::before { background: rgba(235, 235, 245, 0.3); }
+    /* display:none→flexと同一同期タスク内でtransformが書き変わるため、transition駆動の
+       スライドインは初回発火しない（transitionは「変化前スタイル」が必要）。animationは
+       それを問わず必ず再生されるので、開く瞬間だけこちらに切り替える。850px未満限定にして
+       デスクトップ側のiosSheetInと詳細度で競合しないようにする。 */
+    @media (max-width: 849.98px) {
+      .pf-modal-overlay.show .pf-modal-card { animation: sheetSlideUp 0.32s cubic-bezier(0.25, 1, 0.5, 1); }
+    }
     @media (min-width: 850px) {
       .pf-modal-overlay { align-items: center; padding: 24px; background: rgba(0, 0, 0, 0.45); }
       .pf-modal-overlay.show { animation: iosFade 0.25s cubic-bezier(0.25, 1, 0.5, 1); }
@@ -601,6 +608,7 @@
     }
     @keyframes iosSheetIn { from { opacity: 0; transform: scale(0.94) translateY(8px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
     @keyframes iosFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes sheetSlideUp { from { transform: translate3d(0, 100%, 0); } to { transform: translate3d(0, 0, 0); } }
 
     /* ── サイドバー（関連ツールドロワー）のスライドイン ── */
     .sidebar.sidebar-open { animation: iosSlideIn 0.32s cubic-bezier(0.25, 1, 0.5, 1); }
