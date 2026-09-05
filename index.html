@@ -902,22 +902,21 @@
      リンク一覧は複製せず、既存の openSidebarMobile() を呼ぶだけ） -->
 <div class="site-dock" role="navigation" aria-label="クイックメニュー" data-i18n-aria-label="dockAriaLabel">
   <button type="button" onclick="pfOpenModal()">
-    <span class="site-dock-icon"><svg class="inline-icon" width="20" height="20"><use href="#i-folder"/></svg></span>
+    <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-folder"/></svg></span></span>
     <span class="site-dock-label" id="siteDockProfileLabel" data-i18n="dockProfile">プロフィール</span>
   </button>
   <button type="button" onclick="pfDashOpen()">
     <span class="site-dock-icon-wrap">
-      <span class="site-dock-icon"><svg class="inline-icon" width="20" height="20"><use href="#i-calendar"/></svg></span>
-      <span class="dock-urgent-dot" id="dockUrgentDot" aria-hidden="true" title="季節/イベントの終了が近づいています" data-i18n-title="dockUrgentTitle"></span>
+      <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-calendar"/></svg></span><span class="dock-urgent-dot" id="dockUrgentDot" aria-hidden="true" title="季節/イベントの終了が近づいています" data-i18n-title="dockUrgentTitle"></span></span>
     </span>
     <span class="site-dock-label" data-i18n="dockDashboard">ダッシュボード</span>
   </button>
   <button type="button" onclick="openSidebarMobile()">
-    <span class="site-dock-icon"><svg class="inline-icon" width="20" height="20"><use href="#i-menu"/></svg></span>
+    <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-menu"/></svg></span></span>
     <span class="site-dock-label" data-i18n="dockOtherTools">他のツール</span>
   </button>
   <button type="button" onclick="settingsOpenModal()">
-    <span class="site-dock-icon"><svg class="inline-icon" width="20" height="20"><use href="#i-settings"/></svg></span>
+    <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-settings"/></svg></span></span>
     <span class="site-dock-label" data-i18n="dockSettings">表示設定</span>
   </button>
 </div>
@@ -1085,18 +1084,18 @@
     <h3 data-i18n="settingsModalTitle">表示設定</h3>
 
     <div class="dash-section">
-      <p class="dash-section-label" data-i18n="settingsDisplayLabel">表示</p>
+      <p class="dash-section-label" data-i18n="settingsDisplayLabel"><svg class="inline-icon" width="15" height="15"><use href="#i-monitor"/></svg> 表示</p>
       <div class="dash-row" style="align-items:center;">
-        <span class="dash-row-icon"><svg class="inline-icon" width="18" height="18"><use href="#i-moon"/></svg></span>
+        <span class="dash-row-icon icon-chip" style="width:22px; height:22px;"><svg width="17" height="17"><use href="#i-moon"/></svg></span>
         <span class="dash-row-text" data-i18n="settingsDarkModeLabel">ダークモード</span>
         <button type="button" class="theme-toggle-btn" id="settingsThemeToggleBtn" onclick="toggleTheme()">ダーク</button>
       </div>
     </div>
 
     <div class="dash-section">
-      <p class="dash-section-label" data-i18n="settingsShortcutsLabel">キーボードショートカット</p>
+      <p class="dash-section-label" data-i18n="settingsShortcutsLabel"><svg class="inline-icon" width="15" height="15"><use href="#i-keyboard"/></svg> キーボードショートカット</p>
       <div class="dash-row" style="align-items:center;">
-        <span class="dash-row-icon"><svg class="inline-icon" width="18" height="18"><use href="#i-keyboard"/></svg></span>
+        <span class="dash-row-icon icon-chip" style="width:22px; height:22px;"><svg width="17" height="17"><use href="#i-keyboard"/></svg></span>
         <span class="dash-row-text" data-i18n="settingsShortcutsEnableLabel">ショートカットを有効にする</span>
         <input type="checkbox" id="settingsShortcutsCheckbox" onchange="settingsSaveShortcutsPref()" style="width:19px; height:19px; flex-shrink:0; cursor:pointer; accent-color:var(--blue);">
       </div>
@@ -1115,16 +1114,16 @@
     </div>
 
     <div class="dash-section">
-      <p class="dash-section-label" data-i18n="settingsCustomizeLabel">表示のカスタマイズ</p>
+      <p class="dash-section-label" data-i18n="settingsCustomizeLabel"><svg class="inline-icon" width="15" height="15"><use href="#i-palette"/></svg> 表示のカスタマイズ</p>
       <div class="dash-row" style="align-items:center;">
-        <span class="dash-row-icon"><svg class="inline-icon" width="18" height="18"><use href="#i-palette"/></svg></span>
+        <span class="dash-row-icon icon-chip" style="width:22px; height:22px;"><svg width="17" height="17"><use href="#i-palette"/></svg></span>
         <span class="dash-row-text" data-i18n="settingsCustomizeBtnText">アイコンをカスタマイズ</span>
         <button type="button" class="theme-toggle-btn" onclick="settingsCloseModal(); pfIconOpenModal();" data-i18n="settingsCustomizeBtn">開く</button>
       </div>
     </div>
 
     <div class="dash-section">
-      <p class="dash-section-label" data-i18n="settingsLangLabel">言語 / Language</p>
+      <p class="dash-section-label" data-i18n="settingsLangLabel"><svg class="inline-icon" width="15" height="15"><use href="#i-globe"/></svg> 言語 / Language</p>
       <div style="display:flex; gap:8px;">
         <button type="button" class="pf-icon-btn" id="settingsLangJaBtn" onclick="setLang('ja')">日本語</button>
         <button type="button" class="pf-icon-btn" id="settingsLangEnBtn" onclick="setLang('en')">English</button>
@@ -1155,7 +1154,7 @@ const I18N = {
   ja: {
     navTitle: '<svg class="inline-icon" width="19" height="19"><use href="#i-wing"/></svg> 羽トラッカー',
     sidebarRelatedTools: '関連ツール',
-    sidebarClose: '<svg class="inline-icon" width="14" height="14"><use href="#i-close"/></svg>',
+    sidebarClose: '<span class="icon-chip" style="width:22px; height:22px;"><svg width="16" height="16"><use href="#i-close"/></svg></span>',
     toolItem: 'アイテム所持管理',
     toolEmote: 'エモート所持率管理',
     toolShare: '創作物管理ツール',
@@ -1238,21 +1237,21 @@ const I18N = {
     pfDashBtnTitle: '今日・今週・今月ダッシュボード',
     settingsBtnTitle: '表示設定',
     settingsModalTitle: '表示設定',
-    settingsDisplayLabel: '表示',
+    settingsDisplayLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-monitor"/></svg> 表示',
     settingsDarkModeLabel: 'テーマ',
-    settingsCustomizeLabel: '表示のカスタマイズ',
+    settingsCustomizeLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-palette"/></svg> 表示のカスタマイズ',
     settingsCustomizeBtnText: 'アイコンをカスタマイズ',
     settingsCustomizeBtn: '開く',
     themeToggleDark: 'ダーク',
     themeToggleLight: 'ライト',
     themeToggleSystem: 'システム',
     themeToggleAriaLabel: '現在のテーマ: {current}（タップで{next}に切り替え）',
-    settingsShortcutsLabel: 'キーボードショートカット',
+    settingsShortcutsLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-keyboard"/></svg> キーボードショートカット',
     settingsShortcutsEnableLabel: 'ショートカットを有効にする',
     settingsShortcutOpen: 'この設定を開く',
     settingsShortcutTheme: 'テーマ切替（ライト→ダーク→システム）',
     settingsShortcutEscape: '開いているウィンドウを閉じる',
-    settingsLangLabel: '言語 / Language',
+    settingsLangLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-globe"/></svg> 言語 / Language',
     pfAccountColorTitle: 'アカウントカラー',
     pfResetColorTitle: 'カラーを初期値に戻す',
     pfRenameTitle: '名前を変更',
@@ -1418,7 +1417,7 @@ const I18N = {
   en: {
     navTitle: '<svg class="inline-icon" width="19" height="19"><use href="#i-wing"/></svg> Wing Tracker',
     sidebarRelatedTools: 'Related Tools',
-    sidebarClose: '<svg class="inline-icon" width="14" height="14"><use href="#i-close"/></svg>',
+    sidebarClose: '<span class="icon-chip" style="width:22px; height:22px;"><svg width="16" height="16"><use href="#i-close"/></svg></span>',
     toolItem: 'Item Collection',
     toolEmote: 'Emote Collection',
     toolShare: 'Creation Manager',
@@ -1501,21 +1500,21 @@ const I18N = {
     pfDashBtnTitle: 'Today / this week / this month',
     settingsBtnTitle: 'Display Settings',
     settingsModalTitle: 'Display Settings',
-    settingsDisplayLabel: 'Display',
+    settingsDisplayLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-monitor"/></svg> Display',
     settingsDarkModeLabel: 'Theme',
-    settingsCustomizeLabel: 'Display Customization',
+    settingsCustomizeLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-palette"/></svg> Display Customization',
     settingsCustomizeBtnText: 'Customize Icon',
     settingsCustomizeBtn: 'Open',
     themeToggleDark: 'Dark',
     themeToggleLight: 'Light',
     themeToggleSystem: 'System',
     themeToggleAriaLabel: 'Current theme: {current} (tap to switch to {next})',
-    settingsShortcutsLabel: 'Keyboard Shortcuts',
+    settingsShortcutsLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-keyboard"/></svg> Keyboard Shortcuts',
     settingsShortcutsEnableLabel: 'Enable keyboard shortcuts',
     settingsShortcutOpen: 'Open this settings panel',
     settingsShortcutTheme: 'Cycle theme (Light → Dark → System)',
     settingsShortcutEscape: 'Close the open window',
-    settingsLangLabel: 'Language',
+    settingsLangLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-globe"/></svg> Language',
     pfAccountColorTitle: 'Account color',
     pfResetColorTitle: 'Reset color to default',
     pfRenameTitle: 'Rename',
