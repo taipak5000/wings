@@ -599,6 +599,9 @@
       animation: none;
       transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
     }
+    @media (min-width: 560px) {
+      .pf-modal-card { max-width: 480px; }
+    }
     .pf-modal-card.is-dragging, .pf-modal-card.js-anim { transition: none; animation: none; cursor: grabbing; user-select: none; }
     .pf-modal-card::before {
       content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
