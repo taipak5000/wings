@@ -100,6 +100,10 @@
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     a { text-decoration:none; color:inherit; -webkit-tap-highlight-color:transparent; }
+    /* 🔗 文中に地の文と並んで置かれるリンク（フッターの出典・クレジット類）は、
+       上のa{text-decoration:none}を上書きして下線を出し、一目でリンクだと分かるようにする。
+       サイドバーの一覧リンクや各種ボタン（<a class="pf-add-btn">等）はナビ/ボタン扱いのため対象外。 */
+    footer a { text-decoration: underline; text-underline-offset: 2px; }
     button { cursor:pointer; border:none; background:none; font-family:inherit; }
 
     body {
@@ -184,6 +188,8 @@
     .summary-item-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
     .summary-item-value { font-size: 22px; font-weight: 800; }
     .summary-item-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+    /* 🔢 数字と単位に強弱: 「枚」「本」等の単位だけ小さく・淡くして、主役の数値を目立たせる */
+    .num-unit { font-size: 0.55em; font-weight: 500; opacity: 0.75; margin-left: 2px; }
 
     .sec-label {
       font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
@@ -235,11 +241,12 @@
     /* ── プロフィール比較 ───────────────────── */
     .pf-compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
     .pf-compare-table th, .pf-compare-table td {
-      padding: 8px 6px; text-align: center; border-bottom: 0.5px solid var(--sep);
+      /* 📐 数値列は末尾（一の位）が揃うよう右揃え＋等幅数字に。ラベル列だけ:first-childで左揃えに戻す */
+      padding: 8px 6px; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 0.5px solid var(--sep);
     }
     .pf-compare-table th { color: var(--text-2); font-weight: 700; font-size: 11.5px; }
     .pf-compare-table th:first-child, .pf-compare-table td:first-child {
-      text-align: left; color: var(--text); font-weight: 600;
+      text-align: left; color: var(--text); font-weight: 600; font-variant-numeric: normal;
     }
     .pf-compare-table td.pf-compare-lead { color: var(--green); font-weight: 800; }
 
@@ -251,6 +258,8 @@
     .cape-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
     .cape-card-sub { font-size: 12.5px; color: rgba(255,255,255,0.65); margin-bottom: 4px; }
     .cape-level-label { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 14px; }
+    /* 🔢 数字と単位に強弱: 「Lv」は単位的な接頭語として控えめに、数値本体を目立たせる */
+    .cape-lv-prefix { font-size: 0.65em; font-weight: 600; opacity: 0.75; margin-right: 1px; }
     .cape-pips { display: flex; flex-direction: column-reverse; gap: 9px; align-items: center; }
     .cape-pip {
       position: relative;
@@ -379,6 +388,9 @@
     .dash-row-text { flex: 1; min-width: 0; }
     .dash-row b { color: var(--blue); }
     .dash-countdown { display: block; margin-top: 3px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--blue); }
+    /* 🔢 数字と単位に強弱（残り日数の「日/d」部分だけ控えめに） */
+    .dash-count-num { font-size: 1.1em; }
+    .dash-count-unit { font-weight: 500; opacity: 0.75; font-size: 0.85em; margin-right: 3px; }
     .dash-note { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--text-2); }
     .dash-shard-times { display: block; margin-top: 3px; }
     .dash-shard-time { color: var(--blue); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -423,7 +435,7 @@
     .pf-row-input { flex: 1; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
       padding: 6px 8px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; min-width: 0; }
     .pf-row-input:focus { border-color: var(--blue); }
-    .pf-row-confirm-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; }
+    .pf-row-confirm-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.55; }
     .pf-row-btn-ok { background: var(--blue); color: #fff; border: none; }
     .pf-row-btn-danger { background: #ff3b30; color: #fff; border: none; }
     .pf-color-input { width: 28px; height: 28px; padding: 0; border: 1px solid var(--sep); border-radius: 50%;
@@ -546,7 +558,7 @@
     .exp-hero-sub { color: #fff; font-size: 13px; margin-top: 4px; opacity: 0.92; }
     .exp-comment {
       color: #fff; background: rgba(255,255,255,0.16); border-radius: 14px;
-      padding: 10px 14px; font-size: 13px; line-height: 1.6; text-align: center;
+      padding: 10px 14px; font-size: 13px; line-height: 1.6; text-align: left;
       margin-bottom: 4px; white-space: pre-wrap; word-break: break-word;
     }
     .exp-date { color: rgba(255,255,255,0.75); font-size: 10.5px; text-align: right; margin-top: 10px; }
@@ -571,7 +583,7 @@
     }
     .customize-comment-input {
       width: 100%; box-sizing: border-box; border: 1px solid var(--sep);
-      border-radius: var(--r-sm); padding: 10px 12px; font-size: 13.5px;
+      border-radius: var(--r-sm); padding: 10px 12px; font-size: 13.5px; line-height: 1.5;
       font-family: inherit; color: var(--text); resize: vertical; min-height: 60px;
       background: var(--bg);
     }
@@ -751,8 +763,8 @@
   <div class="wrap">
 
     <div class="notice-card" data-i18n="noticeMain">
-      精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている<b>光の子</b>を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>
-      また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。
+      精霊が再訪してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている光の子を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>
+      また、原罪に行って転生すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下のケープレベルの計算にはこの分を+1して反映しています。
     </div>
 
     <div class="summary-card">
@@ -880,9 +892,9 @@
   </div><!-- /wrap -->
 </div><!-- /.app-layout -->
 
-<footer style="text-align:center; padding:24px 16px; color:var(--text-2); font-size:13px; border-top:1px solid var(--sep); margin-top:40px; line-height:1.6;">
+<footer style="text-align:left; padding:24px 16px; color:var(--text-2); font-size:13px; border-top:1px solid var(--sep); margin-top:40px; line-height:1.6;">
   <span data-i18n="footerDisclaimer">このサイトはSky 星を紡ぐ子どもたちの非公式ファンサイトです。thatgamecompanyは一切関与していません。</span><br>
-  <span data-i18n="footerCreditLabel">作成・ご意見:</span> <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;">@Skyzztai</a>　／　<a href="https://odaibako.net/u/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); text-decoration:none; font-weight:bold;" data-i18n="footerRequestForm">リクエストフォーム</a><br>
+  <span data-i18n="footerCreditLabel">作成・ご意見:</span> <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); font-weight:bold;">@Skyzztai</a>　／　<a href="https://odaibako.net/u/Skyzztai" target="_blank" rel="noopener noreferrer" style="color:var(--blue); font-weight:bold;" data-i18n="footerRequestForm">リクエストフォーム</a><br>
   <span style="color:var(--text-2); font-size:12px; margin-top:4px; display:inline-block;">
     <span data-i18n="footerReferenceLabel">参考:</span>
     <a href="https://sky-children-of-the-light.fandom.com/ja/wiki/%E6%97%85%E3%81%99%E3%82%8B%E7%B2%BE%E9%9C%8A" target="_blank" rel="noopener noreferrer" style="color: var(--blue);" data-i18n="footerWikiTravelingJa">旅する精霊 (Sky Wiki 日本語)</a>
@@ -1180,7 +1192,7 @@ const I18N = {
 
     pageTitle: '羽トラッカー - Sky所持率管理',
 
-    noticeMain: '精霊が<b>再訪</b>してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている<b>光の子</b>を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>また、<b>原罪</b>に行って<b>転生</b>すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下の<b>ケープレベル</b>の計算にはこの分を+1して反映しています。',
+    noticeMain: '精霊が再訪してきたとき、その精霊から初回だけもらえる<b>光の翼</b>（星のキャンドル2本消費）を、季節・精霊ごとにチェックして記録します。地方に隠れている光の子を見つけた場合も、光の子1体につき光の翼1枚がもらえます。<br>また、原罪に行って転生すると、精霊に配った枚数とは別に光の翼が1枚加算されるため、下のケープレベルの計算にはこの分を+1して反映しています。',
     summaryTitle: '光の翼の合計',
     summaryGotLabel: 'もらった光の翼（合計）',
     summaryGotSubTemplate: '季節精霊 {season} + 恒常精霊 {perm} + 光の子 {light} + 転生 {rebirth}',
@@ -1397,15 +1409,15 @@ const I18N = {
     seasonEndingSoonTitle: 'この季節はまもなく終了します。再訪でしか手に入らない光の翼を見逃さないようご注意ください。',
     permBadgeTemplate: '{got} / {total} 枚',
     lightChildrenBadgeTemplate: '{got} / {total} 体',
-    sheetCountTemplate: '{n}枚',
-    candleCountTemplate: '{n}本',
+    sheetCountTemplate: '{n}<span class="num-unit">枚</span>',
+    candleCountTemplate: '{n}<span class="num-unit">本</span>',
     tier1Template: '（Tier1・星のキャンドル{n}本）',
     tier2Template: '（Tier2・星のキャンドル{n}本）',
     capeSummaryMaxTemplate: '現在 光の翼 {total}枚 — 最大ケープレベル {max} に到達済み！',
     capeSummaryTemplate: '現在 光の翼 {total}枚（レベル{next}まであと {remain}枚）',
 
     exportCardBrand: '<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:3px;" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.281) translate(-10.5 -12.83)"><path d="M4 19c2-6 6-11 13-13-1 6-2 9-6 12-3 2-5 2-7 1Z"/><path d="M7 17c3-2 6-5 8-9"/></g></svg> 羽トラッカー',
-    exportCardHeroValueTemplate: '{n}枚',
+    exportCardHeroValueTemplate: '{n}<span class="num-unit">枚</span>',
     exportCardHeroLabel: '光の翼 合計',
     exportCardNumsTemplate: '季節精霊 {season} ・ 恒常精霊 {perm}',
     exportCardSubTemplate: 'ケープレベル {level}',
@@ -1444,7 +1456,7 @@ const I18N = {
 
     pageTitle: 'Wing Tracker - Sky Collection Tracker',
 
-    noticeMain: 'Track the <b>Winged Light</b> you receive the first time a <b>Revisit</b> Spirit returns (costs 2 Star Candles), checked off by season and spirit. Finding a hidden <b>Child of Light</b> in a realm also grants 1 Winged Light each.<br>Also, reincarnating at <b>Eye of Eden</b> adds 1 more Winged Light on top of what you\'ve given to Spirits, so the <b>Cape Level</b> calculation below includes this +1.',
+    noticeMain: 'Track the <b>Winged Light</b> you receive the first time a Revisit Spirit returns (costs 2 Star Candles), checked off by season and spirit. Finding a hidden Child of Light in a realm also grants 1 Winged Light each.<br>Also, reincarnating at Eye of Eden adds 1 more Winged Light on top of what you\'ve given to Spirits, so the Cape Level calculation below includes this +1.',
     summaryTitle: 'Total Winged Light',
     summaryGotLabel: 'Winged Light received (total)',
     summaryGotSubTemplate: 'Seasonal {season} + Regular {perm} + Children of Light {light} + Rebirth {rebirth}',
@@ -2785,7 +2797,8 @@ function pfDashCountdown(target) {
   const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
   const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
   const ss = String(totalSec % 60).padStart(2, '0');
-  return days > 0 ? `${days}${t('dashDayUnit')} ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+  // 🔢 数字と単位に強弱: 「日数」は主役の数値を大きく、単位（日/d）は控えめにして視認性を上げる
+  return days > 0 ? `<b class="dash-count-num">${days}</b><span class="dash-count-unit">${t('dashDayUnit')}</span> ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
 }
 
 // ダッシュボードの今日/今週/今月は「項目の種類」ではなく「実際の残り時間」で振り分ける
@@ -4513,9 +4526,9 @@ function render() {
   // ── 集計表示 ──
   const REBIRTH_BONUS = 1; // 原罪での転生ボーナス（精霊への配布とは別に+1）
   const totalAll = seasonFeathers + permFeathers + lightChildrenGot + REBIRTH_BONUS;
-  document.getElementById('sumFeathersAll').textContent = t('sheetCountTemplate', { n: totalAll.toLocaleString() });
+  document.getElementById('sumFeathersAll').innerHTML = t('sheetCountTemplate', { n: totalAll.toLocaleString() });
   document.getElementById('sumFeathersAllSub').textContent = t('summaryGotSubTemplate', { season: seasonFeathers, perm: permFeathers, light: lightChildrenGot, rebirth: REBIRTH_BONUS });
-  document.getElementById('sumCandles').textContent = t('candleCountTemplate', { n: ((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString() });
+  document.getElementById('sumCandles').innerHTML = t('candleCountTemplate', { n: ((seasonFeathers * CANDLES_PER_FEATHER) + permCandles).toLocaleString() });
   document.getElementById('sumFeathersSeason').textContent = `${seasonFeathers} / ${seasonSpiritsTotal}`;
   document.getElementById('sumFeathersPerm').textContent = `${permFeathers} / ${permTotal}`;
   document.getElementById('sumPermCandles').textContent = `${permCandles.toLocaleString()}`;
@@ -4685,7 +4698,7 @@ function renderCapeLevels(total) {
     : t('capeSummaryTemplate', { total, next: reachedLevel + 1, remain: nextNeed - total });
   document.getElementById('capeSummary').textContent = summary;
 
-  document.getElementById('capeLevelLabel').textContent = `Lv${reachedLevel}`;
+  document.getElementById('capeLevelLabel').innerHTML = `<span class="cape-lv-prefix">Lv</span>${reachedLevel}`;
 
   if (reachedLevel === 0) {
     document.getElementById('capePips').innerHTML = '';
