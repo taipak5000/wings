@@ -438,6 +438,10 @@
     .pf-row-confirm-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.55; }
     .pf-row-btn-ok { background: var(--blue); color: #fff; border: none; }
     .pf-row-btn-danger { background: #ff3b30; color: #fff; border: none; }
+    /* .pf-icon-btn:hover（詳細度0,2,0）がこの下の.pf-row-btn-ok/danger単体（詳細度0,1,0）より勝ってしまい、
+       hover時に背景がvar(--sep)へ戻って白文字が読めなくなる（白飛び）のを防ぐための明示ルール */
+    .pf-icon-btn.pf-row-btn-ok:hover { background: var(--blue); color: #fff; }
+    .pf-icon-btn.pf-row-btn-danger:hover { background: #ff3b30; color: #fff; }
     .pf-color-input { width: 28px; height: 28px; padding: 0; border: 1px solid var(--sep); border-radius: 50%;
       background: none; cursor: pointer; flex-shrink: 0; overflow: hidden; }
     .pf-color-input::-webkit-color-swatch-wrapper { padding: 0; }
