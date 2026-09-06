@@ -1190,6 +1190,7 @@ const I18N = {
     titlesPanelTitle: '称号',
     titlesCountTemplate: '{earned} / {total} 個解除',
     titleLockedTooltip: '称号は条件を満たすと明らかになります',
+    titleLockedPlaceholder: '？？？',
     shareTwitterBtn: 'Xで画像を共有',
     shareCustomizeBtn: 'カスタマイズして共有',
     tabWings: '精霊の羽',
@@ -1453,6 +1454,7 @@ const I18N = {
     titlesPanelTitle: 'Titles',
     titlesCountTemplate: '{earned} / {total} unlocked',
     titleLockedTooltip: 'Unlocks when you meet its condition',
+    titleLockedPlaceholder: '???',
     shareTwitterBtn: 'Share image on X',
     shareCustomizeBtn: 'Customize & share',
     tabWings: 'Spirit Wings',
@@ -3698,7 +3700,7 @@ function checkAndUnlockTitles() {
   if (newlyEarned.length) saveTitles(owned);
   renderTitles(owned);
   newlyEarned.forEach(title => {
-    showToast(t('titleUnlockedToastTemplate', { icon: title.icon, name: L(title.name) }));
+    showToast(t('titleUnlockedToastTemplate', { icon: title.icon, name: escapeHtml(L(title.name)) }), { html: true });
   });
 }
 
@@ -3712,7 +3714,7 @@ function renderTitles(owned) {
     if (owned[ti.id]) {
       return `<span class="title-chip" title="${escapeAttr(L(ti.desc))}">${ti.icon} ${escapeHtml(L(ti.name))}</span>`;
     }
-    return `<span class="title-chip locked" title="${escapeAttr(t('titleLockedTooltip'))}">${ti.icon} ？？？</span>`;
+    return `<span class="title-chip locked" title="${escapeAttr(t('titleLockedTooltip'))}">${ti.icon} ${escapeHtml(t('titleLockedPlaceholder'))}</span>`;
   }).join('');
 }
 
@@ -4773,10 +4775,10 @@ function setRealmSpirits(realmJa, checked) {
   showToast(checked ? t('toastAreaSelected') : t('toastAreaReset'));
 }
 
-function showToast(msg) {
+function showToast(msg, opts) {
   const t = document.createElement('div');
   t.className = 'toast';
-  t.textContent = msg;
+  if (opts && opts.html) t.innerHTML = msg; else t.textContent = msg;
   // 称号解禁通知＋通常の操作通知など、同じtick内で2つ以上showToast()が呼ばれると
   // 単一の共有トースト要素では後から追加した方だけが見え前の通知が完全に上書きされて
   // しまう。既に表示中のトースト数だけ上に積み上げて両方見えるようにする
