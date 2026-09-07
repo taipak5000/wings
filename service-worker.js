@@ -9,7 +9,7 @@
 //
 // キャッシュを作り直したい場合はCACHE_VERSIONの文字列を上げるだけでよい。
 // 古いバージョンのキャッシュはactivate時に自動で破棄される。
-const CACHE_VERSION = 'v2'; // v2: cache-first-then-networkからstale-while-revalidateへ変更
+const CACHE_VERSION = 'v3'; // v3: ダッシュボードの再訪精霊表示修正を即時反映させるための強制キャッシュ更新
 const CACHE_NAME = `wings-shell-${CACHE_VERSION}`;
 
 // self.registration.scope（このSWが登録されているディレクトリ）からの相対パスで解決する。
