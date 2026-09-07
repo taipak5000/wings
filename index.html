@@ -340,16 +340,6 @@
     .site-dock .site-dock-icon { font-size: 20px; line-height: 1; }
     .site-dock .site-dock-label { font-size: 10px; font-weight: 700; color: var(--text-2);
       max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    /* 🔴 ダッシュボードボタンの「まもなく終了」インジケーター（季節/イベント終了が3日以内の
-       ときだけ表示する小さな赤丸）。既存の再取得済みダッシュボードデータ(pfDashCache)を
-       流用するだけで、新規fetchは行わない（pfDashUpdateUrgentBadge()参照）。 */
-    .site-dock .site-dock-icon-wrap { position: relative; display: inline-flex; }
-    .site-dock .dock-urgent-dot {
-      display: none; position: absolute; top: -2px; right: -6px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--red); border: 1.5px solid var(--card);
-    }
-    .site-dock .dock-urgent-dot.show { display: block; }
 
     .confirm-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;
@@ -926,9 +916,7 @@
     <span class="site-dock-label" id="siteDockProfileLabel" data-i18n="dockProfile">プロフィール</span>
   </button>
   <button type="button" onclick="pfDashOpen()">
-    <span class="site-dock-icon-wrap">
-      <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-calendar"/></svg></span><span class="dock-urgent-dot" id="dockUrgentDot" aria-hidden="true" title="季節/イベントの終了が近づいています" data-i18n-title="dockUrgentTitle"></span></span>
-    </span>
+    <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-calendar"/></svg></span></span>
     <span class="site-dock-label" data-i18n="dockDashboard">ダッシュボード</span>
   </button>
   <button type="button" onclick="openSidebarMobile()">
@@ -1192,7 +1180,6 @@ const I18N = {
     dockDashboard: 'ダッシュボード',
     dockOtherTools: '他のツール',
     dockSettings: '表示設定',
-    dockUrgentTitle: '季節/イベントの終了が近づいています',
 
     pageTitle: '羽トラッカー - Sky所持率管理',
 
@@ -1456,7 +1443,6 @@ const I18N = {
     dockDashboard: 'Dashboard',
     dockOtherTools: 'Other Tools',
     dockSettings: 'Display',
-    dockUrgentTitle: 'A season or event is ending soon',
 
     pageTitle: 'Wing Tracker - Sky Collection Tracker',
 
@@ -2829,6 +2815,7 @@ const DASH_EVENT_NAME_EN = {
   '光に染まるイベント': 'Event of Radiant Light',
   '来訪する精霊団': 'Traveling Spirit Troupe',
   '夏のキャンプ': 'Summer Camp',
+  '大キャン２倍・シーズンキャンドル２倍': 'Double Grand & Season Candles',
 };
 function dashEventName(name) {
   return LANG === 'en' ? (DASH_EVENT_NAME_EN[name] || name) : name;
@@ -2881,6 +2868,7 @@ async function pfDashLoadData() {
     revisitSchedules: pfExtractArray(html, 'REVISIT_SPIRIT_SCHEDULES') || [],
     season: pfExtractArray(html, 'CURRENT_SEASON') || null,
     eventSchedule: pfExtractArray(html, 'EVENT_SCHEDULE') || [],
+    candleBonusSchedule: pfExtractArray(html, 'CANDLE_BONUS_SCHEDULE') || [],
     nextUpdate: pfExtractArray(html, 'NEXT_UPDATE') || null,
   };
 }
@@ -2943,6 +2931,10 @@ function pfDashBuildHtml(data) {
     const endDate = new Date(ev.end);
     bucketRows[pfDashBucketFor(endDate)].push(pfDashRow('<svg class="inline-icon" width="16" height="16"><use href="#i-star"/></svg>', `<b>${escapeHtml(dashEventName(ev.name))}</b>${t('dashCurrentlyActive')}<span class="dash-countdown">${t('dashEndsIn')} ${pfDashCountdown(endDate)}</span>`));
   });
+  pfDashActiveScheduledEvents(data.candleBonusSchedule).forEach(ev => {
+    const bonusEnd = new Date(ev.end);
+    bucketRows[pfDashBucketFor(bonusEnd)].push(pfDashRow('<svg class="inline-icon" width="16" height="16"><use href="#i-candle"/></svg>', `<b>${escapeHtml(dashEventName(ev.name))}</b>${t('dashCurrentlyActive')}<span class="dash-countdown">${t('dashEndsIn')} ${pfDashCountdown(bonusEnd)}</span>`));
+  });
   pfDashRevisitStatuses(data.revisitSchedules).forEach(({ status: rv }) => {
     const revisitLabel = rv.active
       ? `${t('dashRevisitSpirit')}${t('dashRevisitHereNow')}`
@@ -2988,7 +2980,6 @@ function pfDashStartTimer() {
     if (!pfDashCache) return;
     const body = document.getElementById('dashBody');
     if (body) body.innerHTML = pfDashBuildHtml(pfDashCache);
-    pfDashUpdateUrgentBadge();
   }, 1000);
 }
 function pfDashStopTimer() {
@@ -3006,13 +2997,12 @@ function pfDashEnsureData() {
 async function pfDashOpen() {
   document.getElementById('dashModalOverlay').classList.add('show');
   const body = document.getElementById('dashBody');
-  if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); pfDashUpdateUrgentBadge(); return; }
+  if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); return; }
   body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
   try {
     const data = await pfDashEnsureData();
     body.innerHTML = pfDashBuildHtml(data);
     pfDashStartTimer();
-    pfDashUpdateUrgentBadge();
   } catch (e) {
     console.error('pfDashOpen', e);
     body.innerHTML = `<div class="dash-empty">${t('dashLoadFailed')}</div>`;
@@ -3047,32 +3037,6 @@ function pfGetEndingSoonSeasonInfo() {
   const match = SEASON_SPIRITS.find(s => s.season.en === enName);
   if (!match) return null;
   return { seasonJa: match.season.ja, daysLeft };
-}
-
-// 🔴 サイトドックの「ダッシュボード」ボタンに表示する、終了間近インジケーター（小さな赤丸）。
-// 新規fetchは一切行わず、pfDashCache（ページ読み込み時にバックグラウンドで先読み済み、
-// または実際にダッシュボードを開いた際に読み込まれるデータ）を流用するだけ。
-// pfDashCacheが無い（未読み込み・fetch失敗）場合は何も表示しない＝安全側に倒す。
-const DOCK_URGENT_DAYS = 3;
-function pfDashUrgentEndDates() {
-  const data = pfDashCache;
-  if (!data) return [];
-  const dates = [];
-  if (data.season && data.season.name && data.season.endDate) dates.push(new Date(data.season.endDate));
-  pfDashActiveScheduledEvents(data.eventSchedule).forEach(ev => dates.push(new Date(ev.end)));
-  return dates;
-}
-function pfDashHasUrgentEnding() {
-  const now = new Date();
-  return pfDashUrgentEndDates().some(end => {
-    const ms = end - now;
-    return ms > 0 && ms <= DOCK_URGENT_DAYS * 86400000;
-  });
-}
-function pfDashUpdateUrgentBadge() {
-  const dot = document.getElementById('dockUrgentDot');
-  if (!dot) return;
-  dot.classList.toggle('show', pfDashHasUrgentEnding());
 }
 
 // 名前変更中・削除確認中のプロフィールID（ポップアップブロックの影響を受ける
@@ -4987,7 +4951,7 @@ document.addEventListener('DOMContentLoaded', render);
 // （ダッシュボードモーダルを開かなくても警告が出るようにするため）。
 // fetch失敗時（オフライン等）は静かに諦め、他の機能には一切影響しない。
 document.addEventListener('DOMContentLoaded', () => {
-  pfDashEnsureData().then(() => { render(); pfDashUpdateUrgentBadge(); }).catch(() => {});
+  pfDashEnsureData().then(() => { render(); }).catch(() => {});
 });
 </script>
 
