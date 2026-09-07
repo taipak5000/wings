@@ -2852,12 +2852,11 @@ function pfDashRevisitStatus(schedule) {
 }
 // 複数の来訪(周期的な単独の旅の精霊・期間限定の来訪団など)が同時に進行することがあるため、
 // それぞれの状態をまとめて計算する
-// 一回限り(start/end)の期間限定来訪団はEVENT_SCHEDULE側で「〇〇が開催中」として既に
-// 表示されるため、ここではintervalDaysを持つ周期的な単独の旅する精霊のみを対象にする
-// （同じ来訪が二重に表示されるのを防ぐ）。
+// 「旅の精霊」の周期来訪と「来訪する精霊団」による過去シーズンアイテムの再訪は別物
+// （後者は該当アイテムのevent欄が元の季節名のままで、来訪する精霊団の開催中もそのアイテム
+// だけ別途「再訪中」の対象になる）のため、どちらも省略せずそれぞれ独立した行として表示する。
 function pfDashRevisitStatuses(schedules) {
   return (schedules || [])
-    .filter(schedule => !!schedule.intervalDays)
     .map(schedule => ({ schedule, status: pfDashRevisitStatus(schedule) }))
     .filter(x => x.status);
 }
