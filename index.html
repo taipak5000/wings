@@ -3310,6 +3310,11 @@ async function pfDashOpen() {
   body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
   try {
     const data = await pfDashEnsureData();
+    // 🅿 このawait中にpfDashClose()が呼ばれ、ダッシュボードが既に閉じられている
+    // 場合がある。ここでopen状態を再チェックせずbodyの書き換え・タイマー起動を
+    // 行うと、閉じた後もタイマーが残り続け、1秒毎に裏でずっと再描画され続ける
+    // （次に開いた時にpfDashStartTimerが直前のタイマーを止めるまで気付けない）リークになる。
+    if (!document.getElementById('dashModalOverlay').classList.contains('show')) return;
     body.innerHTML = pfDashBuildHtml(data);
     pfDashStartTimer();
   } catch (e) {
