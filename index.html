@@ -67,6 +67,16 @@
       --text-3:    #C7C7CC;
       --r:         16px;
       --r-sm:      10px;
+      /* 🅷 カレンダーの通常セル（.dash-cal-day、非.is-today）は背景がvar(--bg)=#F2F2F7。
+         元のカテゴリドット色（下のダークモード側の値）はここでは彩度は保ったまま暗めに
+         寄せた変種にし、WCAG 1.4.11の非文字コントラスト3:1をこの背景に対して満たす
+         （season 1.72:1→4.50:1、candle 2.51:1→4.64:1、revisit 2.23:1→4.90:1。
+         eventは元の#ec4899のままで3.16:1と既に3:1を超えているため変更なし）。
+         実際のコントラスト計算はコミット時に手計算で検証済み。 */
+      --dot-season:  #b45309;
+      --dot-event:   #ec4899;
+      --dot-candle:  #c2410c;
+      --dot-revisit: #0f766e;
     }
 
     /* 🌙 ダークモード用のカラー上書き（:root の値は変更せず、[data-theme="dark"] 時だけ上書きする） */
@@ -87,6 +97,12 @@
       --text:      #F2F2F7;
       --text-2:    #98989D;
       --text-3:    #636366;
+      /* ダークモードでは元の彩度の高いフラットカラーのままで近黒背景に対して視認性は
+         問題ないため、ライトモード用に暗く寄せた:root側の値をここで元の色に戻す。 */
+      --dot-season:  #eab308;
+      --dot-event:   #ec4899;
+      --dot-candle:  #f97316;
+      --dot-revisit: #14b8a6;
     }
 
     .inline-icon { stroke: var(--orange); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; color: var(--orange); }
@@ -407,13 +423,17 @@
     .dash-calendar-chevron { margin-left: auto; font-size: 13px; color: var(--text-2); transition: transform 0.2s ease; }
     .dash-calendar[open] .dash-calendar-summary { border-radius: var(--r-sm) var(--r-sm) 0 0; }
     .dash-calendar[open] .dash-calendar-chevron { transform: rotate(90deg); }
-    /* 🅳 デスクトップ幅(.pf-modal-cardが600pxまで広がる>=560px時)でも7列グリッドが
+    /* 🅳🅺 デスクトップ幅(.pf-modal-cardが600pxまで広がる>=560px時)でも7列グリッドが
        aspect-ratio:1のままセルを70px超まで肥大させ、11pxの数字/4pxのドットに対して
-       不釣り合いに巨大な見た目になるのを防ぐため、コンパクトな据え置き幅で上限を切る。
-       モバイル幅ではモーダル自体がこれより狭いので実質何も変わらない。 */
-    .dash-calendar { max-width: 360px; margin: 0 auto; }
+       不釣り合いに巨大な見た目になるのを防ぐ必要がある。ただし.dash-calendarブロック
+       自体（summary含む）にmax-widthを付けると、デイリー/今日/今週/今月の各行
+       （.dash-row、フル幅）に対してカレンダーだけ幅の違う浮いた「島」に見えてしまう
+       （🅺 round1の反省点）。そこで上限は.dash-cal-gridのセル自体（列トラック）にだけ
+       掛け、.dash-calendarとそのsummaryはフル幅のまま他の行と揃える。列合計が
+       コンテナ幅より狭くなった分はjustify-content:centerでグリッドを中央寄せする。
+       モバイル幅ではどのみちコンテナがこの上限より狭いので実質何も変わらない。 */
     .dash-cal-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+      display: grid; grid-template-columns: repeat(7, minmax(0, 46px)); justify-content: center; gap: 3px;
       padding: 10px 11px; background: var(--bg); border-radius: 0 0 var(--r-sm) var(--r-sm);
     }
     .dash-cal-dow { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-2); padding-bottom: 4px; }
@@ -423,15 +443,21 @@
     .dash-cal-day.is-today { background: var(--blue-solid); }
     .dash-cal-day.is-today .dash-cal-daynum { color: #fff; font-weight: 700; }
     .dash-cal-dots { display: flex; gap: 2px; height: 4px; }
+    /* 🅸 .is-today内はドット同士が2px間隔のまま白リング(box-shadow)を足すと、隣接ドット同士の
+       リングがその2pxの隙間でちょうど接し、複数カテゴリが重なる日（今日はよくある）で
+       白い塊に見えて何色あるか判別できなくなる。.is-today内だけ間隔を広げてリング同士が
+       接触しないようにする（通常セルは2pxのまま、見た目の変化を最小限にする）。 */
+    .dash-cal-day.is-today .dash-cal-dots { gap: 4px; }
     .dash-cal-dot { width: 4px; height: 4px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-    .dash-cal-dot.season { background: #eab308; }
-    .dash-cal-dot.event { background: #ec4899; }
-    .dash-cal-dot.candle { background: #f97316; }
-    .dash-cal-dot.revisit { background: #14b8a6; }
+    .dash-cal-dot.season { background: var(--dot-season); }
+    .dash-cal-dot.event { background: var(--dot-event); }
+    .dash-cal-dot.candle { background: var(--dot-candle); }
+    .dash-cal-dot.revisit { background: var(--dot-revisit); }
     /* 🅰️ 彩度の高いカテゴリドットは色によっては--blue-solid背景に対して
        非文字コントラスト3:1を割り込む（例: pink/orangeは2:1台）。ドットの色自体は
        凡例や他の日のセルと共通なので変えず、「今日」セル内だけ白いリングを足して
-       背景色に関わらず視認できるようにする。 */
+       背景色に関わらず視認できるようにする（リングの境界自体が3:1を満たせば、
+       塗り色自体が満たさなくてもWCAG 1.4.11のグラフィック要素の条件を満たせる）。 */
     .dash-cal-day.is-today .dash-cal-dot { box-shadow: 0 0 0 1px rgba(255,255,255,0.9); }
     .dash-cal-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 2px 2px; font-size: 10.5px; color: var(--text-2); }
     .dash-cal-legend span { display: inline-flex; align-items: center; gap: 4px; }
@@ -1834,11 +1860,7 @@ function setLang(lang) {
   if (document.getElementById('pfModalOverlay').classList.contains('show')) { pfRenderModal(); pfRenderCurrency(); }
   if (document.getElementById('dashModalOverlay').classList.contains('show') && pfDashCache) {
     const dashBodyEl = document.getElementById('dashBody');
-    const calWasOpen = dashBodyEl.querySelector('.dash-calendar')?.open;
-    const calSummaryHadFocus = document.activeElement === dashBodyEl.querySelector('.dash-calendar-summary');
-    dashBodyEl.innerHTML = pfDashBuildHtml(pfDashCache);
-    if (calWasOpen) { const cal = dashBodyEl.querySelector('.dash-calendar'); if (cal) cal.open = true; }
-    if (calSummaryHadFocus) { const summary = dashBodyEl.querySelector('.dash-calendar-summary'); if (summary) summary.focus(); }
+    pfDashRerenderBody(dashBodyEl, pfDashBuildHtml(pfDashCache));
     pfSyncReminderUI();
   }
   if (document.getElementById('settingsModalOverlay').classList.contains('show')) { syncSettingsModalUI(); }
@@ -3212,30 +3234,35 @@ function pfDashBuildHtml(data) {
 let pfDashCache = null;
 let pfDashLoading = null;
 let pfDashTimer = null;
+// 🅵 dashBodyのinnerHTMLを差し替える箇所は3つある（①この後のタイマー再描画、②言語切替
+// (setLang)、③pfDashOpen()のキャッシュ済み再オープン分岐）。そのどれで差し替えても、
+// カレンダーの開閉(<details>)状態とフォーカスがリセットされてしまっては困るので、
+// 「差し替え前に読み、差し替え後に戻す」処理を1箇所の共通ヘルパーにまとめ、3箇所全てから
+// これだけを呼ぶようにする（実装が1つなら直し忘れも起きない）。
+// 🅹 フォーカスの復元にはpreventScroll:trueを渡す。素の.focus()は対象が完全に見えていないと
+// 自動でスクロールして視界に入れてしまうため、これが無いとユーザーがダッシュボードを
+// スクロールしてカレンダーより下（今日/今週/今月やリマインダー設定）を見ている最中でも、
+// 1秒ごとの再描画のたびにスクロール位置がカレンダーまで強制的に巻き戻ってしまう。
+function pfDashRerenderBody(body, html) {
+  const wasOpen = body.querySelector('.dash-calendar')?.open;
+  const summaryHadFocus = document.activeElement === body.querySelector('.dash-calendar-summary');
+  body.innerHTML = html;
+  if (wasOpen) {
+    const cal = body.querySelector('.dash-calendar');
+    if (cal) cal.open = true;
+  }
+  if (summaryHadFocus) {
+    const summary = body.querySelector('.dash-calendar-summary');
+    if (summary) summary.focus({ preventScroll: true });
+  }
+}
 function pfDashStartTimer() {
   pfDashStopTimer();
   pfDashTimer = setInterval(() => {
     if (!pfDashCache) return;
     const body = document.getElementById('dashBody');
     if (!body) return;
-    // カレンダーの開閉(<details>)はカウントダウンと違って毎秒更新する必要がないが、
-    // innerHTMLごと差し替えるとdetails要素が作り直され、開いていた状態が毎秒
-    // 勝手に閉じてしまう。差し替え前に開閉状態を読み、差し替え後に復元する。
-    const wasOpen = body.querySelector('.dash-calendar')?.open;
-    // 🅱️ 同様に、差し替えの瞬間にキーボード/スクリーンリーダーの操作で<summary>に
-    // フォーカスがあった場合、要素ごと作り直されることでフォーカスがdocument.bodyに
-    // 落ち、モーダルのフォーカストラップが壊れてしまう。開閉状態と同じ要領で、
-    // 差し替え前にフォーカスの有無を読み、差し替え後の新しい<summary>へ復元する。
-    const summaryHadFocus = document.activeElement === body.querySelector('.dash-calendar-summary');
-    body.innerHTML = pfDashBuildHtml(pfDashCache);
-    if (wasOpen) {
-      const cal = body.querySelector('.dash-calendar');
-      if (cal) cal.open = true;
-    }
-    if (summaryHadFocus) {
-      const summary = body.querySelector('.dash-calendar-summary');
-      if (summary) summary.focus();
-    }
+    pfDashRerenderBody(body, pfDashBuildHtml(pfDashCache));
   }, 1000);
 }
 function pfDashStopTimer() {
@@ -3254,7 +3281,7 @@ async function pfDashOpen() {
   document.getElementById('dashModalOverlay').classList.add('show');
   pfSyncReminderUI(); // ブラウザ側の通知許可状態が変わっている可能性があるため開くたびに再同期
   const body = document.getElementById('dashBody');
-  if (pfDashCache) { body.innerHTML = pfDashBuildHtml(pfDashCache); pfDashStartTimer(); return; }
+  if (pfDashCache) { pfDashRerenderBody(body, pfDashBuildHtml(pfDashCache)); pfDashStartTimer(); return; }
   body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
   try {
     const data = await pfDashEnsureData();
@@ -5527,7 +5554,12 @@ document.addEventListener('DOMContentLoaded', pfReminderInit);
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true, attributeOldValue: true });
 
   function isInteractive(el) {
-    return !!(el && el.closest && el.closest('input, select, textarea, button, a, label, [contenteditable], [role="button"], input[type="range"]'));
+    // 🅶 summaryも対象に含める：<details>の<summary>（カレンダーの開閉トグル）は
+    // ネイティブにクリック/タップで開閉するインタラクティブ要素だが、ここに含まれて
+    // いないとそこを起点にしたわずかな縦ドラッグ（タップ時の指/マウスのブレ程度）まで
+    // このシートのdrag-to-dismissジェスチャに奪われ、開閉トグルが発火しない
+    // （最悪カレンダーどころかダッシュボード自体が閉じてしまう）。
+    return !!(el && el.closest && el.closest('input, select, textarea, button, a, label, summary, [contenteditable], [role="button"], input[type="range"]'));
   }
   document.addEventListener('pointerdown', function (e) {
     if (REDUCE_MOTION.matches) return;
