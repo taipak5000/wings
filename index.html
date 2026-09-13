@@ -657,7 +657,12 @@
     .pf-modal-overlay.show { animation: iosFade 0.32s cubic-bezier(0.25, 1, 0.5, 1); }
     .pf-modal-overlay.is-closing { display: flex; pointer-events: none; }
     .pf-modal-card {
-      width: 100%; max-width: 100%; max-height: 88vh; max-height: 88dvh;
+      /* 📐 幅の統一（cross-site consistency）: 基準サイト item の .app-layout と同じ
+         max-width: 720px（850px以上で960px）を、通常サイズのボトムシートモーダル
+         全般の基準値として使う（旧: 560px以上で600pxだった独自基準を是正）。
+         モバイル幅では実際のビューポート幅の方が狭いため、この基準値自体は見た目に
+         影響しない（従来の max-width:100% と同じ edge-to-edge のまま）。 */
+      width: 100%; max-width: 720px; max-height: 88vh; max-height: 88dvh;
       border-radius: 20px 20px 0 0;
       box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.25);
       position: relative; overscroll-behavior: contain;
@@ -665,9 +670,14 @@
       animation: none;
       transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
     }
+    /* ⚙️ 表示設定モーダルだけは他サイトの多くと同様、意図的に狭いまま据え置く。
+       この分岐点（560px）自体は従来から変えていない — 変えたのは一般モーダルの
+       基準値・分岐点（下のmin-width:850pxブロック）だけ。 */
     @media (min-width: 560px) {
-      .pf-modal-card { max-width: 600px; }
       #settingsModalOverlay .pf-modal-card { max-width: 360px; }
+    }
+    @media (min-width: 850px) {
+      .pf-modal-card { max-width: 960px; }
     }
     .pf-modal-card.is-dragging, .pf-modal-card.js-anim { transition: none; animation: none; cursor: grabbing; user-select: none; }
     .pf-modal-card::before {
@@ -3040,14 +3050,20 @@ function pfDashCalendarBarItems(data, year, month) {
     return colorMap.get(name);
   }
 
-  function pushItems(schedule, name) {
+  // colorKeyを省略した場合はnameをそのまま色割り当てのキーとして使う。再訪精霊は
+  // 表示テキストが全スケジュール共通の汎用文言（意図的な仕様）なため、nameをキーに
+  // 使うと本来別々の再訪スケジュール同士が同じ色になってしまう（同時期に2件以上
+  // 表示された場合の衝突回避が効かなくなる）。呼び出し側でスケジュール自体を一意に
+  // 識別するcolorKey（配列内インデックス等）を渡すことでこれを回避する。
+  function pushItems(schedule, name, colorKey) {
+    const key = colorKey !== undefined ? colorKey : name;
     pfDashOccurrencesInRange(schedule, rangeStart, rangeEnd).forEach(o => {
       const clipStart = o.start && o.start > rangeStart ? o.start : rangeStart;
       const clipEnd = o.end < rangeEnd ? o.end : rangeEnd;
       if (clipEnd < clipStart) return;
       items.push({
         name,
-        color: colorFor(name),
+        color: colorFor(key),
         startDay: clipStart.getDate(),
         endDay: clipEnd.getDate(),
         // 実際の開始/終了がこの月の表示範囲内にあるかどうか（範囲外なら、その端は
@@ -3068,7 +3084,7 @@ function pfDashCalendarBarItems(data, year, month) {
   }
   (data.eventSchedule || []).forEach(ev => pushItems(ev, dashEventName(ev.name)));
   (data.candleBonusSchedule || []).forEach(ev => pushItems(ev, dashEventName(ev.name)));
-  (data.revisitSchedules || []).forEach(sch => pushItems(sch, t('dashRevisitSpirit')));
+  (data.revisitSchedules || []).forEach((sch, idx) => pushItems(sch, t('dashRevisitSpirit'), 'revisit#' + idx));
 
   // 開始日が早い順、同じ開始日なら長い予定を優先してレーンに割り当てる
   // （長い予定ほど上のレーンに固定されやすくなり、月をまたいでも位置が安定しやすい）
