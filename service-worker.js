@@ -9,7 +9,7 @@
 //
 // キャッシュを作り直したい場合はCACHE_VERSIONの文字列を上げるだけでよい。
 // 古いバージョンのキャッシュはactivate時に自動で破棄される。
-const CACHE_VERSION = 'v10'; // v10: ダッシュボードカレンダーの最終日バーを半分幅にし、日中終了(15:59等)であることを視覚的に伝えるよう変更
+const CACHE_VERSION = 'v11'; // v11: ダッシュボードカレンダーの開始日バーも半分幅にし、日中開始(16:00等)であることを視覚的に伝えるよう変更
 const CACHE_NAME = `wings-shell-${CACHE_VERSION}`;
 
 // self.registration.scope（このSWが登録されているディレクトリ）からの相対パスで解決する。

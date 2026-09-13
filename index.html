@@ -453,6 +453,7 @@
     .dash-cal-bar.round-l { border-top-left-radius: 9px; border-bottom-left-radius: 9px; margin-left: 2px; }
     .dash-cal-bar.round-r { border-top-right-radius: 9px; border-bottom-right-radius: 9px; margin-right: 2px; }
     .dash-cal-bar.half-end { width: 50%; }
+    .dash-cal-bar.half-start { width: 50%; justify-self: end; }
     .pf-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
       z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .pf-modal-overlay.show { display: flex; animation: fadeIn 0.15s ease; }
@@ -3088,6 +3089,10 @@ function pfDashCalendarBarItems(data, year, month) {
         // 最終日を丸ごと塗ると「その日一日ずっと開催中」に誤って見えてしまうため、
         // 終了時刻が日付境界でない場合はrenderLoopで最終日だけ半分の幅に短縮する。
         endsMidDay: !(o.end.getHours() === 23 && o.end.getMinutes() >= 59),
+        // 開始時刻についても同様（ほぼ全ての予定が日本時間16:00開始）。
+        // o.startが無い場合（季節など）は「開始日が分かっている」こと自体が無いため
+        // false（trueStartも常にfalseになるので、この値自体は参照されない）。
+        startsMidDay: !!o.start && !(o.start.getHours() === 0 && o.start.getMinutes() === 0),
       });
     });
   }
@@ -3167,28 +3172,44 @@ function pfDashCalendarHtml(data) {
       const roundRight = it.trueEnd && it.endDay <= weekLastDay;
       const color = it.color;
       const nameEsc = escapeHtml(it.name);
-      // 🕓 この週に本当の最終日が含まれ、かつその終了時刻が日中(15:59等)である場合、
-      // 最終日のセルだけ半分の幅に短縮して「日中までしか開催していない」ことを
-      // 視覚的に伝える。前日までの分は通常どおり全幅で塗り、最終日のセルとの間は
-      // 余白なく隣接させることで1本の連続した棒に見えるようにする
-      // （column-gap:0のグリッド設計を踏襲）。
+      // 🕓 この週に本当の開始日/最終日が含まれ、かつその開始/終了時刻が日付境界
+      // （0:00/23:59台）でない場合（ほぼ全ての予定が16:00開始・15:59終了）、
+      // その日のセルだけ半分の幅に短縮して「日中までしか開催していない/日中からしか
+      // 開催していない」ことを視覚的に伝える。開始日は右半分（次の日に向かって）、
+      // 終了日は左半分（前の日から続いて）に配置し、隣接するフル幅部分とは
+      // 余白なく接続する（column-gap:0のグリッド設計を踏襲）。
+      const halfStart = roundLeft && it.startsMidDay;
       const halfEnd = roundRight && it.endsMidDay;
-      if (halfEnd && colSpan > 1) {
-        const tailCol = colStart + colSpan - 1;
-        barsHtml += `<div class="dash-cal-bar${roundLeft ? ' round-l' : ''}"`
-          + ` style="grid-column:${colStart} / span ${colSpan - 1}; grid-row:${localRow + 1}; background:${color};"`
-          + ` title="${nameEsc}">${nameEsc}</div>`;
-        barsHtml += `<div class="dash-cal-bar half-end round-r"`
-          + ` style="grid-column:${tailCol} / span 1; grid-row:${localRow + 1}; background:${color};"`
-          + ` title="${nameEsc}"></div>`;
-      } else if (halfEnd) {
-        barsHtml += `<div class="dash-cal-bar half-end round-r${roundLeft ? ' round-l' : ''}"`
-          + ` style="grid-column:${colStart} / span ${colSpan}; grid-row:${localRow + 1}; background:${color};"`
-          + ` title="${nameEsc}">${nameEsc}</div>`;
-      } else {
+      if (!halfStart && !halfEnd) {
         barsHtml += `<div class="dash-cal-bar${roundLeft ? ' round-l' : ''}${roundRight ? ' round-r' : ''}"`
           + ` style="grid-column:${colStart} / span ${colSpan}; grid-row:${localRow + 1}; background:${color};"`
           + ` title="${nameEsc}">${nameEsc}</div>`;
+      } else if (colSpan === 1) {
+        // この週にはその予定の1日分（開始日と最終日が同じ週内の1日に重なる稀なケース含む）しか含まれない
+        const cls = 'dash-cal-bar' + (halfStart ? ' half-start' : '') + (halfEnd ? ' half-end' : '')
+          + (roundLeft ? ' round-l' : '') + (roundRight ? ' round-r' : '');
+        barsHtml += `<div class="${cls}"`
+          + ` style="grid-column:${colStart} / span 1; grid-row:${localRow + 1}; background:${color};"`
+          + ` title="${nameEsc}">${nameEsc}</div>`;
+      } else {
+        const endCol = colStart + colSpan - 1;
+        const midStart = halfStart ? colStart + 1 : colStart;
+        const midSpan = (halfEnd ? endCol : endCol + 1) - midStart;
+        if (halfStart) {
+          barsHtml += `<div class="dash-cal-bar half-start round-l"`
+            + ` style="grid-column:${colStart} / span 1; grid-row:${localRow + 1}; background:${color};"`
+            + ` title="${nameEsc}"></div>`;
+        }
+        if (midSpan > 0) {
+          barsHtml += `<div class="dash-cal-bar${(!halfStart && roundLeft) ? ' round-l' : ''}${(!halfEnd && roundRight) ? ' round-r' : ''}"`
+            + ` style="grid-column:${midStart} / span ${midSpan}; grid-row:${localRow + 1}; background:${color};"`
+            + ` title="${nameEsc}">${nameEsc}</div>`;
+        }
+        if (halfEnd) {
+          barsHtml += `<div class="dash-cal-bar half-end round-r"`
+            + ` style="grid-column:${endCol} / span 1; grid-row:${localRow + 1}; background:${color};"`
+            + ` title="${nameEsc}"></div>`;
+        }
       }
     });
 
