@@ -330,7 +330,13 @@
        [data-theme="dark"] nav { background:… } の詳細度がクラスセレクタより高く付与されて
        しまうため、要素は <nav> ではなく role="navigation" 付きの <div> を使う。 */
     .site-dock {
-      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+      /* 🩹 オーバーレイ（.pf-modal-overlay/.confirm-overlay等、z-index:1000）より
+         下だと、オーバーレイが開いている間はドックがそのバックドロップに覆われて
+         クリックできず、「別のドックアイコンをクリックしてオーバーレイを切り替える」
+         操作が1回目のクリックでバックドロップの閉じるハンドラに奪われてしまう
+         （2回クリックしないと切り替わらない）。ドックは常にクリック可能であるべき
+         なので、全オーバーレイのz-indexより高くしておく。 */
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1001;
       padding: 6px 10px calc(8px + env(safe-area-inset-bottom));
       background: var(--card);
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -4236,9 +4242,10 @@ function openCustomizeModal() {
   pfCloseOtherTopLevelOverlays('customizeModal');
   const saved = loadShareCustomize();
   document.getElementById('themeSwatchRow').innerHTML = Object.keys(SHARE_THEMES).map(key => `
-    <div class="theme-swatch ${key === saved.theme ? 'selected' : ''}" data-theme="${key}"
+    <button type="button" class="theme-swatch ${key === saved.theme ? 'selected' : ''}" data-theme="${key}"
       style="background:${SHARE_THEMES[key].grad};" title="${escapeAttr(t(SHARE_THEMES[key].labelKey))}"
-      onclick="selectShareTheme('${key}')"></div>`).join('');
+      aria-label="${escapeAttr(t(SHARE_THEMES[key].labelKey))}" aria-pressed="${key === saved.theme ? 'true' : 'false'}"
+      onclick="selectShareTheme('${key}')"></button>`).join('');
   document.getElementById('customizeComment').value = '';
   document.getElementById('customizeModal').classList.add('show');
   trapPush('customizeModal', document.querySelector('#customizeModal .pf-modal-card'));
@@ -4249,7 +4256,9 @@ function closeCustomizeModal() {
 }
 function selectShareTheme(key) {
   document.querySelectorAll('#themeSwatchRow .theme-swatch').forEach(el => {
-    el.classList.toggle('selected', el.dataset.theme === key);
+    const match = el.dataset.theme === key;
+    el.classList.toggle('selected', match);
+    el.setAttribute('aria-pressed', match ? 'true' : 'false');
   });
 }
 function readShareCustomizeFromModal() {
@@ -5608,11 +5617,18 @@ function anyModalOpen() {
   return !!document.querySelector('.pf-modal-overlay.show, .confirm-overlay.show');
 }
 
+// 🩹 input要素はtypeを問わず一律「入力中」扱いにしていたため、type=colorのような
+// 実際には'?'や'd'をリテラル文字として受け付けない入力（チェックボックス/ラジオ/
+// レンジ/カラー/ボタン等）にフォーカスがあるだけでショートカットが死んでいた。
+// 実際に文字を打ち込めるtypeだけを「入力中」とみなす。
+const FT_NON_TEXT_INPUT_TYPES = ['checkbox', 'radio', 'range', 'color', 'button', 'submit', 'reset', 'file', 'image', 'hidden'];
+
 document.addEventListener('keydown', function (e) {
   if (e.repeat) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const tgt = e.target;
-  const isTyping = tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
+  const isTextInput = tgt && tgt.tagName === 'INPUT' && FT_NON_TEXT_INPUT_TYPES.indexOf((tgt.type || '').toLowerCase()) === -1;
+  const isTyping = tgt && (isTextInput || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
 
   if (e.key === 'Escape') {
     closeTopmostOpenModal();
