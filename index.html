@@ -3361,7 +3361,11 @@ let trapListenerAttached = false;
 // モーダル内でTab移動の対象になる要素（表示されているものだけ）を取得する
 function trapFocusableEls(container) {
   const all = container.querySelectorAll(
-    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    // 🅢 summaryを含める：ダッシュボードのイベントカレンダー（<details><summary>による
+    // ネイティブ開閉トグル）はデフォルトでキーボードフォーカス可能なインタラクティブ要素
+    // だが、ここに含めないとフォーカストラップが有効な間はTab/Shift+Tabで一切到達できず、
+    // キーボード操作でカレンダーの開閉トグルを使えなくなってしまう。
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
   );
   return Array.prototype.filter.call(all, el => el.offsetParent !== null);
 }
@@ -3418,15 +3422,21 @@ function trapPop(overlayId) {
   }
 }
 
-// 表示設定／ダッシュボード／プロフィール切替／サイドバー（「他のツール」ドロワー）の
-// 4つは下部ドックや「?」ショートカットからいつでも独立して開けるため、他のどれかが
-// 開いたままもう1つを開くとオーバーレイ同士が重なってしまう。開く前に、開こうとして
-// いるもの以外を閉じておく（各close関数は未オープン時は何もしない安全な関数）。
+// 表示設定／ダッシュボード／プロフィール切替／サイドバー（「他のツール」ドロワー）／
+// 画像カスタマイズ／ホーム画面アイコンカスタマイズ／画像プレビュー／確認ダイアログの
+// 8つは、下部ドックや「?」ショートカット、あるいはメインページ上のボタンからいつでも
+// 独立して開けるため、他のどれかが開いたままもう1つを開くとオーバーレイ同士が重なって
+// しまう。開く前に、開こうとしているもの以外を閉じておく（各close関数は未オープン時は
+// 何もしない安全な関数）。
 function pfCloseOtherTopLevelOverlays(exceptId) {
   if (exceptId !== 'settingsModalOverlay' && document.getElementById('settingsModalOverlay').classList.contains('show')) settingsCloseModal();
   if (exceptId !== 'dashModalOverlay' && document.getElementById('dashModalOverlay').classList.contains('show')) pfDashClose();
   if (exceptId !== 'pfModalOverlay' && document.getElementById('pfModalOverlay').classList.contains('show')) pfCloseModal();
   if (exceptId !== 'sidebar' && document.getElementById('sidebar').classList.contains('sidebar-open')) closeSidebarMobile();
+  if (exceptId !== 'customizeModal' && document.getElementById('customizeModal').classList.contains('show')) closeCustomizeModal();
+  if (exceptId !== 'iconCustomModal' && document.getElementById('iconCustomModal').classList.contains('show')) pfIconCloseModal();
+  if (exceptId !== 'imagePreviewModal' && document.getElementById('imagePreviewModal').classList.contains('show')) closeImagePreviewModal();
+  if (exceptId !== 'confirmOverlay' && document.getElementById('confirmOverlay').classList.contains('show')) closeConfirmModal();
 }
 
 async function pfDashOpen() {
@@ -3435,11 +3445,29 @@ async function pfDashOpen() {
   if (document.getElementById('dashModalOverlay').classList.contains('show')) return;
   pfCloseOtherTopLevelOverlays('dashModalOverlay');
   document.getElementById('dashModalOverlay').classList.add('show');
-  trapPush('dashModalOverlay', document.querySelector('#dashModalOverlay .pf-modal-card'));
   pfSyncReminderUI(); // ブラウザ側の通知許可状態が変わっている可能性があるため開くたびに再同期
   const body = document.getElementById('dashBody');
-  if (pfDashCache) { pfDashRerenderBody(body, pfDashBuildHtml(pfDashCache)); pfDashStartTimer(); return; }
+  // 🅳 trapPush()はその時点でカード内にある要素からフォーカス対象を決めるため、
+  // 「通知リマインダー」欄のチェックボックス／セレクト（dashBody外の静的要素）しかまだ
+  // 無いタイミングで呼んでしまうと、本来の先頭要素（カレンダートグル等、dashBody側の
+  // 動的コンテンツ）を飛ばしてリマインダーのチェックボックスへフォーカスしてしまう。
+  // キャッシュがあり実コンテンツを同期的に描画できる場合は、描画を終えてから
+  // trapPush()を呼ぶことでこれを避ける。
+  if (pfDashCache) {
+    pfDashRerenderBody(body, pfDashBuildHtml(pfDashCache));
+    pfDashStartTimer();
+    trapPush('dashModalOverlay', document.querySelector('#dashModalOverlay .pf-modal-card'));
+    return;
+  }
+  // 🅳 初回オープン等、実データがまだ無い場合はこの後のawaitでの取得を待つ必要があり
+  // 描画後まで完全に遅らせられない（Tabトラップ自体はモーダルを開いた瞬間から効かせたい
+  // ため）。ここでは一旦、読み込み中プレースホルダーを基準にtrapPush()で初期フォーカス・
+  // トラップを有効化しておき、実コンテンツ描画後に改めて先頭要素へフォーカスをやり直す
+  // （ただし、取得中にユーザーが自分でTab移動していた場合はその操作を尊重し、フォーカスを
+  // 奪わない）。
   body.innerHTML = `<div class="pf-hint">${t('dashLoading')}</div>`;
+  trapPush('dashModalOverlay', document.querySelector('#dashModalOverlay .pf-modal-card'));
+  const focusBeforeLoad = document.activeElement;
   try {
     const data = await pfDashEnsureData();
     // 🅿 このawait中にpfDashClose()が呼ばれ、ダッシュボードが既に閉じられている
@@ -3449,6 +3477,11 @@ async function pfDashOpen() {
     if (!document.getElementById('dashModalOverlay').classList.contains('show')) return;
     body.innerHTML = pfDashBuildHtml(data);
     pfDashStartTimer();
+    if (document.activeElement === focusBeforeLoad) {
+      const card = document.querySelector('#dashModalOverlay .pf-modal-card');
+      const focusable = trapFocusableEls(card);
+      (focusable[0] || card).focus();
+    }
   } catch (e) {
     console.error('pfDashOpen', e);
     body.innerHTML = `<div class="dash-empty">${t('dashLoadFailed')}</div>`;
@@ -3999,6 +4032,7 @@ let pfIconMode = 'emoji';
 let pfIconUploadedImg = null;
 
 function pfIconOpenModal() {
+  pfCloseOtherTopLevelOverlays('iconCustomModal');
   document.getElementById('iconCustomModal').classList.add('show');
   closeSidebarMobile();
   trapPush('iconCustomModal', document.querySelector('#iconCustomModal .pf-modal-card'));
@@ -4199,6 +4233,7 @@ function saveShareCustomize(theme) {
 }
 
 function openCustomizeModal() {
+  pfCloseOtherTopLevelOverlays('customizeModal');
   const saved = loadShareCustomize();
   document.getElementById('themeSwatchRow').innerHTML = Object.keys(SHARE_THEMES).map(key => `
     <div class="theme-swatch ${key === saved.theme ? 'selected' : ''}" data-theme="${key}"
@@ -4649,6 +4684,7 @@ async function tryShareImage(canvas, filename, text) {
 }
 
 function openImagePreview(dataUrl, filename, shareText) {
+  pfCloseOtherTopLevelOverlays('imagePreviewModal');
   document.getElementById('previewImg').src = dataUrl;
   const link = document.getElementById('previewDownloadLink');
   link.href = dataUrl;
@@ -5286,6 +5322,7 @@ function markAllLightChildren() {
 }
 
 function showConfirmModal(message, onConfirm) {
+  pfCloseOtherTopLevelOverlays('confirmOverlay');
   document.getElementById('confirmMessage').textContent = message;
   const okBtn = document.getElementById('confirmOkBtn');
   const newOkBtn = okBtn.cloneNode(true); // 前回登録したonclickを消すため差し替える

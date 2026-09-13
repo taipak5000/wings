@@ -9,7 +9,7 @@
 //
 // キャッシュを作り直したい場合はCACHE_VERSIONの文字列を上げるだけでよい。
 // 古いバージョンのキャッシュはactivate時に自動で破棄される。
-const CACHE_VERSION = 'v7'; // v7: モーダル幅を720/960基準に統一 + 再訪精霊の色衝突バグ修正
+const CACHE_VERSION = 'v8'; // v8: オーバーレイ排他制御の対象漏れ修正 + カレンダートグルのフォーカストラップ対応 + ダッシュボード初期フォーカスの非同期競合修正
 const CACHE_NAME = `wings-shell-${CACHE_VERSION}`;
 
 // self.registration.scope（このSWが登録されているディレクトリ）からの相対パスで解決する。
