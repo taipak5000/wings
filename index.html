@@ -3460,9 +3460,21 @@ function trapPush(overlayId, card) {
   (focusable[0] || card).focus();
 }
 
+// 🩹 連鎖オーバーレイのフォーカス誤復元バグ対策: pfCloseOtherTopLevelOverlays()が
+// 「開こうとしているBのために他のAを閉じる」際、trapPop(A)が即座にA自身のトリガーへ
+// フォーカスを戻してしまうと、その直後に呼ばれるtrapPush(B)がdocument.activeElementを
+// 読み取った時点で既にA側のトリガーに上書きされてしまっており、Bの本当のトリガー
+// （実際にクリックされた要素や「?」ショートカット押下時にフォーカスされていた要素）を
+// 正しく記憶できなくなる。この「他を閉じるための連鎖的なpop」である間だけ、
+// trapPop()自身のフォーカス復元を止めておく（Escape等ユーザーが直接1つだけ閉じる
+// 通常のpopでは、このフラグは立たないので今までどおり即座に復元される）。
+let pfSuppressTrapFocusRestore = 0;
 // overlayIdをスタックから取り除き、そのモーダルを開く前にフォーカスしていた要素
 // （トリガー）へフォーカスを戻す。document.contains()は、トリガーが別のオーバーレイの
-// 再描画等で既にDOMから失われていた場合に備えた安全策。
+// 再描画等で既にDOMから失われていた場合に備えた安全策。offsetParentのチェックは、
+// トリガーがDOM上には残っているものの（例：別のオーバーレイの中の要素）、その
+// オーバーレイ自体が閉じてdisplay:noneになりフォーカス不可能になっているケースに
+// 備えたもの——この場合は無言で失敗させず、常に見えている下部ドックへ安全に逃がす。
 function trapPop(overlayId) {
   const idx = trapStack.findIndex(s => s.overlayId === overlayId);
   if (idx === -1) return;
@@ -3471,8 +3483,13 @@ function trapPop(overlayId) {
     document.removeEventListener('keydown', trapKeydown, true);
     trapListenerAttached = false;
   }
-  if (entry.prevFocusEl && typeof entry.prevFocusEl.focus === 'function' && document.contains(entry.prevFocusEl)) {
-    entry.prevFocusEl.focus();
+  if (pfSuppressTrapFocusRestore) return;
+  const el = entry.prevFocusEl;
+  if (el && typeof el.focus === 'function' && document.contains(el) && el.offsetParent !== null) {
+    el.focus();
+  } else {
+    const fallback = document.querySelector('.site-dock button, .site-dock a');
+    if (fallback) fallback.focus();
   }
 }
 
@@ -3483,14 +3500,19 @@ function trapPop(overlayId) {
 // しまう。開く前に、開こうとしているもの以外を閉じておく（各close関数は未オープン時は
 // 何もしない安全な関数）。
 function pfCloseOtherTopLevelOverlays(exceptId) {
-  if (exceptId !== 'settingsModalOverlay' && document.getElementById('settingsModalOverlay').classList.contains('show')) settingsCloseModal();
-  if (exceptId !== 'dashModalOverlay' && document.getElementById('dashModalOverlay').classList.contains('show')) pfDashClose();
-  if (exceptId !== 'pfModalOverlay' && document.getElementById('pfModalOverlay').classList.contains('show')) pfCloseModal();
-  if (exceptId !== 'sidebar' && document.getElementById('sidebar').classList.contains('sidebar-open')) closeSidebarMobile();
-  if (exceptId !== 'customizeModal' && document.getElementById('customizeModal').classList.contains('show')) closeCustomizeModal();
-  if (exceptId !== 'iconCustomModal' && document.getElementById('iconCustomModal').classList.contains('show')) pfIconCloseModal();
-  if (exceptId !== 'imagePreviewModal' && document.getElementById('imagePreviewModal').classList.contains('show')) closeImagePreviewModal();
-  if (exceptId !== 'confirmOverlay' && document.getElementById('confirmOverlay').classList.contains('show')) closeConfirmModal();
+  pfSuppressTrapFocusRestore++;
+  try {
+    if (exceptId !== 'settingsModalOverlay' && document.getElementById('settingsModalOverlay').classList.contains('show')) settingsCloseModal();
+    if (exceptId !== 'dashModalOverlay' && document.getElementById('dashModalOverlay').classList.contains('show')) pfDashClose();
+    if (exceptId !== 'pfModalOverlay' && document.getElementById('pfModalOverlay').classList.contains('show')) pfCloseModal();
+    if (exceptId !== 'sidebar' && document.getElementById('sidebar').classList.contains('sidebar-open')) closeSidebarMobile();
+    if (exceptId !== 'customizeModal' && document.getElementById('customizeModal').classList.contains('show')) closeCustomizeModal();
+    if (exceptId !== 'iconCustomModal' && document.getElementById('iconCustomModal').classList.contains('show')) pfIconCloseModal();
+    if (exceptId !== 'imagePreviewModal' && document.getElementById('imagePreviewModal').classList.contains('show')) closeImagePreviewModal();
+    if (exceptId !== 'confirmOverlay' && document.getElementById('confirmOverlay').classList.contains('show')) closeConfirmModal();
+  } finally {
+    pfSuppressTrapFocusRestore--;
+  }
 }
 
 async function pfDashOpen() {
