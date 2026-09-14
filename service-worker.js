@@ -9,7 +9,7 @@
 //
 // キャッシュを作り直したい場合はCACHE_VERSIONの文字列を上げるだけでよい。
 // 古いバージョンのキャッシュはactivate時に自動で破棄される。
-const CACHE_VERSION = 'v13'; // v13: カレンダーの配色をかわいらしいパステル系に変更(文字色は色ごとにWCAG準拠の白/黒を自動選択)
+const CACHE_VERSION = 'v14'; // v14: 退場アニメーション中の要素へのフォーカス復元誤判定と、フォールバック先を文脈に合ったドックボタンに改善
 const CACHE_NAME = `wings-shell-${CACHE_VERSION}`;
 
 // self.registration.scope（このSWが登録されているディレクトリ）からの相対パスで解決する。
