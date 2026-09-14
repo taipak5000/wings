@@ -9,7 +9,7 @@
 //
 // キャッシュを作り直したい場合はCACHE_VERSIONの文字列を上げるだけでよい。
 // 古いバージョンのキャッシュはactivate時に自動で破棄される。
-const CACHE_VERSION = 'v12'; // v12: 連鎖オーバーレイ切替時のフォーカストラップ誤復元バグを修正
+const CACHE_VERSION = 'v13'; // v13: カレンダーの配色をかわいらしいパステル系に変更(文字色は色ごとにWCAG準拠の白/黒を自動選択)
 const CACHE_NAME = `wings-shell-${CACHE_VERSION}`;
 
 // self.registration.scope（このSWが登録されているディレクトリ）からの相対パスで解決する。
