@@ -744,6 +744,7 @@
     <symbol id="i-sync" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.094) translate(-12 -12)"><path d="M17 7h-8a4 4 0 0 0-4 4"/><path d="M11 4l-2 3 2 3"/><path d="M7 17h8a4 4 0 0 0 4-4"/><path d="M13 20l2-3-2-3"/></g></symbol>
     <symbol id="i-settings" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></symbol>
     <symbol id="i-person" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.094) translate(-12 -12)"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></g></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5Z"/><circle cx="9" cy="10.5" r="2"/><path d="M6 16c.4-1.7 1.7-2.8 3-2.8s2.6 1.1 3 2.8M14 9.5h4M14 12.5h3"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.094) translate(-12 -12)"><path d="M4 7h16M4 12h16M4 17h16"/></g></symbol>
     <symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-6 6c0 2.5 1.5 4 2.5 5.5.5.7.5 1 .5 1.5h6c0-.5 0-.8.5-1.5C16.5 13 18 11.5 18 9a6 6 0 0 0-6-6Z"/></symbol>
     <symbol id="i-sheet-music" viewBox="0 0 24 24"><path d="M6 4h9l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M8 10h8M8 13h8M8 16h5"/></symbol>
@@ -831,6 +832,7 @@
       <a href="https://taipak5000.github.io/tai-catalog/" class="sidebar-nav-link"><span class="tool-badge-test">test</span><span data-i18n="toolCatalog">精霊ツリー管理</span></a>
       <a href="https://taipak5000.github.io/tai-revisit/" class="sidebar-nav-link" data-i18n="toolRevisit">再訪精霊データベース</a>
       <a href="https://taipak5000.github.io/tai-score/" class="sidebar-nav-link"><span class="tool-badge-test">test</span><span data-i18n="toolScore">楽譜づくり</span></a>
+      <a href="https://taipak5000.github.io/tai-card/" class="sidebar-nav-link" data-i18n="toolCard">星紡ぎカード</a>
       <a href="https://taipak5000.github.io/tai-transfer/" class="sidebar-nav-link" data-i18n="toolDataTransfer">データ引継ぎ</a>
       <a href="https://taipak5000.github.io/tai-info/" class="sidebar-nav-link" data-i18n="toolInfo">設定・更新情報</a>
       <a href="https://taipak5000.github.io/skyzztai-profile/" class="sidebar-nav-link" data-i18n="toolProfile">作者プロフィール</a>
@@ -1277,6 +1279,7 @@ const I18N = {
     toolCatalog: '<svg class="inline-icon" width="19" height="19"><use href="#i-tree"/></svg> 精霊ツリー管理',
     toolRevisit: '<svg class="inline-icon" width="19" height="19"><use href="#i-wing"/></svg> 再訪精霊データベース',
     toolScore: '<svg class="inline-icon" width="19" height="19"><use href="#i-music-note"/></svg> 楽譜づくり',
+    toolCard: '<svg class="inline-icon" width="19" height="19"><use href="#i-card"/></svg> 星紡ぎカード',
     toolDataTransfer: '<svg class="inline-icon" width="19" height="19"><use href="#i-sync"/></svg> データ引継ぎ',
     toolInfo: '<svg class="inline-icon" width="19" height="19"><use href="#i-settings"/></svg> 設定・更新情報',
     toolProfile: '<svg class="inline-icon" width="19" height="19"><use href="#i-person"/></svg> 作者プロフィール',
@@ -1559,6 +1562,7 @@ const I18N = {
     toolCatalog: '<svg class="inline-icon" width="19" height="19"><use href="#i-tree"/></svg> Spirit Tree Catalog',
     toolRevisit: '<svg class="inline-icon" width="19" height="19"><use href="#i-wing"/></svg> Revisit Spirit Database',
     toolScore: '<svg class="inline-icon" width="19" height="19"><use href="#i-music-note"/></svg> Sheet Music Maker',
+    toolCard: '<svg class="inline-icon" width="19" height="19"><use href="#i-card"/></svg> Self-Intro Card Maker',
     toolDataTransfer: '<svg class="inline-icon" width="19" height="19"><use href="#i-sync"/></svg> Data Transfer',
     toolInfo: '<svg class="inline-icon" width="19" height="19"><use href="#i-settings"/></svg> Settings & Updates',
     toolProfile: '<svg class="inline-icon" width="19" height="19"><use href="#i-person"/></svg> Creator Profile',
