@@ -538,9 +538,19 @@
       display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
     .pf-currency-toggle-label { font-size: 11px; font-weight: 700; text-transform: none; letter-spacing: 0; }
     .pf-currency-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 2px; }
-    .pf-currency-label { font-size: 13px; color: var(--text); }
-    .pf-currency-input { width: 90px; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
-      padding: 6px 8px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; text-align: right; }
+    .pf-currency-label { font-size: 13px; color: var(--text); min-width: 0; }
+    /* 🔢 数値入力＋クイック±ボタン。イベント後などに毎回全部打ち直すのではなく
+       1個単位でサッと増減できるようにする（既存の直接入力はまとめての修正用に残す）。 */
+    .pf-currency-input-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .pf-currency-step-btn {
+      width: 26px; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      background: var(--bg); border: 1px solid var(--sep); border-radius: 6px; color: var(--text-2);
+      font-size: 15px; font-weight: 700; line-height: 1; cursor: pointer; font-family: inherit;
+    }
+    .pf-currency-step-btn:hover { background: var(--sep); color: var(--text); }
+    .pf-currency-step-btn:active { background: var(--blue-bg); color: var(--blue); }
+    .pf-currency-input { width: 64px; background: var(--bg); border: 1px solid var(--sep); border-radius: 6px;
+      padding: 6px 4px; font-size: 14px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box; text-align: right; }
     .pf-currency-input:focus { border-color: var(--blue); }
 
     /* ── モード切替タブ ─────────────────────────── */
@@ -1204,6 +1214,11 @@
         <span class="dash-row-text" data-i18n="settingsDarkModeLabel">ダークモード</span>
         <button type="button" class="theme-toggle-btn" id="settingsThemeToggleBtn" onclick="toggleTheme()">ダーク</button>
       </div>
+      <div class="dash-row" style="align-items:center;">
+        <span class="dash-row-icon icon-chip" style="width:22px; height:22px;"><svg width="17" height="17"><use href="#i-trophy"/></svg></span>
+        <span class="dash-row-text" data-i18n="settingsShowTitlesLabel">称号を表示する</span>
+        <input type="checkbox" id="settingsShowTitlesCheckbox" onchange="settingsSaveShowTitlesPref()" style="width:19px; height:19px; flex-shrink:0; cursor:pointer; accent-color:var(--blue);">
+      </div>
     </div>
 
     <div class="dash-section">
@@ -1356,6 +1371,7 @@ const I18N = {
     settingsModalTitle: '表示設定',
     settingsDisplayLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-monitor"/></svg> 表示',
     settingsDarkModeLabel: 'テーマ',
+    settingsShowTitlesLabel: '称号を表示する',
     settingsCustomizeLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-palette"/></svg> 表示のカスタマイズ',
     settingsCustomizeBtnText: 'アイコンをカスタマイズ',
     settingsCustomizeBtn: '開く',
@@ -1388,6 +1404,8 @@ const I18N = {
     currencyAscendedCandle: '星のキャンドル',
     currencySeasonCandle: 'シーズンキャンドル',
     currencyGiftPass: 'ギフトパス',
+    pfCurrencyDecreaseAriaTemplate: '{label}を1減らす',
+    pfCurrencyIncreaseAriaTemplate: '{label}を1増やす',
 
     dashModalTitle: '今日・今週・今月',
     dashLoading: '読み込み中…',
@@ -1639,6 +1657,7 @@ const I18N = {
     settingsModalTitle: 'Display Settings',
     settingsDisplayLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-monitor"/></svg> Display',
     settingsDarkModeLabel: 'Theme',
+    settingsShowTitlesLabel: 'Show titles',
     settingsCustomizeLabel: '<svg class="inline-icon" width="15" height="15"><use href="#i-palette"/></svg> Display Customization',
     settingsCustomizeBtnText: 'Customize Icon',
     settingsCustomizeBtn: 'Open',
@@ -1671,6 +1690,8 @@ const I18N = {
     currencyAscendedCandle: 'Star Candles',
     currencySeasonCandle: 'Season Candles',
     currencyGiftPass: 'Gift Pass',
+    pfCurrencyDecreaseAriaTemplate: 'Decrease {label} by 1',
+    pfCurrencyIncreaseAriaTemplate: 'Increase {label} by 1',
 
     dashModalTitle: 'Today / This Week / This Month',
     dashLoading: 'Loading…',
@@ -3899,13 +3920,28 @@ function pfRenderCurrency() {
   const body = document.getElementById('pfCurrencyBody');
   if (!body) return;
   const c = pfLoadCurrency();
-  body.innerHTML = PF_CURRENCY_FIELDS.map(f => `
+  body.innerHTML = PF_CURRENCY_FIELDS.map(f => {
+    const label = t(f.labelKey);
+    return `
     <div class="pf-currency-row">
-      <span class="pf-currency-label">${f.icon} ${t(f.labelKey)}</span>
-      <input type="number" min="0" class="pf-currency-input" value="${c[f.key]}"
-        onchange="pfSaveCurrencyField('${f.key}', this.value)">
-    </div>`).join('');
+      <span class="pf-currency-label">${f.icon} ${label}</span>
+      <div class="pf-currency-input-group">
+        <button type="button" class="pf-currency-step-btn" aria-label="${escapeAttr(t('pfCurrencyDecreaseAriaTemplate', { label }))}" onclick="pfStepCurrencyField('${f.key}', -1)">−</button>
+        <input type="number" min="0" inputmode="numeric" class="pf-currency-input" aria-label="${escapeAttr(label)}" value="${c[f.key]}"
+          onchange="pfSaveCurrencyField('${f.key}', this.value)">
+        <button type="button" class="pf-currency-step-btn" aria-label="${escapeAttr(t('pfCurrencyIncreaseAriaTemplate', { label }))}" onclick="pfStepCurrencyField('${f.key}', 1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
   pfSyncCurrencyToggleUI();
+}
+// ➕➖ 「所持通貨」のクイック±ボタン。イベント後の記録更新等、1個単位の増減が
+// 多い操作を、毎回全部入力し直させずに済ませるための入力補助（直接入力欄も残る）。
+function pfStepCurrencyField(field, delta) {
+  const c = pfLoadCurrency();
+  const next = Math.max(0, (c[field] || 0) + delta);
+  pfSaveCurrencyField(field, next);
+  pfRenderCurrency();
 }
 
 let pfCurrencyOpen = true;
@@ -4492,12 +4528,20 @@ function checkAndUnlockTitles() {
   });
   if (newlyEarned.length) saveTitles(owned);
   renderTitles(owned);
-  newlyEarned.forEach(title => {
-    showToast(t('titleUnlockedToastTemplate', { icon: title.icon, name: escapeHtml(L(title.name)) }), { html: true });
-  });
+  // 🏆 表示設定で称号表示がOFFの場合は、新規解禁トーストも出さない（称号関連の
+  // UIをすべて隠すという設定の意図に合わせる）。獲得自体の記録はこれまで通り行う
+  // ため、後で表示をONに戻せば解禁済みとしてそのまま見える。
+  if (skyTitlesVisible()) {
+    newlyEarned.forEach(title => {
+      showToast(t('titleUnlockedToastTemplate', { icon: title.icon, name: escapeHtml(L(title.name)) }), { html: true });
+    });
+  }
 }
 
 function renderTitles(owned) {
+  const panel = document.getElementById('titlesPanel');
+  if (!skyTitlesVisible()) { if (panel) panel.style.display = 'none'; return; }
+  if (panel) panel.style.display = '';
   owned = owned || loadTitles();
   const earnedCount = TITLES.filter(ti => owned[ti.id]).length;
   document.getElementById('titlesCount').textContent = t('titlesCountTemplate', { earned: earnedCount, total: TITLES.length });
@@ -4701,6 +4745,8 @@ function pfCollectEarnedTitles(profileId) {
 // プロフィール切替モーダルの1行分に添える「🏆 N個の称号 ▾」開閉セクションのHTML。
 // pfRenderModal()から、プロフィールを切り替えずに（＝アクティブプロフィールを問わず）呼ばれる。
 function pfBuildTitlesSectionHtml(p) {
+  // 🏆 表示設定で称号表示がOFFなら、プロフィール切替モーダル内のこのセクション自体を出さない。
+  if (!skyTitlesVisible()) return '';
   const groups = pfCollectEarnedTitles(p.id);
   const total = groups.reduce((sum, g) => sum + g.titles.length, 0);
   const expanded = pfTitlesExpandedIds.has(p.id);
@@ -5611,6 +5657,7 @@ function closeSidebarMobile() {
    ================================================================ */
 const THEME_KEY = 'sky_app_theme';
 const SHORTCUTS_KEY = 'sky_shortcuts_enabled';
+const TITLES_VISIBLE_KEY = 'sky_titles_visible';
 
 // 🌓 sky_app_theme は 'light' / 'dark' / 'system' の3値を取り得る（キー未設定＝初回訪問時も
 // 'system'として扱う）。「今どちらの見た目にすべきか」を決める箇所（<head>内の先読みスクリプト・
@@ -5666,6 +5713,23 @@ function settingsSaveShortcutsPref() {
   try { localStorage.setItem(SHORTCUTS_KEY, (checkbox && checkbox.checked) ? '1' : '0'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
 }
 
+// 🏆 称号を表示するかどうか（端末単位・全プロフィール共通。sky_app_theme等と同じく
+// nsKey()は使わない）。未設定（null）の場合は既存ユーザーの見た目を変えないよう表示扱いにする。
+function skyTitlesVisible() {
+  try {
+    const v = localStorage.getItem(TITLES_VISIBLE_KEY);
+    return v === null ? true : v === '1';
+  } catch (e) { return true; }
+}
+function settingsSaveShowTitlesPref() {
+  const checkbox = document.getElementById('settingsShowTitlesCheckbox');
+  try { localStorage.setItem(TITLES_VISIBLE_KEY, (checkbox && checkbox.checked) ? '1' : '0'); } catch (e) { /* プライベートブラウジング等でlocalStorageが使えない場合も表示は継続する */ }
+  // ダッシュボードの称号カードと、開いていればプロフィール切替モーダル内の
+  // 称号セクションの両方を即座に反映する。
+  renderTitles();
+  if (document.getElementById('pfModalOverlay').classList.contains('show')) pfRenderModal();
+}
+
 function themeModeLabel(mode) {
   if (mode === 'dark') return t('themeToggleDark');
   if (mode === 'light') return t('themeToggleLight');
@@ -5686,6 +5750,8 @@ function syncSettingsModalUI() {
   }
   const checkbox = document.getElementById('settingsShortcutsCheckbox');
   if (checkbox) checkbox.checked = skyShortcutsEnabled();
+  const showTitlesCheckbox = document.getElementById('settingsShowTitlesCheckbox');
+  if (showTitlesCheckbox) showTitlesCheckbox.checked = skyTitlesVisible();
   const langJaBtn = document.getElementById('settingsLangJaBtn');
   const langEnBtn = document.getElementById('settingsLangEnBtn');
   if (langJaBtn && langEnBtn) {
