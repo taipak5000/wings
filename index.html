@@ -725,6 +725,54 @@
       .pf-modal-card { animation: none !important; transform: none !important; }
     }
   </style>
+<script id="side-panels-early">
+  // 🪟 ワイド画面（幅1280px以上）のサイドパネル（関連ツール＝左端／ダッシュボード＝右端）を使う設定なら、描画前にレイアウト用の
+  // クラスを付ける（JS起動後に付けると本文が左右にずれて画面がガクつくため）。設定のキーはtai-hubの
+  // 「表示設定 > ワイド画面でサイドパネルを表示」と共通（未設定＝オン）。実際に出るのは幅1280px以上の時だけ（下のCSSのメディアクエリ）。
+  (function () {
+    var cls = document.documentElement.classList;
+    function apply() {
+      var on = true;
+      try { on = localStorage.getItem('sky_hub_side_panels') !== '0'; } catch (e) {}
+      cls.toggle('side-panels-on', on);
+      cls.toggle('side-dash-on', on);
+    }
+    apply();
+    window.addEventListener('storage', function (e) { if (e.key === 'sky_hub_side_panels') apply(); });
+  })();
+</script>
+<style id="side-panels-css">
+/* 🪟 ワイド画面のサイドパネル（関連ツール＝左端／ダッシュボード＝右端）。tai-hubの同名機能と同じ仕様:
+   幅1280px以上で、html.side-panels-on（左）/ html.side-dash-on（右）が付いている時だけ出る。
+   左パネルは既存の「他のツール」サイドバー（.sidebar / .pf-drawer）をそのまま固定表示にしたもの。
+   右パネルはダッシュボードを別の入れ物(#sideDashPanel)に常時描画する。ドックから左右へ移ったボタンは
+   .dock-tools / .dock-dash で隠す。モーダル・引き出しは従来どおり全幅（パネルより手前）。 */
+.side-dash-panel { display: none; }
+.side-panel-title { font-weight: 700; font-size: 14px; margin: 0 0 12px; }
+@media (min-width: 1280px) {
+  html.side-panels-on, html.side-dash-on { --side-left-w: 232px; --side-right-w: 340px; --side-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  html.side-panels-on body { padding-left: var(--side-left-w) !important; }
+  html.side-dash-on body { padding-right: var(--side-right-w) !important; }
+  html.side-panels-on .sidebar, html.side-panels-on .pf-drawer {
+    display: block !important; position: fixed !important; top: 0 !important; left: 0 !important;
+    bottom: var(--side-bottom) !important; height: auto !important; width: var(--side-left-w) !important; max-width: none !important;
+    z-index: 900 !important; overflow-y: auto !important; border-radius: 0 !important; margin: 0 !important;
+    transform: none !important; animation: none !important; box-shadow: none !important; visibility: visible !important; opacity: 1 !important;
+    border-right: 0.5px solid var(--sep, var(--border-color, rgba(128,128,128,0.3))) !important; box-sizing: border-box !important;
+  }
+  html.side-panels-on .sidebar-close-btn, html.side-panels-on .pf-drawer-close-btn,
+  html.side-panels-on .sidebar-overlay, html.side-panels-on .pf-drawer-overlay { display: none !important; }
+  html.side-panels-on .site-dock .dock-tools { display: none !important; }
+  html.side-dash-on .site-dock .dock-dash { display: none !important; }
+  html.side-panels-on .site-dock { justify-content: center !important; gap: 28px !important; }
+  html.side-dash-on .side-dash-panel {
+    display: block; position: fixed; top: 0; right: 0; bottom: var(--side-bottom); width: var(--side-right-w);
+    z-index: 900; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 16px 14px 20px;
+    background: var(--card, var(--card-bg, #fff)); color: var(--text, var(--text-color, inherit));
+    border-left: 0.5px solid var(--sep, var(--border-color, rgba(128,128,128,0.3)));
+  }
+}
+</style>
 </head>
 <body>
 
@@ -995,11 +1043,11 @@
     <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-folder"/></svg></span></span>
     <span class="site-dock-label" id="siteDockProfileLabel" data-i18n="dockProfile">プロフィール</span>
   </button>
-  <button type="button" onclick="pfDashOpen()">
+  <button class="dock-dash" type="button" onclick="pfDashOpen()">
     <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-calendar"/></svg></span></span>
     <span class="site-dock-label" data-i18n="dockDashboard">ダッシュボード</span>
   </button>
-  <button type="button" onclick="openSidebarMobile()">
+  <button class="dock-tools" type="button" onclick="openSidebarMobile()">
     <span class="site-dock-icon"><span class="icon-chip" style="width:28px; height:28px;"><svg width="22" height="22"><use href="#i-menu"/></svg></span></span>
     <span class="site-dock-label" data-i18n="dockOtherTools">他のツール</span>
   </button>
@@ -3707,6 +3755,51 @@ function pfDashClose() {
   trapPop('dashModalOverlay');
 }
 
+
+// 🪟 ワイド画面（幅1280px以上）の右サイドパネル: ダッシュボードを常設する（tai-hubの右パネルと同じ仕様）。
+// レイアウトのCSS・描画前のクラス付与は <head> 内の #side-panels-css / #side-panels-early。
+// モーダル側の描画（#dashBody・タイマー）とは独立しているので、同時に出ても干渉しない。
+(function sideDashPanel() {
+  var MQ = window.matchMedia('(min-width: 1280px)');
+  var host = null, bodyEl = null, timer = null, token = 0;
+  function enabled() { try { return localStorage.getItem('sky_hub_side_panels') !== '0'; } catch (e) { return true; } }
+  function isEn() { try { return localStorage.getItem('sky_app_lang') === 'en'; } catch (e) { return false; } }
+  function rebuild() {
+    if (!bodyEl || !pfDashCache) return;
+    var cal = bodyEl.querySelector('.dash-calendar');
+    var wasOpen = cal && cal.open;
+    bodyEl.innerHTML = pfDashBuildHtml(pfDashCache);
+    if (wasOpen) { var c2 = bodyEl.querySelector('.dash-calendar'); if (c2) c2.open = true; }
+  }
+  async function start() {
+    if (host) return;
+    var my = ++token, en = isEn();
+    host = document.createElement('aside');
+    host.id = 'sideDashPanel'; host.className = 'side-dash-panel';
+    host.innerHTML = '<div class="side-panel-title">' + (en ? 'Today / This Week / This Month' : '今日・今週・今月') + '</div><div id="sideDashBody"><div class="pf-hint">' + (en ? 'Loading…' : '読み込み中…') + '</div></div>';
+    document.body.appendChild(host);
+    bodyEl = host.querySelector('#sideDashBody');
+    try {
+      if (!pfDashCache) { if (!pfDashLoading) pfDashLoading = pfDashLoadData(); pfDashCache = await pfDashLoading; }
+    } catch (e) {
+      console.error('sideDashPanel', e);
+      if (my === token && bodyEl) bodyEl.innerHTML = '<div class="dash-empty">' + (en ? 'Failed to load' : '読み込みに失敗しました') + '</div>';
+      return;
+    }
+    if (my !== token || !host) return;
+    rebuild();
+    timer = setInterval(rebuild, 1000);
+  }
+  function stop() {
+    token++;
+    if (timer) { clearInterval(timer); timer = null; }
+    if (host) { host.remove(); host = null; bodyEl = null; }
+  }
+  function sync() { if (enabled() && MQ.matches) start(); else stop(); }
+  if (MQ.addEventListener) MQ.addEventListener('change', sync); else if (MQ.addListener) MQ.addListener(sync);
+  window.addEventListener('storage', function (e) { if (e.key === 'sky_hub_side_panels') sync(); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
+})();
 /* ================================================================
    🔔 ダッシュボードのカウントダウンに対する通知リマインダー（任意オプトイン）。
    ページを開きっぱなしにしない前提のツールのため、Service Worker等での
