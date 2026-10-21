@@ -726,19 +726,78 @@
     }
   </style>
 <script id="side-panels-early">
-  // 🪟 ワイド画面（幅1280px以上）のサイドパネル（関連ツール＝左端／ダッシュボード＝右端）を使う設定なら、描画前にレイアウト用の
-  // クラスを付ける（JS起動後に付けると本文が左右にずれて画面がガクつくため）。設定のキーはtai-hubの
-  // 「表示設定 > ワイド画面でサイドパネルを表示」と共通（未設定＝オン）。実際に出るのは幅1280px以上の時だけ（下のCSSのメディアクエリ）。
+  // 🪟 ワイド画面（幅1280px以上）のサイドパネル（関連ツール＝左端／ダッシュボード＝右端）の表示設定。
+  // 描画前にレイアウト用のクラスを付ける（JS起動後に付けると本文が左右にずれて画面がガクつくため）。
+  // 設定は「表示設定」の「ワイド画面のサイドパネル」で、左右を別々にオフにできる（オフ＝これまでどおり画面下部のメニューから開く）。
+  // キーは全サイトとtai-hubで共通（未設定＝オン。旧キー sky_hub_side_panels が '0' ならその値を引き継ぐ）。
+  // 実際に出るのは幅1280px以上の時だけ（下のCSSのメディアクエリ）。
   (function () {
-    var cls = document.documentElement.classList;
-    function apply() {
-      var on = true;
-      try { on = localStorage.getItem('sky_hub_side_panels') !== '0'; } catch (e) {}
-      cls.toggle('side-panels-on', on);
-      cls.toggle('side-dash-on', on);
+    var K = { tools: 'sky_side_tools', dash: 'sky_side_dash', legacy: 'sky_hub_side_panels' };
+    function on(which) {
+      try { var v = localStorage.getItem(K[which]); if (v === null) v = localStorage.getItem(K.legacy); return v !== '0'; }
+      catch (e) { return true; }
     }
+    window.skySidePanelEnabled = on;
+    var cls = document.documentElement.classList;
+    function apply() { cls.toggle('side-panels-on', on('tools')); cls.toggle('side-dash-on', on('dash')); }
+    function changed() { apply(); syncChecks(); window.dispatchEvent(new Event('sidepanels-change')); }
+    window.skySidePanelSet = function (which, checked) {
+      try { localStorage.setItem(K[which], checked ? '1' : '0'); } catch (e) {}
+      changed();
+    };
     apply();
-    window.addEventListener('storage', function (e) { if (e.key === 'sky_hub_side_panels') apply(); });
+    window.addEventListener('storage', function (e) { if (e.key === K.tools || e.key === K.dash || e.key === K.legacy) changed(); });
+
+    // ── 表示設定への行の追加（目印のショートカット設定の手前に差し込む。Vue製のページには #spSettingsBlock の空の入れ物がある） ──
+    var ANCHORS = ['#settingsShortcutsCheckbox', '#settingsShortcutsEnabled', '#settingsShortcutsToggle', '#shortcutsCheckbox', '#shortcutsEnabledCheckbox', '#settingsShortcutsBtn', '#settingsThemeBtn'];
+    function txt() {
+      var l = 'ja'; try { l = localStorage.getItem('sky_app_lang') || 'ja'; } catch (e) {}
+      return l === 'ja' ? {
+        title: 'ワイド画面のサイドパネル', tools: '関連ツールを左端に常時表示', dash: 'ダッシュボードを右端に常時表示',
+        hint: '幅1280px以上の画面で有効です。オフにすると、これまでどおり画面下部のメニューから開きます。'
+      } : {
+        title: 'Side panels on wide screens', tools: 'Always show Related Tools on the left', dash: 'Always show the Dashboard on the right',
+        hint: 'Applies to screens 1280px or wider. When off, open them from the bottom menu as before.'
+      };
+    }
+    function fill(box) {
+      var x = txt();
+      box.innerHTML = '<div class="sp-set-title">' + x.title + '</div>' +
+        '<label class="sp-set-row"><span>' + x.tools + '</span><input type="checkbox" class="sp-set-tools" onchange="skySidePanelSet(\'tools\', this.checked)"></label>' +
+        '<label class="sp-set-row"><span>' + x.dash + '</span><input type="checkbox" class="sp-set-dash" onchange="skySidePanelSet(\'dash\', this.checked)"></label>' +
+        '<div class="sp-set-hint">' + x.hint + '</div>';
+      box.setAttribute('data-sp-filled', '1');
+    }
+    function syncChecks() {
+      var t = document.querySelector('#spSettingsBlock .sp-set-tools'), d = document.querySelector('#spSettingsBlock .sp-set-dash');
+      if (t) t.checked = on('tools');
+      if (d) d.checked = on('dash');
+    }
+    function install() {
+      var box = document.getElementById('spSettingsBlock');
+      if (!box) {
+        var anchor = null;
+        for (var i = 0; i < ANCHORS.length && !anchor; i++) anchor = document.querySelector(ANCHORS[i]);
+        if (!anchor) return;
+        var card = anchor.closest('.pf-modal-card, .modal-card, .tools-modal, .settings-modal-card, [role="dialog"], [class*="modal"]');
+        var el = anchor;
+        if (card) { while (el.parentElement && el.parentElement !== card) el = el.parentElement; }
+        else el = anchor.closest('.settings-section, .dash-section, section') || anchor.parentElement || anchor;
+        var prev = el.previousElementSibling;
+        if (prev && /label|title/i.test(prev.className || '')) el = prev;
+        box = document.createElement('div');
+        box.id = 'spSettingsBlock'; box.className = 'sp-set';
+        el.parentNode.insertBefore(box, el);
+      }
+      if (!box.getAttribute('data-sp-filled') || !box.firstChild) fill(box);
+      syncChecks();
+    }
+    var pending = false;
+    function schedule() { if (pending) return; pending = true; setTimeout(function () { pending = false; install(); }, 50); }
+    document.addEventListener('DOMContentLoaded', function () {
+      install();
+      new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+    });
   })();
 </script>
 <style id="side-panels-css">
@@ -772,6 +831,12 @@
     border-left: 0.5px solid var(--sep, var(--border-color, rgba(128,128,128,0.3)));
   }
 }
+/* ── 表示設定の「ワイド画面のサイドパネル」行（左右を別々にオフにできる。early scriptが差し込む） ── */
+.sp-set { margin: 14px 0; padding: 10px 0; border-top: 1px solid var(--sep, var(--border-color, rgba(128,128,128,0.25))); border-bottom: 1px solid var(--sep, var(--border-color, rgba(128,128,128,0.25))); font-size: 14px; color: var(--text, var(--text-color, inherit)); }
+.sp-set-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+.sp-set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; cursor: pointer; }
+.sp-set-row input { width: 19px; height: 19px; flex-shrink: 0; cursor: pointer; accent-color: var(--orange, var(--blue, #FF9500)); }
+.sp-set-hint { font-size: 11.5px; opacity: 0.7; line-height: 1.5; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -3762,7 +3827,7 @@ function pfDashClose() {
 (function sideDashPanel() {
   var MQ = window.matchMedia('(min-width: 1280px)');
   var host = null, bodyEl = null, timer = null, token = 0;
-  function enabled() { try { return localStorage.getItem('sky_hub_side_panels') !== '0'; } catch (e) { return true; } }
+  function enabled() { return window.skySidePanelEnabled ? window.skySidePanelEnabled('dash') : true; }
   function isEn() { try { return localStorage.getItem('sky_app_lang') === 'en'; } catch (e) { return false; } }
   function rebuild() {
     if (!bodyEl || !pfDashCache) return;
@@ -3797,7 +3862,7 @@ function pfDashClose() {
   }
   function sync() { if (enabled() && MQ.matches) start(); else stop(); }
   if (MQ.addEventListener) MQ.addEventListener('change', sync); else if (MQ.addListener) MQ.addListener(sync);
-  window.addEventListener('storage', function (e) { if (e.key === 'sky_hub_side_panels') sync(); });
+  window.addEventListener('sidepanels-change', sync);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
 })();
 /* ================================================================
